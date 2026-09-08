@@ -361,7 +361,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <option value="5">5레인 — 430.66m</option><option value="6">6레인 — 438.33m</option>
             <option value="7">7레인 — 446.00m</option><option value="8">8레인 — 453.66m</option>
           </select></div>
-        <div id="run-plan-info" style="background:#080e1a;border-radius:6px;padding:9px 12px;margin-bottom:12px;font-size:12.5px;color:#38bdf8">—</div>
+        <div id="run-plan-info" style="background:#080e1a;border-radius:6px;padding:9px 12px;margin-bottom:8px;font-size:12.5px;color:#38bdf8">—</div>
+        <div id="run-plan-preview" style="display:none;margin-bottom:12px"></div>
         <div id="run-track-info" style="display:none;background:#0f1b12;border:1px solid #16532e;border-radius:6px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#6ee7b7"></div>
         <div class="form-group" style="margin-bottom:8px">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="run-metro-toggle" onchange="onMetroUiToggle()" style="width:17px;height:17px"> 메트로놈 (케이던스 박자)</label>
@@ -1049,7 +1050,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   <div class="modal-box">
     <div class="card-header"><div class="card-title"><i class="bi bi-play-circle-fill" style="color:#10b981"></i> <span id="run-title">워크아웃</span></div><button onclick="closeRunModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer"><i class="bi bi-x-lg"></i></button></div>
     <div id="run-body"></div>
-    <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn" style="width:100%;margin-top:12px;background:#dc2626;border:none;font-weight:800;padding:13px" onclick="goToRunningTabWithWorkout()"><i class="bi bi-play-fill"></i> Run — 러닝 탭에서 바로 시작</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-secondary" style="flex:1" onclick="addWorkoutToPlanFromRun()"><i class="bi bi-calendar-plus"></i> 오늘 계획에 추가</button>
       <button class="btn btn-success" style="flex:1" onclick="logCurrentRunResult()"><i class="bi bi-check2-circle"></i> 완료 · 결과 기록</button>
     </div>
@@ -2212,8 +2214,13 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.9.0",APP_BUILD="2026-09-08";
+const APP_VERSION="2.9.1",APP_BUILD="2026-09-08";
 const CHANGELOG=[
+  {v:"2.9.1",d:"2026-09-08",title:"워크아웃 시작 흐름 개선 · 계획 상세 미리보기",items:[
+    "워크아웃 라이브러리의 미리보기에 빨간 'Run' 버튼 추가 — 누르면 러닝 탭으로 이동해 해당 워크아웃이 자동 선택되고 스텝이 바로 펼쳐짐",
+    "오늘 계획(플랜) 모드도 저장된 워크아웃처럼 시작 전에 전체 스텝(구간별 거리·페이스·심박존)이 상세히 펼쳐짐",
+    "반복 인터벌(예: 400m×8)은 낱개로 나열하지 않고 워크아웃 미리보기와 같은 'N회 반복' 압축 형태로 표시",
+    "휴식일 계획은 별도 안내 문구로 표시"]},
   {v:"2.9.0",d:"2026-09-08",title:"올해의 나 vs 작년의 나",items:[
     "대시보드에 '작년의 나와 비교' 카드 추가 — 최근 7·14·30일을 1~3년 전 같은 시기와 나란히 비교",
     "총 거리·평균 페이스·운동 횟수·TRIMP·평균 심박을 비교하고, 개선 방향에 맞춰 화살표 색으로 표시(페이스·심박은 낮을수록 초록)",
@@ -5585,6 +5592,18 @@ function startWorkout(id){const w=(DB.workouts||[]).find(x=>x.id===id);if(!w)ret
     else body+=stepRunCard(m.label,m.icon,s.tType,s.val,s.zone);});
   document.getElementById("run-body").innerHTML=body;document.getElementById("runModal").classList.add("active");}
 function closeRunModal(){document.getElementById("runModal").classList.remove("active");}
+function goToRunningTabWithWorkout(){ // 워크아웃 미리보기의 빨간 Run 버튼 — 러닝 탭으로 이동해 이 워크아웃을 바로 준비시킴
+  if(!currentRunId){showToast("워크아웃을 찾을 수 없습니다.");return;}
+  const id=currentRunId;closeRunModal();
+  goToSlide(1);
+  setTimeout(()=>{ // 탭 전환 애니메이션 이후 안전하게 값 설정
+    const modeSel=document.getElementById("run-mode");if(modeSel)modeSel.value="workout";
+    onRunModeChange();
+    const pick=document.getElementById("run-workout-pick");
+    if(pick&&[...pick.options].some(o=>o.value===id))pick.value=id;
+    renderWorkoutPreview();
+    const card=document.getElementById("run-setup-card");if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
+  },150);}
 function planStrOf(w){const t=workoutTotals(w);return `${w.name} ${t.km.toFixed(0)}km (Z${t.maxZone})`;}
 function addWorkoutToPlan(id){const w=(DB.workouts||[]).find(x=>x.id===id);if(!w)return;const date=selectedDate||TODAY;
   if(!DB.calendar[date])DB.calendar[date]={plans:[],logs:[]};DB.calendar[date].plans.push(planStrOf(w));
@@ -5949,6 +5968,34 @@ function renderFreeTargetHint(){const box=document.getElementById("run-free-targ
   let pace=paceSec>0?paceSec:(distKm>0&&timeMin>0?Math.round(timeMin*60/distKm):null);
   if(pace)parts.push(`목표 페이스 <strong style="color:#38bdf8">${fmtPace(pace)}/km</strong>${(!paceSec&&distKm>0&&timeMin>0)?" (거리·시간으로 자동 계산)":""}`);
   box.innerHTML=`<i class="bi bi-check2-circle" style="color:#6ee7b7"></i> `+parts.join(" · ");}
+/* 계획(오늘 계획) 텍스트도 저장된 워크아웃처럼 시작 전에 스텝을 펼쳐서 보여준다.
+   planToSteps는 반복 구간을 전부 낱개로 펼치므로(예: 인터벌1~8), 그대로 나열하면 너무 길어져
+   원래 "N회×" 패턴이 있으면 워크아웃 미리보기와 같은 "N회 반복" 압축 형태로 다시 묶어서 보여준다. */
+function planStepLine(s){const zz=calculatedZones[s.zone]||{min:"?",max:"?"};
+  const amt=s.type==="dist"?`${s.val}km`:s.type==="time"?`${s.val}분`:"제한 없음(직접 종료)";
+  const tp=s.targetPaceSec||(s.zone?zonePaceSec(s.zone):null);
+  return `<div style="margin-bottom:6px"><strong style="color:#fff">${escapeHtml(s.label)}</strong>
+    <span style="font-size:12px;color:#94a3b8">${amt}${s.zone?` · Z${s.zone}`:""}${tp?` · @${fmtPace(tp)}/km`:""}${s.zone?` · ${zz.min}~${zz.max}bpm`:""}</span></div>`;}
+function renderPlanStepsPreview(planStr){const box=document.getElementById("run-plan-preview");if(!box)return;
+  if(!planStr){box.style.display="none";return;}
+  const steps=planToSteps(planStr);
+  if(!steps){box.style.display="block";box.innerHTML=`<div style="background:#080e1a;border-radius:8px;padding:12px;font-size:12px;color:#94a3b8">휴식일입니다. 페이스 목표 없이 자유롭게 진행됩니다.</div>`;return;}
+  const repM=planStr.match(/(\d+(?:\.\d+)?)\s*(km|m)\s*[×x*]\s*(\d+)/i);
+  let body;
+  if(repM&&steps.length>=4){const reps=parseInt(repM[3]),warm=steps[0],work=steps[1],rec=steps[2],cool=steps[steps.length-1];
+    body=planStepLine(warm)+
+      `<div style="margin-bottom:6px"><strong style="color:#fcd34d">🔁 ${reps}회 반복</strong>
+        <div style="margin:4px 0 0 20px;font-size:12px;color:#6ee7b7">↳ 본운동: ${work.val}${work.type==="dist"?"km":"분"} · Z${work.zone} · @${fmtPace(zonePaceSec(work.zone))}/km</div>
+        <div style="margin:2px 0 0 20px;font-size:12px;color:#94a3b8">↳ 회복: ${rec.val}${rec.type==="dist"?"km":"분"} · Z${rec.zone} · @${fmtPace(zonePaceSec(rec.zone))}/km</div></div>`+
+      planStepLine(cool);}
+  else body=steps.map(planStepLine).join("");
+  const totalKm=steps.reduce((a,s)=>a+(s.type==="dist"?s.val:0),0);
+  const totalMin=steps.reduce((a,s)=>a+(s.type==="time"?s.val:s.type==="dist"&&s.zone?Math.round(s.val*zonePaceSec(s.zone)/60):0),0);
+  box.style.display="block";
+  box.innerHTML=`<div style="background:#080e1a;border-radius:8px;padding:12px">
+    <div style="font-size:12.5px;color:#fcd34d;margin-bottom:8px"><i class="bi bi-calculator"></i> 총 ${totalKm>0?totalKm.toFixed(1)+"km · ":""}약 ${totalMin}분</div>
+    <div style="border-top:1px solid var(--border-light);padding-top:8px">${body}</div>
+  </div>`;}
 function planToSteps(planStr){const p=parsePlan(planStr);if(p.rest)return null;
   const zone=p.zone||2;
   const repM=planStr.match(/(\d+(?:\.\d+)?)\s*(km|m)\s*[×x*]\s*(\d+)/i); // "1km×5"/"400m×10" 같은 반복 세트를 실제 인터벌+회복 구조로 전개
@@ -6004,15 +6051,19 @@ function onRunModeChange(){const m=document.getElementById("run-mode").value;
   if(m==="plan"){const src=pendingRunPlan||{date:TODAY,idx:0,text:(dayPlans(TODAY)[0]||null),fromLog:false};
     if(src.text){const isToday=src.date===TODAY;
       const label=src.fromLog?`선택한 기록 재실행 (${src.date})`:(isToday?"오늘 계획":`선택한 계획 (${src.date})`);
-      info.innerHTML=`<i class="bi bi-flag-fill"></i> ${label}: <strong>${escapeHtml(src.text)}</strong>${(isToday&&!src.fromLog)?"":'<div style="font-size:11px;color:#94a3b8;margin-top:4px">오늘 날짜가 아니어도 이 내용대로 지금 실행할 수 있습니다.</div>'}`;}
-    else info.innerHTML=`<i class="bi bi-exclamation-circle"></i> 오늘 등록된 계획이 없습니다. 자유 달리기로 진행하거나 주기화 탭에서 플랜을 배치하세요.`;
+      info.innerHTML=`<i class="bi bi-flag-fill"></i> ${label}: <strong>${escapeHtml(src.text)}</strong>${(isToday&&!src.fromLog)?"":'<div style="font-size:11px;color:#94a3b8;margin-top:4px">오늘 날짜가 아니어도 이 내용대로 지금 실행할 수 있습니다.</div>'}`;
+      renderPlanStepsPreview(src.text);}
+    else{info.innerHTML=`<i class="bi bi-exclamation-circle"></i> 오늘 등록된 계획이 없습니다. 자유 달리기로 진행하거나 주기화 탭에서 플랜을 배치하세요.`;
+      document.getElementById("run-plan-preview").style.display="none";}
     document.getElementById("run-workout-preview").style.display="none";}
   else if(m==="workout"){const sel=document.getElementById("run-workout-pick");
     sel.innerHTML=(DB.workouts||[]).map(w=>`<option value="${w.id}">${w.name}</option>`).join("")||`<option value="">저장된 워크아웃 없음</option>`;
     info.innerHTML=`<i class="bi bi-clipboard2-pulse"></i> 선택한 워크아웃의 스텝을 순서대로 안내합니다.`;
+    document.getElementById("run-plan-preview").style.display="none";
     renderWorkoutPreview();}
   else{info.innerHTML=`<i class="bi bi-geo"></i> 거리·페이스·랩을 측정합니다. 목표 없이 자유롭게 달립니다.`;
-    document.getElementById("run-workout-preview").style.display="none";}}
+    document.getElementById("run-workout-preview").style.display="none";
+    document.getElementById("run-plan-preview").style.display="none";}}
 function runWorkoutStepLine(s,refDist,refTimeSec){ // 러닝 시작 전 미리보기 한 줄 — 종류·거리(시간)·목표페이스·심박존을 함께 보여줌
   const m=STEP_META[s.kind];
   const z=(zn)=>calculatedZones[zn]||{min:"?",max:"?"};
