@@ -1,0 +1,9 @@
+{
+  "name": "run2080",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Run2080 마라톤 훈련 앱 — /api 폴더는 Vercel 서버리스 함수(roadrun.co.kr 프록시)에 사용됩니다.",
+  "dependencies": {
+    "iconv-lite": "^0.7.3"
+  }
+}
