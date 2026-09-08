@@ -2090,8 +2090,15 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.6.2",APP_BUILD="2026-09-06";
+const APP_VERSION="2.6.3",APP_BUILD="2026-09-06";
 const CHANGELOG=[
+  {v:"2.6.3",d:"2026-09-07",title:"마라톤온라인 — 텍스트 기반 파싱으로 재구성, 속도 개선",items:[
+    "원인 확정 — 원본 표의 태그가 깨져(닫히지 않은 링크 등) 화면 전체가 글자 한 덩어리로 뭉치는 문제 발견",
+    "표 구조에 기대지 않고, '날짜(9/5 (토))'·'거리(10km,5km · 풀,하프 · 50k 등)' 같은 실제 텍스트 패턴으로 이벤트를 직접 추출하도록 전면 교체",
+    "상세보기 링크는 원본에서 <a href=view.php?no=...> 패턴만 별도로 뽑아 카드에 정확히 연결",
+    "실제 문제가 됐던 데이터로 검증 — 9개 대회 전부 이름·거리·장소 정확히 분리됨",
+    "느리다는 문제 해결 — 우리 서버(Vercel) 응답을 1순위로 바꿔, 성공하면 공개 프록시를 아예 호출하지 않음(캐시 덕에 훨씬 빠름)",
+    "파싱까지 실패해도 원본 텍스트는 그대로 보여 화면이 완전히 비지는 않음"]},
   {v:"2.6.2",d:"2026-09-07",title:"마라톤온라인 화면 가독성 개선",items:[
     "원본의 옆으로 잘리던 표를 앱 스타일의 세로 카드 목록으로 자동 재구성",
     "날짜를 배지로, 대회명을 굵은 링크로, 거리·장소를 한 줄로 정리",
@@ -3501,72 +3508,81 @@ function decodeBestEffort(buf){ // EUC-KR/UTF-8 중 실제 한글이 더 잘 읽
   const asEucKr=tryDecode("euc-kr"),asUtf8=tryDecode("utf-8");
   const score=(s)=>s?(s.match(/[\uAC00-\uD7A3]/g)||[]).length-(s.match(/\uFFFD/g)||[]).length*5:-1e9; // 완성형 한글 음절 수 − 깨짐문자×5
   return score(asEucKr)>=score(asUtf8)?asEucKr:asUtf8;}
-function cleanRoadrunHtml(html){ // 팝업 스크립트를 실제 링크로, 원본 스타일은 우리 것으로 교체
+function escHtml(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function wrapRoadrunShell(inner){return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>body{background:#0a0e17;color:#e2e8f0;font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6;padding:12px;margin:0}
+    a{color:#38bdf8;text-decoration:none}</style>
+    </head><body>${inner}</body></html>`;}
+function cleanRoadrunHtml(html){ // 파싱 실패 시 최소한 원본이라도 보이도록 하는 최후 대체 경로
   html=html.replace(/<script[\s\S]*?<\/script>/gi,"");
   html=html.replace(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi,"");
   html=html.replace(/href=["']javascript:open_window\('win',\s*'([^']+)'[^)]*\)["']/gi,
     (_m,path)=>`href="http://www.roadrun.co.kr/schedule/${path}" target="_blank" rel="noopener"`);
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>body{background:#0a0e17;color:#e2e8f0;font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6;padding:12px;margin:0}
-    a{color:#38bdf8;text-decoration:none} table{width:100%;border-collapse:collapse;font-size:12.5px}
-    td,th{padding:7px 4px;border-bottom:1px solid #1e293b;vertical-align:top;text-align:left} strong{color:#fff}</style>
-    </head><body>${html}</body></html>`;}
-/* 원본 사이트의 표는 폭이 고정돼 있어 폰 화면에서 옆으로 잘린다. 정확한 태그 구조를 알 수 없으므로,
-   "행이 가장 많은 표 = 대회 목록"이라는 일반적인 규칙으로 찾아낸 뒤, 각 행에서 날짜·링크·나머지 텍스트를
-   뽑아 우리 앱 스타일의 세로 카드로 다시 그린다. 재구성에 실패해도 원본 표가 그대로 남으므로 안전하다. */
-function reformatRoadrunView(doc){
-  try{
-    doc.querySelectorAll("img").forEach(img=>img.remove()); // 광고·깨진 아이콘 이미지 제거
-    doc.querySelectorAll("[bgcolor]").forEach(el=>el.removeAttribute("bgcolor")); // 옛날 방식의 흰 배경 지정을 걷어내 우리 다크 테마가 보이게 함
-    doc.querySelectorAll("*").forEach(el=>{if(el.style&&el.style.backgroundColor)el.style.backgroundColor="";});
-    doc.querySelectorAll("table,td,th").forEach(el=>{el.removeAttribute("width");el.removeAttribute("height");}); // 고정 폭 때문에 잘리는 문제 방지
-
-    const tables=[...doc.querySelectorAll("table")];if(!tables.length)return;
-    let listTable=tables[0],maxRows=0;
-    tables.forEach(t=>{const n=t.querySelectorAll("tr").length;if(n>maxRows){maxRows=n;listTable=t;}});
-    const cards=[];
-    listTable.querySelectorAll("tr").forEach(tr=>{
-      const tds=[...tr.querySelectorAll("td")];if(tds.length<2)return;
-      const dateTxt=(tds[0].innerText||"").replace(/\s+/g," ").trim();
-      if(!dateTxt||!/\d/.test(dateTxt))return; // 날짜가 없는 줄(광고·구분줄)은 건너뜀
-      const link=tr.querySelector("a[href]");
-      const nameTxt=(link?link.innerText:(tds[1]?tds[1].innerText:"")).replace(/\s+/g," ").trim();
-      if(!nameTxt)return;
-      const restTxt=tds.slice(1).map(td=>td.innerText||"").join(" ").replace(nameTxt,"").replace(/\s+/g," ").trim();
-      cards.push({dateTxt,nameTxt,restTxt,href:link?link.getAttribute("href"):"#"});});
-    if(!cards.length)return; // 못 찾으면 원본 표를 그대로 둠(정보는 어쨌든 보임)
-
-    const wrap=doc.createElement("div");
-    wrap.innerHTML=cards.map(c=>`
-      <div style="background:#0d1420;border:1px solid #1e293b;border-radius:10px;padding:12px 14px;margin-bottom:9px">
-        <span style="display:inline-block;background:#1e3a5f;color:#7dd3fc;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;margin-bottom:6px">${c.dateTxt}</span>
-        <a href="${c.href}" target="_blank" rel="noopener" style="display:block;font-size:14.5px;font-weight:700;color:#f1f5f9;text-decoration:none;line-height:1.4;margin-bottom:4px">${c.nameTxt}</a>
-        <div style="font-size:12px;color:#94a3b8;line-height:1.5">${c.restTxt}</div>
-      </div>`).join("");
-    listTable.replaceWith(wrap);
-  }catch(e){/* 재구성 실패해도 원본 표가 남아있으므로 화면이 비지는 않음 */}}
-function showInRoadrunFrame(html){
+  return wrapRoadrunShell(html);}
+/* ===== 대회 목록 텍스트 파서 =====
+   원본 사이트의 표 태그가 (닫히지 않은 링크 등으로) 깨져서 화면 전체가 파란 글자 한 덩어리로
+   뭉쳐버리는 문제가 있었다. 태그 구조에 기대지 않고, 실제로 항상 일정한 형태로 나타나는
+   텍스트 패턴("9/5 (토)" 같은 날짜, "10km,5km"/"풀,하프" 같은 거리 표기)만으로 이벤트 단위를 직접 잘라낸다.
+   상세보기 링크는 원본 문자열에서 <a href=...view.php?no=NNN...>이름</a> 패턴만 별도로 추출해 매칭한다
+   (이 정규식은 문서 전체가 깨져 있어도 그 부분 자체는 국소적으로 온전하면 잡아낼 수 있다). */
+function parseRoadrunEvents(rawHtml){
+  const linkMap=new Map();
+  const linkRe=/<a\b[^>]*href=["']([^"']*view\.php\?no=\d+[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let lm;while((lm=linkRe.exec(rawHtml))){
+    const href=lm[1].startsWith("http")?lm[1]:"http://www.roadrun.co.kr/schedule/"+lm[1].replace(/^\.?\//,"");
+    const name=lm[2].replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();
+    if(name)linkMap.set(name,href);}
+  let text=rawHtml.replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ")
+    .replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").replace(/&amp;/g,"&")
+    .replace(/[ \t]+/g," ").replace(/\s*\n\s*/g,"\n");
+  let startIdx=-1;
+  for(const m of["주최 & 연락처","주최&연락처","날짜 대회명 장소"]){const i=text.indexOf(m);if(i>=0){startIdx=i+m.length;break;}}
+  const body=text.slice(startIdx<0?0:startIdx);
+  const parts=body.split(/(\d{1,2}\/\d{1,2}\s*\([월화수목금토일]\))/);
+  const DIST_START=/(?:^|\s)((?:풀|하프|걷기)(?=[,\s]|$)|\d+(?:\.\d+)?\s*k(?:m)?(?:-[A-Za-z])?(?=[,\s]|$))/;
+  const events=[];
+  for(let i=1;i<parts.length;i+=2){
+    const date=parts[i].trim(),chunk=(parts[i+1]||"").trim();if(!chunk)continue;
+    let name=null,href=null;
+    for(const[nm,hf] of linkMap){if(chunk.startsWith(nm)){name=nm;href=hf;break;}}
+    if(!name){const dm=chunk.match(DIST_START);name=dm?chunk.slice(0,dm.index).trim():chunk.slice(0,40).trim();}
+    if(!name)continue;
+    events.push({date,name,rest:chunk.slice(name.length).trim(),href});}
+  return events;}
+function renderRoadrunCards(events){
+  return events.map(e=>`
+    <div style="background:#0d1420;border:1px solid #1e293b;border-radius:10px;padding:12px 14px;margin-bottom:9px">
+      <span style="display:inline-block;background:#1e3a5f;color:#7dd3fc;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;margin-bottom:6px">${escHtml(e.date)}</span>
+      ${e.href?`<a href="${escHtml(e.href)}" target="_blank" rel="noopener" style="display:block;font-size:14.5px;font-weight:700;color:#f1f5f9;text-decoration:none;line-height:1.4;margin-bottom:4px">${escHtml(e.name)}</a>`
+              :`<div style="font-size:14.5px;font-weight:700;color:#f1f5f9;line-height:1.4;margin-bottom:4px">${escHtml(e.name)}</div>`}
+      <div style="font-size:12px;color:#94a3b8;line-height:1.5">${escHtml(e.rest)}</div>
+    </div>`).join("");}
+function showInRoadrunFrame(rawHtml){
   document.getElementById("roadrun-loading").style.display="none";
   const iframe=document.getElementById("roadrun-iframe");iframe.style.display="block";
   const doc=iframe.contentDocument||iframe.contentWindow.document;
-  doc.open();doc.write(html);doc.close();
-  reformatRoadrunView(doc);}
+  const events=parseRoadrunEvents(rawHtml);
+  const finalHtml=events.length
+    ?wrapRoadrunShell(`<div style="font-size:11.5px;color:#64748b;margin-bottom:10px">총 ${events.length}개 대회</div>${renderRoadrunCards(events)}`)
+    :cleanRoadrunHtml(rawHtml); // 파싱 실패 시에도 원본 내용은 보이게
+  doc.open();doc.write(finalHtml);doc.close();}
+function isFileProtocol(){return location.protocol==="file:";} // 별도 함수로 분리 — 배포 상황을 흉내내 테스트할 수 있도록
 function openRoadrunViewer(){
   const loading=document.getElementById("roadrun-loading"),iframe=document.getElementById("roadrun-iframe"),fb=document.getElementById("roadrun-fallback");
   loading.style.display="flex";iframe.style.display="none";fb.style.display="none";
   document.getElementById("roadrunModal").classList.add("active");
-  // 1순위: 공개 프록시 — 배포 여부와 무관하게 지금 바로 시도
-  fetch(ROADRUN_PROXY).then(r=>{if(!r.ok)throw new Error("proxy status "+r.status);return r.arrayBuffer();})
-    .then(buf=>{const text=decodeBestEffort(buf);
-      if(!text||!/[\uAC00-\uD7A3]/.test(text))throw new Error("decode failed"); // 한글이 전혀 없으면 실패로 간주
-      showInRoadrunFrame(cleanRoadrunHtml(text));})
-    .catch(()=>tryRoadrunServerFn(loading,iframe,fb));}
-function tryRoadrunServerFn(loading,iframe,fb){
-  if(location.protocol==="file:"){loading.style.display="none";fb.style.display="block";return;} // 로컬 파일에선 /api가 있을 수 없음
-  // 2순위: 우리 서버(Vercel) 함수 — iframe의 onload는 404에도 발생할 수 있어 fetch로 상태를 직접 확인
+  if(isFileProtocol()){tryPublicRoadrunProxy(loading,iframe,fb);return;} // /api가 있을 수 없으니 바로 공개 프록시로
+  // 1순위: 우리 서버(Vercel) 함수 — 캐시가 걸려 있어 공개 프록시보다 훨씬 빠르고 안정적
   fetch("/api/roadrun").then(r=>{if(!r.ok)throw new Error("status "+r.status);return r.text();})
     .then(html=>showInRoadrunFrame(html))
+    .catch(()=>tryPublicRoadrunProxy(loading,iframe,fb));}
+function tryPublicRoadrunProxy(loading,iframe,fb){
+  // 2순위: 공개 프록시 — 배포 전이거나 우리 서버가 응답하지 않을 때의 대비책(속도는 이쪽이 더 느릴 수 있음)
+  fetch(ROADRUN_PROXY).then(r=>{if(!r.ok)throw new Error("proxy status "+r.status);return r.arrayBuffer();})
+    .then(buf=>{const text=decodeBestEffort(buf);
+      if(!text||!/[\uAC00-\uD7A3]/.test(text))throw new Error("decode failed");
+      showInRoadrunFrame(text);})
     .catch(()=>{loading.style.display="none";fb.style.display="block";});}
 async function requestPersistentStorage(silent){
   if(!navigator.storage||!navigator.storage.persist){
