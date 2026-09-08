@@ -187,6 +187,30 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 .toast-progress{position:absolute;left:0;bottom:0;height:3px;background:#38bdf8;width:100%;transform-origin:left;opacity:.7}
 .toast-hint{font-size:10.5px;color:#7dd3fc;opacity:.75;margin-top:5px;font-weight:500}
 .term{background:#080e1a;padding:12px;border-radius:8px;font-family:monospace;font-size:12px;color:#38bdf8;min-height:160px;line-height:1.7;white-space:pre-wrap}
+/* ===== 출력용 리포트 인쇄 스타일 ===== 인쇄할 때는 리포트 내용만 남기고 나머지 앱 화면은 전부 숨김 */
+@media print{
+  body>*:not(#reportPreviewView){display:none!important}
+  #reportPreviewView{position:static!important;background:#fff!important;overflow:visible!important}
+  .no-print{display:none!important}
+  #report-print-area{background:#fff;color:#111;padding:0}
+  #report-print-area .rep-section{page-break-inside:avoid;break-inside:avoid}
+  #report-print-area table{page-break-inside:auto}
+  #report-print-area tr{page-break-inside:avoid}
+}
+#report-print-area{background:#fff;color:#1e293b;font-family:-apple-system,sans-serif;padding:18px;max-width:800px;margin:0 auto}
+#report-print-area h1{font-size:20px;margin:0 0 4px}
+#report-print-area h2{font-size:15px;margin:22px 0 8px;padding-bottom:5px;border-bottom:2px solid #1e293b;color:#0f172a}
+#report-print-area .rep-meta{font-size:12px;color:#64748b;margin-bottom:18px}
+#report-print-area .rep-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
+#report-print-area .rep-stat{background:#f1f5f9;border-radius:8px;padding:10px;text-align:center}
+#report-print-area .rep-stat b{display:block;font-size:17px;color:#0f172a}
+#report-print-area .rep-stat span{font-size:10.5px;color:#64748b}
+#report-print-area table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:6px}
+#report-print-area th{background:#0f172a;color:#fff;padding:5px 6px;text-align:left}
+#report-print-area td{padding:4px 6px;border-bottom:1px solid #e2e8f0}
+#report-print-area .rep-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:11px}
+#report-print-area .rep-bar-track{flex:1;height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden}
+#report-print-area .rep-bar-fill{height:100%;border-radius:5px}
 </style>
 </head>
 <body onclick="closeDropdownIfOutside(event)">
@@ -231,6 +255,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="d-day-badge"><div class="days" id="hero-d-day">D-—</div><div style="font-size:10.5px;color:#94a3b8">남은 기간</div></div>
       </div>
       <div id="adapt-banner-slot"></div>
+      <div class="card" id="lifetime-card" style="margin-bottom:16px;border-left:3px solid #38bdf8">
+        <div class="card-header"><div class="card-title"><i class="bi bi-infinity" style="color:#38bdf8"></i> 나의 러닝 인생</div></div>
+        <div id="lifetime-body"></div>
+      </div>
+      <div class="card" id="onthisday-card" style="margin-bottom:16px;display:none;border-left:3px solid #fcd34d">
+        <div class="card-header"><div class="card-title"><i class="bi bi-clock-history" style="color:#fcd34d"></i> 1년 전 오늘</div></div>
+        <div id="onthisday-body"></div>
+      </div>
+      <div class="card" id="yearcompare-card" style="margin-bottom:16px;border-left:3px solid #a855f7">
+        <div class="card-header"><div class="card-title"><i class="bi bi-arrow-left-right" style="color:#a855f7"></i> 작년의 나와 비교</div>
+          <div style="display:flex;gap:4px">
+            <select id="yc-window" onchange="renderYearCompare()" style="width:auto;padding:3px 6px;font-size:11px"><option value="7">7일</option><option value="14" selected>14일</option><option value="30">30일</option></select>
+            <select id="yc-years-ago" onchange="renderYearCompare()" style="width:auto;padding:3px 6px;font-size:11px"><option value="1" selected>1년 전</option><option value="2">2년 전</option><option value="3">3년 전</option></select>
+          </div></div>
+        <div id="yearcompare-body"></div>
+      </div>
       <div class="card" id="weather-card" style="margin-bottom:16px">
         <div class="card-header"><div class="card-title"><i class="bi bi-cloud-sun-fill" style="color:#38bdf8"></i> 오늘의 러닝 환경</div><button class="btn btn-sm btn-secondary" onclick="loadRunWeather(true)"><i class="bi bi-arrow-clockwise"></i></button></div>
         <div id="weather-body"><div style="font-size:12.5px;color:var(--text-secondary)">위치 확인 중… (위치 권한을 허용해주세요)</div></div>
@@ -734,6 +774,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <button class="btn btn-secondary" onclick="exportCSV()"><i class="bi bi-filetype-csv"></i> CSV 내보내기</button>
           <button class="btn btn-secondary" onclick="exportBackup()"><i class="bi bi-download"></i> JSON 전체 백업</button>
           <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()"><i class="bi bi-upload"></i> JSON 백업 복원</button>
+          <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#a855f7);border:none" onclick="openReportSetup()"><i class="bi bi-printer"></i> 출력용 리포트 만들기</button>
         </div>
         <div style="font-size:11.5px;color:var(--text-secondary);margin-top:12px;line-height:1.7"><i class="bi bi-info-circle"></i> 엑셀 파일은 <strong>운동로그·개인기록·계획·일기·주간요약</strong> 5개 시트로 나뉘어 저장됩니다. JSON 백업은 앱 전체 상태(운동·PR·계획·일기·설정)를 그대로 저장/복원해 기기 이전이나 데이터 보존에 씁니다. 달리기 일기도 길이 제한 없이 함께 포함됩니다.</div>
       </div></div>
@@ -746,6 +787,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-12')"><div class="card-title"><i class="bi bi-activity" style="color:#f59e0b"></i> 소리 끊김 진단</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-12" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-12">
         <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">화면을 끈 동안 메트로놈·음성이 멈추면, 그 순간 무엇이 중단됐는지 여기에 기록됩니다. 러닝 후 열어보시고 <strong>복사해서 알려주시면</strong> 정확한 원인을 찾을 수 있습니다.</div>
         <div id="audio-log-body"></div>
+      </div></div>
+      <div class="card" id="sec-10-13">
+        <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-13')"><div class="card-title"><i class="bi bi-shoe" style="color:#a855f7"></i> 신발 마일리지</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-13" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-13">
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">러닝화는 보통 700~800km쯤 뛰면 쿠셔닝이 죽어 부상 위험이 커집니다. 신발을 등록해두면 운동 기록에 연결한 만큼 자동으로 누적되어, 교체 시점을 미리 알려드립니다.</div>
+        <div id="shoe-list"></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <input type="text" id="shoe-new-name" placeholder="신발 이름 (예: 페가수스 41)" style="flex:2">
+          <input type="number" id="shoe-new-retirekm" placeholder="700km" style="flex:1">
+          <button class="btn btn-sm" style="white-space:nowrap" onclick="addShoe()"><i class="bi bi-plus-lg"></i> 추가</button>
+        </div>
       </div></div>
       <div class="card" id="sec-10-3">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-3')"><div class="card-title"><i class="bi bi-soundwave" style="color:#38bdf8"></i> 메트로놈 기본값</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-3" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-3">
@@ -853,6 +904,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="form-group"><label>최대 심박수 (bpm)</label><input type="number" id="m-log-maxhr" value="150"></div>
     </div>
     <div style="background:#080e1a;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12.5px" id="zone-preview">—</div>
+    <div class="form-group"><label>신발 (선택)</label><select id="m-log-shoe"><option value="">신발 선택 안 함</option></select></div>
     <div class="form-group"><label>메모 / RPE(1~10)</label><input type="text" id="m-log-notes" value=""></div>
     <div class="form-group"><label>자기 평가 (오늘 훈련, 스스로 채점)</label>
       <select id="m-log-rating">
@@ -1166,7 +1218,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 
     <div style="margin-bottom:20px">
       <div style="font-size:13.5px;font-weight:800;color:#38bdf8;margin-bottom:8px"><i class="bi bi-book"></i> RUN2080 소개 및 방법론적 근거</div>
-      <div style="font-size:12.5px;color:#cbd5e1;line-height:1.8">RUN2080은 20대부터 80세까지, 부상 없이 오래 달리는 걸 목표로 하는 러닝 훈련 도구입니다. 훈련 페이스·심박존·기록 예측 등은 특정 코치의 비공개 훈련법이 아니라, <strong>공개적으로 알려진 스포츠과학 이론</strong>(Jack Daniels의 VDOT 시스템, Riegel 기록 예측 공식, Karvonen/Tanaka 심박 공식, 세계마스터스육상연맹(WMA) 에이지 그레이딩, Banister의 TRIMP 훈련부하 모델, 80:20 폴라라이즈드 트레이닝 원리 등)을 참고해 자체적으로 설계한 것입니다. 특정 개인·기관의 저작권 있는 훈련 플랜을 그대로 복제한 것이 아닙니다.</div>
+      <div style="font-size:12.5px;color:#cbd5e1;line-height:1.8">RUN2080은 20대부터 80세까지, 부상 없이 오래 달리는 걸 목표로 하는 러닝 훈련 도구입니다. 훈련 페이스·심박존·기록 예측 등은 특정 코치의 비공개 훈련법이 아니라, <strong>공개적으로 알려진 스포츠과학 이론</strong>(Jack Daniels의 VDOT 시스템, Riegel 기록 예측 공식, Karvonen/Tanaka 심박 공식, 세계마스터스육상연맹(WMA) 에이지 그레이딩, Banister의 TRIMP 훈련부하 모델, 80:20 폴라라이즈드 트레이닝 원리 등)을 참고해 자체적으로 설계한 것입니다. 특정 개인·기관의 저작권 있는 훈련 플랜을 그대로 복제한 것이 아닙니다.<br><br>
+      <strong style="color:#e2e8f0">이 앱의 더 근본적인 목적은 "다음 훈련을 도와주는 것"보다 "지금까지의 러닝 인생을 정교하게, 온전히 내 것으로 남기는 것"에 있습니다.</strong> 매 훈련의 거리·페이스·심박·TRIMP 같은 수치, PR의 변화, 신발 하나하나의 마일리지, 대회의 기억까지 — 이 모든 게 서버가 아니라 <strong>내 기기의 파일 하나</strong>에 쌓입니다. 다른 서비스가 사라지거나 바뀌어도 이 기록은 그대로 남고, 언제든 엑셀·PDF로 꺼내 소유할 수 있습니다.</div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:13.5px;font-weight:800;color:#38bdf8;margin-bottom:8px"><i class="bi bi-printer"></i> 기록을 소유하기 — 출력용 리포트 & 신발 마일리지</div>
+      <div style="font-size:12.5px;color:#cbd5e1;line-height:1.8">설정의 <strong>"출력용 리포트 만들기"</strong>에서 기간(전체 기간 포함)과 항목을 골라 미리보기를 열면, 요약·월별 추이·심박존 분포·PR·신발·대회·상세 기록표가 인쇄용 문서로 정리됩니다. 거기서 <strong>"PDF로 저장"</strong>을 누르면 브라우저 자체 인쇄 기능으로 파일이 남습니다(화면 캡처 방식이 아니라 브라우저 인쇄를 쓰므로 가볍고 선명합니다). <strong>"신발 마일리지"</strong>에서는 러닝화를 등록해두면 운동 기록에 연결한 만큼 자동으로 누적되어, 보통 권장되는 700~800km에 가까워지면 교체 시점을 미리 알려줍니다.</div>
     </div>
 
     <div style="margin-bottom:20px">
@@ -1228,6 +1286,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">설정 화면 접기</strong> — 환경설정의 각 소주제는 제목을 눌러 접고 펼 수 있습니다. 펼쳐둔 상태는 기억되어 다음에 열 때 그대로 유지됩니다. 상단의 '모두 펼치기 / 모두 접기'로 한 번에 조작할 수도 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">버전 표기</strong> — <strong>2</strong>.0.0은 큰 개편, 2.<strong>1</strong>.0은 기능 추가, 2.0.<strong>1</strong>은 작은 수정을 뜻합니다. 설정의 '버전 정보'에서 각 버전에 무엇이 바뀌었는지 확인할 수 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">배터리 최적화와 백그라운드 소리</strong> — 안드로이드는 배터리 절약을 위해 화면이 꺼진 뒤 약 1분 후 브라우저의 오디오 연결을 끊습니다. 이 앱은 무음 재생·미디어 세션 등록·별도 스레드 타이머 등 웹에서 가능한 모든 방법을 써서 버티지만, <strong>OS가 브라우저 자체를 잠재우면 막을 수 없습니다.</strong> 폰 설정 → 앱 → Chrome → 배터리 → "제한 없음"으로 바꾸면 해결됩니다. 이 설정은 러닝 앱, 음악 앱 등 백그라운드 소리가 필요한 모든 웹앱에 공통으로 필요합니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">작년의 나와 비교</strong> — 최근 7·14·30일과 같은 페이스 총 거리·평균 페이스·운동 횟수·TRIMP·평균 심박을, 1~3년 전 같은 시기와 나란히 비교합니다. 페이스와 심박은 낮을수록(빠르고 여유로울수록) 좋다고 보아 초록 화살표(▲)로, 거리·횟수는 늘어난 쪽을 초록으로 표시합니다. 비교할 과거 기록이 없으면 안내 문구만 뜨고, 기록이 쌓이면 자동으로 채워집니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">나의 러닝 인생</strong> — 대시보드 상단에 기록이 시작된 날부터 오늘까지의 전체 조망이 표시됩니다. 누적 거리·시간·운동 횟수·완주 대회 수와 함께, 누적 거리를 지구 둘레(40,075km)와 비교한 "지구 O%를 뛴 셈" 문구가 함께 나옵니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">1년 전 오늘</strong> — 오늘과 같은 날짜(월/일)에 과거 어느 해든 운동 기록이나 일지가 있으면 대시보드에 자동으로 보여줍니다. 여러 해에 기록이 있으면 각 연도별로 모두 표시됩니다. 기록이 없는 날짜에는 카드 자체가 나타나지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">신발 마일리지 추적</strong> — 설정에서 신발을 등록하고(교체 기준 km 지정, 기본 700km) 운동 기록에 연결하면, 그 신발로 뛴 모든 거리가 자동으로 누적됩니다. 진행률이 80%를 넘으면 "교체 시기 임박", 100%를 넘으면 "교체 권장!"으로 표시됩니다. 신발을 삭제해도 이미 기록된 운동 자체의 거리는 지워지지 않고 신발 연결만 해제됩니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">출력용 리포트 (PDF/인쇄)</strong> — 기간(이번 달·최근 3개월·올해·전체 기간)과 포함할 항목을 골라 인쇄용 문서를 만듭니다. "PDF로 저장"은 화면을 사진처럼 캡처하는 방식이 아니라 <strong>브라우저 자체의 인쇄 기능</strong>을 이용합니다 — 그래서 별도 프로그램 설치 없이 가볍고, 글자와 그래프가 흐려지지 않습니다. 인쇄 대화상자에서 "PDF로 저장"을 선택하면 파일로 남습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">자유 달리기 목표 (거리주·시간주·페이스주)</strong> — 러닝 시작의 자유 달리기 모드에서 거리·시간·페이스 중 하나 이상을 채우면 목표가 생깁니다. 거리를 넣으면 그 거리 도달 시, 시간만 넣으면 그 시간 경과 시 완료로 처리됩니다. 페이스만 넣으면 끝나는 기준 없이 그 페이스로 계속 코칭만 하며 직접 종료할 때까지 이어집니다. 거리와 시간을 함께 넣으면 필요한 페이스(시간÷거리)를 자동으로 계산해 목표 페이스로 씁니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">커스텀 템플릿의 기간 설정</strong> — 내 커스텀 템플릿 만들기에서 주기화 기간을 4·8·12·16·20·24·30주 중에서 고르거나, <strong>"기간 기타"</strong>를 선택해 시작일~종료일을 직접 지정할 수 있습니다. 직접 지정한 일수는 가장 가까운 주 단위로 자동 환산됩니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">마라톤온라인 대회 일정</strong> — 대회 주기화 탭의 "마라톤온라인" 버튼은 roadrun.co.kr의 대회 목록을 앱 안에서 바로 보여줍니다. 이 사이트는 보안 접속(https)을 지원하지 않아 기기에서 직접 열면 연결이 거부되는데, 앱이 대신 접속해 가져온 뒤 화면 가독성이 좋은 카드 형태로 재구성해 보여줍니다. 원본 표 구조가 깨져 있어도 날짜·거리 등 텍스트 패턴으로 직접 이벤트를 추출하는 방식이라 안정적입니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">PR 곡선의 코치 통찰</strong> — 개인기록 탭의 거리별 페이스 곡선 아래에, 등록된 기록 중 가장 긴 거리를 기준으로 다른 거리들을 예측해 비교한 분석이 표시됩니다. 실측이 예측보다 빠른 짧은 거리는 "스피드는 있는데 그 거리까지 유지하는 지구력이 상대적으로 약함"을, 예측보다 느리면 "지구력 기반은 있는데 스피드로 못 바꾸고 있음"을 뜻하며, 거리별로 맞는 훈련(인터벌·크루즈·지속주 등)을 함께 제안합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">TRIMP</strong> — Training Impulse. Banister 모델 기반으로 심박수·시간을 종합해 훈련 부하를 하나의 수치로 정량화한 지표입니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">ACWR</strong> — 최근 7일 훈련량과 최근 28일 평균 훈련량의 비율로, 급격한 훈련량 증가로 인한 부상 위험을 참고하는 지표입니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">80:20 폴라라이즈드 트레이닝</strong> — 전체 훈련의 약 80%는 저강도(Zone 1~2), 20%는 고강도(Zone 4~5)로 나누는 훈련 배분 철학입니다.</div>
@@ -1263,7 +1331,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         · 저장 용량은 텍스트 기록 기준 10년치도 여유롭지만(약 0.6MB), 브라우저가 데이터를 정리해버리는 상황은 용량과 무관하게 발생할 수 있습니다. 설정의 '저장소 보호'를 켜면 이 위험을 줄일 수 있습니다.<br>
         · 앱 자체는 오프라인에서 동작하지만, <strong>지도 배경과 날씨 정보는 인터넷 연결이 필요</strong>합니다.<br>
         · 심박수를 실측하지 않고 추정치로 쓰는 경우, 개인차에 따라 실제와 10bpm 이상 차이날 수 있습니다. 가능하면 실측값을 입력하세요.<br>
-        · <strong>안드로이드에서 화면을 끄면 약 1분 뒤 메트로놈·음성 안내가 멈출 수 있습니다.</strong> 이는 안드로이드 배터리 최적화 정책이며 웹앱 코드로 우회할 수 없습니다. 폰 설정에서 Chrome(또는 설치한 앱)의 배터리를 "제한 없음"으로 바꾸면 해결됩니다. 러닝 시작 시 이 안내가 한 번 표시됩니다.
+        · <strong>안드로이드에서 화면을 끄면 약 1분 뒤 메트로놈·음성 안내가 멈출 수 있습니다.</strong> 이는 안드로이드 배터리 최적화 정책이며 웹앱 코드로 우회할 수 없습니다. 폰 설정에서 Chrome(또는 설치한 앱)의 배터리를 "제한 없음"으로 바꾸면 해결됩니다. 러닝 시작 시 이 안내가 한 번 표시됩니다.<br>
+        · 신발 마일리지는 운동 기록에 <strong>직접 연결한 경우에만</strong> 집계됩니다. 과거에 이미 등록된 기록은 신발을 연결하지 않으면 반영되지 않습니다.<br>
+        · PDF 저장은 브라우저의 인쇄 기능을 이용하므로, 실제 저장 방식과 화면은 기기·브라우저에 따라 조금씩 다를 수 있습니다.<br>
+        · 마라톤온라인 연동은 외부 사이트와 무료 중계 서비스에 의존하므로, 그쪽 사정으로 일시적으로 접속이 늦어지거나 안 될 수 있습니다.
       </div>
     </div>
 
@@ -1328,6 +1399,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <strong style="color:#fff">4. 달리기</strong> — 러닝 측정 탭에서 시작하면 GPS로 거리·페이스가 기록되고, 계획한 워크아웃이 있으면 구간별로 안내해 줍니다.
     </div>
 
+    <div style="font-size:13px;font-weight:800;color:#38bdf8;margin-bottom:8px"><i class="bi bi-printer"></i> 내 러닝 기록을 남기고 소유하기</div>
+    <div style="font-size:12.5px;color:#cbd5e1;line-height:1.8;margin-bottom:18px">
+      설정 탭의 <strong style="color:#fff">"신발 마일리지"</strong>에서 러닝화를 등록하고, 운동 기록을 저장할 때 신발을 선택해두면 누적 거리가 자동으로 쌓입니다. 700km(기본값)에 가까워지면 교체 시점을 알려드립니다.<br><br>
+      <strong style="color:#fff">"출력용 리포트 만들기"</strong>에서는 기간과 원하는 항목을 골라 미리보기를 연 뒤, <strong style="color:#fff">"PDF로 저장"</strong>을 누르면 지금까지의 러닝 기록을 문서 한 장으로 남길 수 있습니다. 인쇄해서 보관하셔도 좋습니다.
+    </div>
+
     <div style="font-size:13px;font-weight:800;color:#38bdf8;margin-bottom:8px"><i class="bi bi-clock-history"></i> 과거 데이터 살펴보기</div>
     <div style="font-size:12.5px;color:#cbd5e1;line-height:1.8;margin-bottom:18px">
       통계 탭의 <strong style="color:#fff">이행 리포트·실측 분석·TRIMP 추세·레이스 예상 추세</strong>는 기간을 고른 뒤 <strong style="color:#fff">좌우 화살표</strong>로 그 단위만큼 과거를 넘겨볼 수 있습니다. 7일을 고르면 1주씩, 4주를 고르면 4주씩 이동합니다.<br><br>
@@ -1357,6 +1434,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   <div class="modal-box" style="max-width:520px;height:85vh;display:flex;flex-direction:column;padding:0">
     <div class="card-header" style="padding:14px 16px;margin:0"><div class="card-title"><i class="bi bi-list-ul"></i> 마라톤온라인 대회 일정</div>
       <button onclick="document.getElementById('roadrunModal').classList.remove('active')" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer"><i class="bi bi-x-lg"></i></button></div>
+    <div style="display:flex;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border-light);flex-wrap:wrap">
+      <select id="roadrun-year" style="width:auto;padding:5px 8px;font-size:12px"></select>
+      <select id="roadrun-month" style="width:auto;padding:5px 8px;font-size:12px"><option value="">전체 월</option></select>
+      <button class="btn btn-sm" style="padding:5px 12px" onclick="loadRoadrunFiltered()"><i class="bi bi-search"></i> 조회</button>
+      <button class="btn btn-sm btn-secondary" style="padding:5px 12px" onclick="openRoadrunViewer()">기본목록</button>
+    </div>
     <div id="roadrun-viewer-body" style="flex:1;overflow:hidden;position:relative">
       <div id="roadrun-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:12.5px"><i class="bi bi-arrow-repeat"></i>&nbsp;불러오는 중…</div>
       <iframe id="roadrun-iframe" style="width:100%;height:100%;border:0;display:none"></iframe>
@@ -1366,6 +1449,45 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       대신 원본 사이트로 바로 이동할 수 있습니다 — 기기의 <strong>"항상 보안 연결 사용"</strong> 설정을 꺼야 열릴 수 있습니다.
       <a href="http://www.roadrun.co.kr/schedule/list.php" target="_blank" style="display:block;margin-top:8px;color:#38bdf8">roadrun.co.kr 새 탭에서 열기 →</a>
     </div>
+  </div>
+</div>
+<div class="modal-overlay" id="reportSetupModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="card-header"><div class="card-title"><i class="bi bi-printer"></i> 출력용 리포트 만들기</div>
+      <button onclick="document.getElementById('reportSetupModal').classList.remove('active')" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer"><i class="bi bi-x-lg"></i></button></div>
+    <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:14px;line-height:1.7">화면에 나온 요약과 기록을 인쇄용 문서로 만듭니다. 미리보기를 연 뒤 "PDF로 저장"을 누르면, 브라우저의 인쇄 대화상자에서 "PDF로 저장"을 선택해 파일로 남길 수 있습니다.</div>
+    <div class="form-group"><label>기간</label>
+      <select id="report-period">
+        <option value="month">이번 달</option><option value="q3">최근 3개월</option>
+        <option value="year">올해</option><option value="all" selected>전체 기간 (러닝 인생 전체)</option>
+      </select></div>
+    <div class="form-group"><label>포함할 항목</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-summary" checked style="width:16px;height:16px"> 요약 (총 거리·시간·평균 페이스 등)</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-monthly" checked style="width:16px;height:16px"> 월별 마일리지 추이</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-zone" checked style="width:16px;height:16px"> 심박존 분포</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-pr" checked style="width:16px;height:16px"> 개인기록(PR)</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-shoes" checked style="width:16px;height:16px"> 신발 마일리지</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-races" checked style="width:16px;height:16px"> 대회 출전 이력</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-logs" checked style="width:16px;height:16px"> 상세 운동 기록표 (전체 수치)</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;font-size:13px"><input type="checkbox" id="rep-inc-diary" style="width:16px;height:16px"> 일지 텍스트 포함</label>
+    </div>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="openReportPreview()"><i class="bi bi-eye"></i> 미리보기 열기</button>
+  </div>
+</div>
+<div id="reportPreviewView" style="display:none;position:fixed;inset:0;background:#f8fafc;z-index:9999;overflow-y:auto">
+  <div class="no-print" style="position:sticky;top:0;background:#0a0e17;padding:10px 14px;display:flex;gap:8px;align-items:center;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.3)">
+    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('reportPreviewView').style.display='none'"><i class="bi bi-x-lg"></i> 닫기</button>
+    <span style="color:#94a3b8;font-size:12px;flex:1">인쇄 미리보기</span>
+    <button class="btn btn-sm" onclick="window.print()"><i class="bi bi-file-earmark-pdf"></i> PDF로 저장</button>
+  </div>
+  <div id="report-print-area"></div>
+</div>
+<div class="modal-overlay" id="milestoneModal">
+  <div class="modal-box" style="max-width:360px;text-align:center;padding:28px 20px">
+    <div style="font-size:44px;margin-bottom:10px">🏆</div>
+    <div id="milestone-title" style="font-size:17px;font-weight:800;color:#fcd34d;margin-bottom:8px"></div>
+    <div id="milestone-sub" style="font-size:13px;color:#cbd5e1;line-height:1.6;margin-bottom:18px"></div>
+    <button class="btn" style="width:100%" onclick="document.getElementById('milestoneModal').classList.remove('active')">계속 달리기</button>
   </div>
 </div>
 <div class="modal-overlay" id="batteryGuideModal">
@@ -2090,8 +2212,23 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.6.3",APP_BUILD="2026-09-06";
+const APP_VERSION="2.9.0",APP_BUILD="2026-09-08";
 const CHANGELOG=[
+  {v:"2.9.0",d:"2026-09-08",title:"올해의 나 vs 작년의 나",items:[
+    "대시보드에 '작년의 나와 비교' 카드 추가 — 최근 7·14·30일을 1~3년 전 같은 시기와 나란히 비교",
+    "총 거리·평균 페이스·운동 횟수·TRIMP·평균 심박을 비교하고, 개선 방향에 맞춰 화살표 색으로 표시(페이스·심박은 낮을수록 초록)",
+    "2월 29일 같은 윤년 경계도 정확히 보정해 비교 시점을 계산",
+    "비교할 과거 기록이 없을 때는 안내 문구만 표시하고, 기록이 쌓이면 자동으로 채워짐"]},
+  {v:"2.8.0",d:"2026-09-08",title:"나의 러닝 인생 — 평생 통계 · 1년 전 오늘 · 이정표 축하",items:[
+    "대시보드에 '나의 러닝 인생' 카드 추가 — 기록 시작일부터 오늘까지 누적 거리·시간·운동 횟수·완주 대회를 한눈에 조망(지구 둘레 대비 % 포함)",
+    "'1년 전 오늘' 추가 — 같은 날짜에 과거 기록이나 일지가 있으면 대시보드에 자동으로 되짚어줌",
+    "이정표 자동 축하 추가 — 누적 거리 100·500·1,000km 등, PR이 서브20·서브2:00·서브4:00 등 상징적 기준을 처음 넘으면 축하 화면이 자동으로 뜸(중복 방지)"]},
+  {v:"2.7.0",d:"2026-09-08",title:"신발 마일리지 추적 & 출력용 리포트",items:[
+    "신발(장비) 마일리지 추적 추가 — 신발을 등록하고 운동 기록에 연결하면 누적 거리가 자동 집계되고, 교체 기준(기본 700km)에 가까워지면 알림",
+    "운동 기록 입력 화면(GPS 러닝 종료 후 저장 포함) 전체에 신발 선택 필드 추가",
+    "출력용 리포트 기능 추가 — 기간과 항목을 골라 요약·월별 추이·심박존·PR·신발·대회·상세 기록표·일지를 인쇄용 문서로 생성",
+    "브라우저 자체 인쇄 기능으로 PDF 저장 지원(추가 라이브러리 없이 가볍고 선명함)",
+    "엑셀 내보내기에 '신발' 시트 추가(9개 시트)"]},
   {v:"2.6.3",d:"2026-09-07",title:"마라톤온라인 — 텍스트 기반 파싱으로 재구성, 속도 개선",items:[
     "원인 확정 — 원본 표의 태그가 깨져(닫히지 않은 링크 등) 화면 전체가 글자 한 덩어리로 뭉치는 문제 발견",
     "표 구조에 기대지 않고, '날짜(9/5 (토))'·'거리(10km,5km · 풀,하프 · 50k 등)' 같은 실제 텍스트 패턴으로 이벤트를 직접 추출하도록 전면 교체",
@@ -2292,7 +2429,7 @@ let currentSlideIndex=0;
 function uid(){return Math.random().toString(36).slice(2,9);}
 function save(){return Store.set(SKEY,DB);}
 function escapeHtml(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function normalizeDB(){if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];
+function normalizeDB(){if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
   if(!DB.races||!DB.races.length){const r=DB.race||{name:"내 목표 대회",date:addDays(TODAY,112),target:"SUB3"};
     DB.races=[{id:"r_"+uid(),name:r.name,date:r.date,dist:r.dist||"FULL",targetSec:r.targetSec||TARGET_SEC[r.target]||10800,weeks:r.weeks||16,primary:true}];}
   DB.races.forEach(r=>{if(!r.dist)r.dist="FULL";if(!r.targetSec)r.targetSec=TARGET_SEC[r.target]||10800;if(!r.id)r.id="r_"+uid();});
@@ -3439,7 +3576,7 @@ function dashWeekMon(){return addDays(mondayOf(TODAY),-dashWeekOffset*7);}
 function dashWeekEnd(){return addDays(dashWeekMon(),6);}
 function shiftDashWeek(dir){const n=dashWeekOffset+(dir<0?1:-1);if(n<0)return;dashWeekOffset=n;renderDashboard();}
 /* ===== 설정 탭 소주제 접기/펼치기 — 펼침 상태는 기기에 저장되어 다음에 열 때 그대로 ===== */
-const SETTING_SECTIONS=["sec-10-0","sec-10-1","sec-10-2","sec-10-11","sec-10-12","sec-10-3","sec-10-4","sec-10-10","sec-10-5","sec-10-6","sec-10-8","sec-10-9"];
+const SETTING_SECTIONS=["sec-10-0","sec-10-1","sec-10-2","sec-10-11","sec-10-12","sec-10-13","sec-10-3","sec-10-4","sec-10-10","sec-10-5","sec-10-6","sec-10-8","sec-10-9"];
 function settingOpenState(){return Store.get("settingOpenState")||{"sec-10-0":true};} // 첫 방문 시 프로필만 펼침
 function applySettingSection(id){const st=settingOpenState(),open=st[id]===true;
   const body=document.getElementById("body-"+id),caret=document.getElementById("caret-"+id);
@@ -3567,6 +3704,51 @@ function showInRoadrunFrame(rawHtml){
     ?wrapRoadrunShell(`<div style="font-size:11.5px;color:#64748b;margin-bottom:10px">총 ${events.length}개 대회</div>${renderRoadrunCards(events)}`)
     :cleanRoadrunHtml(rawHtml); // 파싱 실패 시에도 원본 내용은 보이게
   doc.open();doc.write(finalHtml);doc.close();}
+/* ===== 년도·월 필터 =====
+   사이트가 실제로 어떤 이름의 파라미터로 년도·월을 받는지 알 수 없으므로,
+   먼저 기본 페이지를 한 번 받아와 그 안의 <select name="..."> 중
+   "옵션 값이 전부 2005~2035 사이 숫자면 년도", "1~12 사이 숫자가 8개 이상이면 월"로 자동 추정한다.
+   사이트 구조가 예상과 다르면 찾지 못할 수 있고, 그 경우 기본 목록만 보여준다(안전한 실패). */
+function extractOptionValues(selectInner){
+  const out=[];const optRe=/<option\b([^>]*)>([\s\S]*?)<\/option>/gi;let om;
+  while((om=optRe.exec(selectInner))){
+    const attrs=om[1],inner=om[2].replace(/<[^>]+>/g,"").trim();
+    const vm=attrs.match(/value=["']?([^"'>\s]*)["']?/i);
+    out.push(vm?vm[1]:inner);}
+  return out;}
+function discoverRoadrunFilterParams(rawHtml){
+  const selectRe=/<select\b[^>]*\bname=["']([^"']+)["'][^>]*>([\s\S]*?)<\/select>/gi;
+  let sm,yearParam=null,monthParam=null;
+  while((sm=selectRe.exec(rawHtml))){
+    const name=sm[1],optValues=extractOptionValues(sm[2]);
+    const nums=optValues.filter(v=>/^\d+$/.test(v)).map(Number);
+    if(!yearParam&&nums.some(n=>n>=2005&&n<=2035)&&nums.length>=5)yearParam=name;
+    else if(!monthParam&&name!==yearParam&&nums.length>=8&&nums.every(n=>n>=0&&n<=12))monthParam=name;}
+  return{yearParam,monthParam};}
+async function fetchRoadrunRaw(url){ // 공개 프록시를 거쳐 임의의 roadrun 페이지 원문을 가져와 디코딩까지 처리
+  const r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));
+  if(!r.ok)throw new Error("proxy status "+r.status);
+  const text=decodeBestEffort(await r.arrayBuffer());
+  if(!text||!/[\uAC00-\uD7A3]/.test(text))throw new Error("decode failed");
+  return text;}
+function populateRoadrunYearMonth(){const y=document.getElementById("roadrun-year");if(y.options.length)return;
+  const cur=new Date().getFullYear();
+  for(let yr=cur+1;yr>=cur-3;yr--)y.innerHTML+=`<option value="${yr}"${yr===cur?" selected":""}>${yr}년</option>`;
+  const m=document.getElementById("roadrun-month");
+  for(let mo=1;mo<=12;mo++)m.innerHTML+=`<option value="${mo}">${mo}월</option>`;}
+async function loadRoadrunFiltered(){
+  const loading=document.getElementById("roadrun-loading"),iframe=document.getElementById("roadrun-iframe"),fb=document.getElementById("roadrun-fallback");
+  loading.style.display="flex";iframe.style.display="none";fb.style.display="none";
+  const year=document.getElementById("roadrun-year").value,month=document.getElementById("roadrun-month").value;
+  try{
+    const base=await fetchRoadrunRaw(ROADRUN_URL); // 필터 폼 구조를 먼저 확인
+    const{yearParam,monthParam}=discoverRoadrunFilterParams(base);
+    if(!yearParam){showInRoadrunFrame(base);showToast("이 사이트의 필터 형식을 자동으로 찾지 못해 기본 목록만 표시합니다.");return;}
+    let url=ROADRUN_URL+"?"+yearParam+"="+encodeURIComponent(year);
+    if(monthParam&&month)url+="&"+monthParam+"="+encodeURIComponent(month);
+    const filtered=await fetchRoadrunRaw(url);
+    showInRoadrunFrame(filtered);
+  }catch(e){loading.style.display="none";fb.style.display="block";}}
 function isFileProtocol(){return location.protocol==="file:";} // 별도 함수로 분리 — 배포 상황을 흉내내 테스트할 수 있도록
 function openRoadrunViewer(){
   const loading=document.getElementById("roadrun-loading"),iframe=document.getElementById("roadrun-iframe"),fb=document.getElementById("roadrun-fallback");
@@ -3680,6 +3862,7 @@ function renderWeekHeatmap(){const box=document.getElementById("week-heatmap");i
     <span>높이 = 거리</span>
   </div>`;}
 function renderDashboard(){
+  renderLifetimeCard();renderOnThisDay();renderYearCompare();
   const r=primaryRace(),cur=currentBlockIndex(),blocks=periodBlocksFor(r);
   document.getElementById("hero-race-title").innerHTML=`<i class="bi bi-trophy-fill" style="color:#fcd34d"></i> ${r.name}`;
   document.getElementById("hero-race-details").innerHTML=`<i class="bi bi-calendar-event"></i> ${r.date} · 목표: <strong>${raceGoalLabel(r)}</strong> · 현재: <span class="zone-badge z4">${cur<0?"준비기":cur>3?"완료":blocks[cur].stage.split(" ")[1]||"진행"}</span>`;
@@ -4372,6 +4555,7 @@ function logPlanResult(date,i){const planStr=dayPlans(date)[i];if(planStr==null)
     document.getElementById("m-log-dist").value=existing.dist;document.getElementById("m-log-duration").value=existing.duration;
     document.getElementById("m-log-avghr").value=existing.avghr;document.getElementById("m-log-maxhr").value=existing.maxhr;
     document.getElementById("m-log-notes").value=existing.notes||"";document.getElementById("m-log-rating").value=(existing.rating==null?"":existing.rating);
+    populateShoeSelect();document.getElementById("m-log-shoe").value="";
     previewZone();document.getElementById("manualLogModal").classList.add("active");return;}
   const p=parsePlan(planStr);let zone=p.zone||2,km=p.km||10;
   if(/대회 당일/.test(planStr)){km=42.195;zone=3;}
@@ -4383,11 +4567,12 @@ function logPlanResult(date,i){const planStr=dayPlans(date)[i];if(planStr==null)
   document.getElementById("m-log-duration").value=dur;document.getElementById("m-log-avghr").value=mid;
   document.getElementById("m-log-maxhr").value=z.max;document.getElementById("m-log-rating").value="4";
   document.getElementById("m-log-notes").value=planStr.replace(/\s*@[\d:]+\/km/g,"").replace(/\s*\(Z\d\)/g,"").replace(/🏆\s*/,"").trim();
+  populateShoeSelect();document.getElementById("m-log-shoe").value="";
   previewZone();document.getElementById("manualLogModal").classList.add("active");}
 
 /* ===== 운동 기록 모달 ===== */
 function openManualLogModal(){document.getElementById("m-log-editid").value="";document.getElementById("m-log-planref").value="";document.getElementById("m-log-rating").value="";document.getElementById("log-modal-title").textContent="운동 결과 기록";
-  document.getElementById("m-log-date").value=selectedDate||TODAY;previewZone();document.getElementById("manualLogModal").classList.add("active");}
+  document.getElementById("m-log-date").value=selectedDate||TODAY;populateShoeSelect();document.getElementById("m-log-shoe").value="";previewZone();document.getElementById("manualLogModal").classList.add("active");}
 function openManualLogModalForDate(){openManualLogModal();document.getElementById("m-log-date").value=selectedDate;}
 function closeManualLogModal(){document.getElementById("manualLogModal").classList.remove("active");}
 function previewZone(){
@@ -4404,6 +4589,7 @@ function editLog(key,id){const l=(DB.calendar[key].logs||[]).find(x=>x.id===id);
   document.getElementById("m-log-dist").value=l.dist;document.getElementById("m-log-duration").value=l.duration;
   document.getElementById("m-log-avghr").value=l.avghr;document.getElementById("m-log-maxhr").value=l.maxhr;document.getElementById("m-log-notes").value=l.notes||"";
   document.getElementById("m-log-planref").value=(l.planRef==null?"":l.planRef);document.getElementById("m-log-rating").value=(l.rating==null?"":l.rating);
+  populateShoeSelect();document.getElementById("m-log-shoe").value=l.shoeId||"";
   previewZone();document.getElementById("manualLogModal").classList.add("active");}
 function autoTitle(log){const act=ACT_BY_ID[log.sport]||(log.type==="cross"?ACT_BY_ID.etc:ACT_BY_ID.run);
   if(act.bucket==="cross")return(log.notes||"").trim()||act.label;
@@ -4419,6 +4605,7 @@ function saveManualWorkoutLog(){
   const edit=document.getElementById("m-log-editid").value;
   const pr=document.getElementById("m-log-planref").value,rt=document.getElementById("m-log-rating").value;
   if(pr!=="")log.planRef=parseInt(pr);if(rt!=="")log.rating=parseInt(rt);
+  const shoeId=(document.getElementById("m-log-shoe")||{}).value;if(shoeId)log.shoeId=shoeId;
   // GPS 경로는 용량이 커서 localStorage가 아닌 IndexedDB에 저장하고, 로그에는 있다는 표시만 남김
   if(pendingRoute&&pendingRoute.length>=2){log.hasRoute=true;log.routePts=pendingRoute.length;saveRouteData(log.id,pendingRoute);}
   pendingRoute=null;
@@ -4431,6 +4618,7 @@ function saveManualWorkoutLog(){
   closeManualLogModal();selectedDate=date;renderCalendar();refreshAll();
   showToast(`${date} 기록을 ${edit?"수정":"등록"}했습니다.`);
   if(!edit)autoDetectPR(log,date);
+  checkDistanceMilestones();
   if(currentSlideIndex!==1)goToSlide(3); // 러닝 측정 탭에서 저장한 경우엔 그대로 머무름(측정 화면이 갑자기 사라지는 혼란 방지)
 }
 function openAddPlanModal(){document.getElementById("m-plan-date").value=selectedDate||TODAY;
@@ -4616,7 +4804,8 @@ function savePR(){const m=parseInt(document.getElementById("pr-dist").value),sec
   const chk=recordSanityCheck(m,sec);if(!chk.ok&&!confirm(chk.msg))return;
   const cur=DB.records[m];if(cur&&sec>=cur.sec){showToast(`기존 PR이 더 빠릅니다: ${fmtTime(cur.sec)}`);return;}
   DB.records[m]={sec,date:document.getElementById("pr-date").value||TODAY,note:document.getElementById("pr-note").value.trim(),src:"manual"};
-  save();closePRModal();renderPRBoard();showToast(`${PR_DISTANCES.find(d=>d.m===m).label} PR ${fmtTime(sec)} 등록!`);}
+  save();closePRModal();renderPRBoard();showToast(`${PR_DISTANCES.find(d=>d.m===m).label} PR ${fmtTime(sec)} 등록!`);
+  checkPRMilestone(m,sec);}
 function deletePR(m){if(!confirm("이 개인기록을 삭제할까요?"))return;delete DB.records[m];save();renderPRBoard();showToast("기록을 삭제했습니다.");}
 function prCurveSVG(){ // 거리별 페이스를 곡선으로 — 예측선 대비 위/아래로 어느 거리가 강하고 약한지 보임
   const MAIN=[1000,1609,3000,5000,10000,21097,42195]; // 곡선에 쓸 주요 거리
@@ -4728,7 +4917,8 @@ function autoDetectPR(log,date){
     const time=paceSecM*d.m,cur=DB.records[d.m];
     if(cur&&time>=cur.sec)continue;
     if(confirm(`${d.label} 기록 ${fmtTime(time)} (페이스 ${pacePerKm(time,d.m)}/km) 감지 — 개인기록으로 등록할까요?`)){
-      DB.records[d.m]={sec:time,date,note:"세션 자동 감지",src:"auto"};save();renderPRBoard();showToast(`${d.label} PR 자동 등록!`);}
+      DB.records[d.m]={sec:time,date,note:"세션 자동 감지",src:"auto"};save();renderPRBoard();showToast(`${d.label} PR 자동 등록!`);
+      checkPRMilestone(d.m,time);}
     return;}
 }
 
@@ -5409,6 +5599,7 @@ function logWorkoutResult(id){const w=(DB.workouts||[]).find(x=>x.id===id);if(!w
   document.getElementById("m-log-duration").value=Math.round(t.min);document.getElementById("m-log-avghr").value=mid;
   document.getElementById("m-log-maxhr").value=z.max;document.getElementById("m-log-notes").value=w.name;
   document.getElementById("m-log-planref").value="";document.getElementById("m-log-rating").value="";
+  populateShoeSelect();document.getElementById("m-log-shoe").value="";
   previewZone();closeRunModal();document.getElementById("manualLogModal").classList.add("active");}
 function logCurrentRunResult(){if(currentRunId)logWorkoutResult(currentRunId);}
 
@@ -6311,7 +6502,7 @@ function finishRunSession(){if(!RUN)return;
   document.getElementById("m-log-rating").value="";
   document.getElementById("run-setup-card").style.display="block";
   document.getElementById("run-live-panel").style.display="none";
-  RUN=null;previewZone();document.getElementById("manualLogModal").classList.add("active");
+  RUN=null;populateShoeSelect();document.getElementById("m-log-shoe").value="";previewZone();document.getElementById("manualLogModal").classList.add("active");
   startPrewarmGps();} // 설정 화면으로 복귀 — 다음 러닝을 위해 예열 재개
 
 /* ===== GPS 경로 저장 & 렌더 (SVG 기본 + Leaflet 옵션) ===== */
@@ -6412,6 +6603,241 @@ function weeklySummaryRows(){const w={};
       if(l.type==="cross"||l.zone===1||l.zone===2)w[mon].low+=m;else if(l.zone===3)w[mon].mid+=m;else w[mon].high+=m;}}
   return Object.keys(w).sort().map(mon=>{const x=w[mon],t=x.low+x.mid+x.high||1;
     return{"주 시작":mon,"총거리(km)":+x.km.toFixed(1),"TRIMP 합계":Math.round(x.tr),"세션 수":x.n,"저강도%":Math.round(x.low/t*100),"중강도%":Math.round(x.mid/t*100),"고강도%":Math.round(x.high/t*100)};});}
+/* ===== 신발(장비) 마일리지 추적 =====
+   러닝화는 보통 700~800km 정도 뛰면 쿠셔닝이 죽어 부상 위험이 커진다는 게 정설이라,
+   신발별로 누적 거리를 자동 집계해 교체 시점을 미리 알려준다. */
+const SHOE_DEFAULT_RETIRE_KM=700;
+/* ===== 나의 러닝 인생 =====
+   "다음 훈련"이 아니라 "지금까지 쌓아온 것"을 조망하는 화면. 주간·기간 통계와 달리
+   기록이 시작된 날부터 오늘까지 전체를 한 번에 보여준다. */
+function lifetimeStats(){
+  let totalKm=0,totalMin=0,runCount=0,firstDate=null;
+  Object.keys(DB.calendar).sort().forEach(d=>{const logs=dayLogs(d);
+    if(logs.length&&!firstDate)firstDate=d;
+    logs.forEach(l=>{totalKm+=l.dist||0;totalMin+=l.duration||0;runCount++;});});
+  const raceCount=(DB.raceArchive||[]).filter(r=>r.result&&r.result.finishSec!=null).length;
+  const daysSinceStart=firstDate?diffDays(TODAY,firstDate)+1:0;
+  return{totalKm:+totalKm.toFixed(1),totalMin:Math.round(totalMin),runCount,raceCount,firstDate,daysSinceStart,
+    earthLaps:totalKm/40075}; // 지구 둘레 40,075km 기준
+}
+function renderLifetimeCard(){const box=document.getElementById("lifetime-body");if(!box)return;
+  const s=lifetimeStats();
+  if(!s.runCount){box.innerHTML=`<div style="font-size:12px;color:#64748b">첫 운동을 기록하면 여기에 평생 통계가 쌓이기 시작합니다.</div>`;return;}
+  const earthTxt=s.earthLaps>=0.01?`지구 둘레의 <strong style="color:#6ee7b7">${(s.earthLaps*100).toFixed(1)}%</strong>${s.earthLaps>=1?` (${s.earthLaps.toFixed(2)}바퀴)`:""}를 뛴 셈입니다.`:"";
+  box.innerHTML=`<div class="rep-stat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+      <div style="background:#0d1420;border-radius:8px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:#38bdf8">${s.totalKm}</div><div style="font-size:10px;color:#64748b">누적 km</div></div>
+      <div style="background:#0d1420;border-radius:8px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:#38bdf8">${fmtDur(s.totalMin*60)}</div><div style="font-size:10px;color:#64748b">누적 시간</div></div>
+      <div style="background:#0d1420;border-radius:8px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:#38bdf8">${s.runCount}</div><div style="font-size:10px;color:#64748b">운동 횟수</div></div>
+      <div style="background:#0d1420;border-radius:8px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:#fcd34d">${s.raceCount}</div><div style="font-size:10px;color:#64748b">완주 대회</div></div>
+      <div style="background:#0d1420;border-radius:8px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:#fcd34d">${s.daysSinceStart}</div><div style="font-size:10px;color:#64748b">일째 기록중</div></div>
+      <div style="background:#0d1420;border-radius:8px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:#fcd34d">${s.firstDate||"—"}</div><div style="font-size:10px;color:#64748b">첫 기록일</div></div>
+    </div>
+    ${earthTxt?`<div style="font-size:11.5px;color:#94a3b8;text-align:center">${earthTxt}</div>`:""}`;}
+/* ===== 1년 전 오늘 =====
+   같은 날짜, 과거 몇 년 전엔 뭘 하고 있었는지 되짚어보는 기능 — 기록이 쌓일수록 진가를 발휘한다. */
+function onThisDayEntries(){const mmdd=TODAY.slice(5),results=[];
+  for(let ago=1;ago<=15;ago++){const y=parseInt(TODAY.slice(0,4))-ago,dateStr=`${y}-${mmdd}`;
+    const logs=dayLogs(dateStr),diary=((DB.calendar[dateStr]||{}).diary||"").trim();
+    if(logs.length||diary)results.push({date:dateStr,ago,logs,diary});}
+  return results;}
+function renderOnThisDay(){const card=document.getElementById("onthisday-card");if(!card)return;
+  const entries=onThisDayEntries();
+  if(!entries.length){card.style.display="none";return;}
+  card.style.display="block";
+  const box=document.getElementById("onthisday-body");
+  box.innerHTML=entries.map(e=>{
+    const km=e.logs.reduce((a,l)=>a+(l.dist||0),0);
+    const logTxt=e.logs.length?`<strong style="color:#e2e8f0">${km.toFixed(1)}km</strong> · ${e.logs.length}회 운동`:"";
+    const diaryTxt=e.diary?`<div style="font-size:11.5px;color:#94a3b8;margin-top:3px;font-style:italic">"${escHtml(e.diary.slice(0,60))}${e.diary.length>60?"…":""}"</div>`:"";
+    return`<div style="padding:7px 0;border-bottom:1px solid var(--border-light)">
+      <span style="font-size:11px;color:#64748b">${e.ago}년 전 오늘 (${e.date})</span><br>${logTxt}${diaryTxt}</div>`;}).join("");}
+/* ===== 이정표 자동 축하 =====
+   누적 거리나 PR이 의미 있는 기준선을 처음 넘는 순간을 감지해 알려준다.
+   한 번 축하한 이정표는 DB.milestonesSeen에 남겨 다시 뜨지 않게 한다. */
+const KM_MILESTONES=[100,500,1000,2000,3000,5000,7500,10000,15000,20000,30000,50000,75000,100000];
+const PR_MILESTONES={
+  5000:[{sec:25*60,label:"5K 서브25"},{sec:20*60,label:"5K 서브20"},{sec:18*60,label:"5K 서브18"}],
+  10000:[{sec:50*60,label:"10K 서브50"},{sec:45*60,label:"10K 서브45"},{sec:40*60,label:"10K 서브40"}],
+  21097:[{sec:120*60,label:"하프 서브2:00"},{sec:105*60,label:"하프 서브1:45"},{sec:90*60,label:"하프 서브1:30"}],
+  42195:[{sec:240*60,label:"풀 서브4:00"},{sec:210*60,label:"풀 서브3:30"},{sec:180*60,label:"풀 서브3:00"},{sec:170*60,label:"풀 서브2:50"}]};
+function checkDistanceMilestones(){if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
+  const total=lifetimeStats().totalKm,hit=[];
+  for(const m of KM_MILESTONES){if(total>=m&&!DB.milestonesSeen.km.includes(m)){DB.milestonesSeen.km.push(m);hit.push(m);}}
+  if(hit.length){save();const m=hit[hit.length-1];
+    celebrateMilestone(`누적 ${m.toLocaleString()}km 달성!`,`지금까지 총 ${total.toFixed(1)}km를 뛰셨습니다. 대단합니다!`);}}
+/* ===== 올해의 나 vs 작년의 나 =====
+   "1년 전 오늘"이 하루 스냅샷이라면, 이건 최근 N일 흐름을 같은 시기의 과거와 비교해
+   "그때보다 빨라졌는지, 얼마나 더 뛰고 있는지"를 보여준다. 데이터가 몇 년 쌓일수록 진가를 발휘한다. */
+function sameDateYearsAgo(dateStr,yearsAgo){const[y,m,d]=dateStr.split("-").map(Number);
+  let dt=new Date(y-yearsAgo,m-1,d);
+  if(dt.getMonth()!==m-1)dt=new Date(y-yearsAgo,m,0); // 대상 연도에 그 날짜가 없으면(2/29 등) 그 달 마지막 날로 보정
+  return ymd(dt);}
+function periodStats(start,end){let km=0,min=0,trimp=0,hrSum=0,hrCount=0,n=0;
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).forEach(d=>dayLogs(d).forEach(l=>{
+    km+=l.dist||0;min+=l.duration||0;trimp+=l.trimp||0;n++;
+    if(l.avghr){hrSum+=l.avghr;hrCount++;}}));
+  return{km:+km.toFixed(1),min:Math.round(min),trimp:Math.round(trimp),n,
+    avgPaceSec:km>0.1?(min*60/km):null,avgHr:hrCount?Math.round(hrSum/hrCount):null};}
+function renderYearCompare(){const box=document.getElementById("yearcompare-body");if(!box)return;
+  const windowDays=parseInt((document.getElementById("yc-window")||{}).value)||14;
+  const yearsAgo=parseInt((document.getElementById("yc-years-ago")||{}).value)||1;
+  const curStart=addDays(TODAY,-(windowDays-1)),cur=periodStats(curStart,TODAY);
+  const pastEnd=sameDateYearsAgo(TODAY,yearsAgo),pastStart=addDays(pastEnd,-(windowDays-1)),past=periodStats(pastStart,pastEnd);
+  if(!past.n){box.innerHTML=`<div style="font-size:12px;color:#64748b;line-height:1.6">${yearsAgo}년 전 이맘때(${pastStart}~${pastEnd}) 기록이 아직 없습니다. 기록이 쌓이면 이 카드가 자동으로 채워집니다.</div>`;return;}
+  const row=(label,curV,pastV,fmt,lowerIsBetter)=>{
+    if(curV==null||pastV==null)return"";
+    const diff=curV-pastV,improved=lowerIsBetter?diff<0:diff>0,changed=Math.abs(diff)>(lowerIsBetter?0.5:0.05);
+    const arrow=!changed?`<span style="color:#64748b">−</span>`:improved?`<span style="color:#10b981">▲</span>`:`<span style="color:#f87171">▼</span>`;
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-light);font-size:12.5px">
+      <span style="color:#94a3b8">${label}</span>
+      <span>${fmt(pastV)} → <strong style="color:#e2e8f0">${fmt(curV)}</strong> ${arrow}</span></div>`;};
+  box.innerHTML=`<div style="font-size:11px;color:#64748b;margin-bottom:6px">이번: ${curStart}~${TODAY} · ${yearsAgo}년 전: ${pastStart}~${pastEnd}</div>`+
+    row("총 거리",cur.km,past.km,v=>v+"km",false)+
+    row("평균 페이스",cur.avgPaceSec,past.avgPaceSec,v=>fmtPace(v)+"/km",true)+
+    row("운동 횟수",cur.n,past.n,v=>v+"회",false)+
+    row("총 TRIMP",cur.trimp,past.trimp,v=>v,false)+
+    (cur.avgHr&&past.avgHr?row("평균 심박",cur.avgHr,past.avgHr,v=>v+"bpm",true):"");}
+function checkPRMilestone(distM,newSec){if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
+  const list=PR_MILESTONES[distM];if(!list)return;
+  let best=null; // 한 번에 여러 기준선을 넘으면 가장 어려운 것(마지막 것)을 축하 대상으로 삼음
+  for(const ms of list){const key=distM+"_"+ms.sec;
+    if(newSec<ms.sec){if(!DB.milestonesSeen.pr.includes(key)){best=ms;DB.milestonesSeen.pr.push(key);}}}
+  if(best){save();celebrateMilestone(`🎉 첫 ${best.label} 달성!`,`${fmtTime(newSec)} — 새로운 자신을 만났습니다.`);}}
+function celebrateMilestone(title,sub){
+  document.getElementById("milestone-title").textContent=title;
+  document.getElementById("milestone-sub").textContent=sub;
+  document.getElementById("milestoneModal").classList.add("active");}
+function shoeMileageKm(shoeId){let km=0;
+  for(const d in DB.calendar)for(const l of dayLogs(d))if(l.shoeId===shoeId)km+=(l.dist||0);
+  return Math.round(km*10)/10;}
+function shoeRunCount(shoeId){let n=0;
+  for(const d in DB.calendar)for(const l of dayLogs(d))if(l.shoeId===shoeId)n++;
+  return n;}
+function activeShoes(){return(DB.shoes||[]).filter(s=>!s.retired);}
+function addShoe(){const name=(document.getElementById("shoe-new-name")||{}).value.trim();
+  if(!name){showToast("신발 이름을 입력하세요.");return;}
+  const retireKm=parseFloat((document.getElementById("shoe-new-retirekm")||{}).value)||SHOE_DEFAULT_RETIRE_KM;
+  DB.shoes.push({id:uid(),name,startDate:TODAY,retireKm,retired:false,note:""});
+  save();document.getElementById("shoe-new-name").value="";document.getElementById("shoe-new-retirekm").value="";
+  renderShoeList();populateShoeSelect();showToast(`'${name}' 등록했습니다.`);}
+function deleteShoe(id){const s=(DB.shoes||[]).find(x=>x.id===id);if(!s)return;
+  const km=shoeMileageKm(id);
+  if(!confirm(`'${s.name}'을(를) 삭제할까요?\n\n이 신발로 기록된 ${shoeRunCount(id)}회 운동(${km}km)의 기록 자체는 지워지지 않고, 신발 연결만 해제됩니다.`))return;
+  DB.shoes=DB.shoes.filter(x=>x.id!==id);save();renderShoeList();populateShoeSelect();showToast("신발을 삭제했습니다.");}
+function toggleShoeRetired(id){const s=(DB.shoes||[]).find(x=>x.id===id);if(!s)return;
+  s.retired=!s.retired;save();renderShoeList();populateShoeSelect();
+  showToast(s.retired?`'${s.name}'을(를) 은퇴 처리했습니다.`:`'${s.name}'을(를) 다시 활성화했습니다.`);}
+function renderShoeList(){const box=document.getElementById("shoe-list");if(!box)return;
+  const shoes=(DB.shoes||[]).slice().sort((a,b)=>(a.retired===b.retired?0:a.retired?1:-1));
+  if(!shoes.length){box.innerHTML=`<div style="font-size:12px;color:#64748b;padding:6px 0">등록된 신발이 없습니다. 아래에서 추가해보세요.</div>`;return;}
+  box.innerHTML=shoes.map(s=>{const km=shoeMileageKm(s.id),n=shoeRunCount(s.id),pct=Math.min(100,km/s.retireKm*100);
+    const color=s.retired?"#475569":pct>=100?"#ef4444":pct>=80?"#f59e0b":"#10b981";
+    const statusTxt=s.retired?"은퇴함":pct>=100?"교체 권장!":pct>=80?"교체 시기 임박":"양호";
+    return`<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px;padding:11px 13px;margin-bottom:8px;${s.retired?"opacity:.6":""}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+        <strong style="font-size:13.5px;color:#e2e8f0">${escHtml(s.name)}</strong>
+        <span style="font-size:11px;color:${color};font-weight:700">${statusTxt}</span></div>
+      <div style="height:7px;background:#0d1420;border-radius:4px;overflow:hidden;margin-bottom:5px">
+        <div style="width:${Math.max(2,pct)}%;height:100%;background:${color};border-radius:4px"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#94a3b8">
+        <span>${km}km / ${s.retireKm}km · ${n}회 · ${s.startDate}부터</span>
+        <span style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:11px" onclick="toggleShoeRetired('${s.id}')">${s.retired?"재활성":"은퇴"}</button>
+          <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:11px;color:#fca5a5" onclick="deleteShoe('${s.id}')"><i class="bi bi-trash"></i></button>
+        </span></div></div>`;}).join("");}
+function populateShoeSelect(){const sel=document.getElementById("m-log-shoe");if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">신발 선택 안 함</option>`+activeShoes().map(s=>`<option value="${s.id}">${escHtml(s.name)} (${shoeMileageKm(s.id)}km)</option>`).join("");
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;}
+/* ===== 출력용 리포트(PDF/인쇄) =====
+   화면 캡처 라이브러리 대신 브라우저 자체 인쇄 기능을 쓴다 — 가볍고, 어떤 기기에서도
+   "PDF로 저장"이 표준으로 들어있어 추가 코드 없이 안정적으로 동작한다. */
+function openReportSetup(){document.getElementById("reportSetupModal").classList.add("active");}
+function reportPeriodRange(period){
+  if(period==="all"){const dates=Object.keys(DB.calendar).filter(d=>dayLogs(d).length).sort();
+    return{start:dates.length?dates[0]:TODAY,end:TODAY};}
+  if(period==="month")return{start:TODAY.slice(0,8)+"01",end:TODAY};
+  if(period==="year")return{start:TODAY.slice(0,4)+"-01-01",end:TODAY};
+  return{start:addDays(TODAY,-89),end:TODAY};} // q3(최근 3개월) 기본
+function reportSummaryStats(start,end){
+  let totalKm=0,totalMin=0,runCount=0,totalTrimp=0;
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).forEach(d=>dayLogs(d).forEach(l=>{
+    totalKm+=l.dist||0;totalMin+=l.duration||0;totalTrimp+=l.trimp||0;runCount++;}));
+  const raceCount=(DB.raceArchive||[]).filter(r=>r.result&&r.result.finishSec!=null&&r.date>=start&&r.date<=end).length;
+  return{totalKm:+totalKm.toFixed(1),totalMin:Math.round(totalMin),runCount,totalTrimp:Math.round(totalTrimp),raceCount,
+    avgPace:totalKm>0.1?fmtPace(totalMin*60/totalKm):null};}
+function reportCoverHTML(start,end,period){const p=DB.profile||{},stats=reportSummaryStats(start,end);
+  const periodLabel={month:"이번 달",q3:"최근 3개월",year:"올해",all:"전체 기간(러닝 인생 전체)"}[period]||period;
+  return`<h1>${escHtml(p.displayName||"나")}의 러닝 리포트</h1>
+    <div class="rep-meta">${periodLabel} · ${start} ~ ${end} · 생성일 ${TODAY}</div>
+    <div class="rep-stat-grid">
+      <div class="rep-stat"><b>${stats.totalKm}km</b><span>총 거리</span></div>
+      <div class="rep-stat"><b>${fmtDur(stats.totalMin*60)}</b><span>총 시간</span></div>
+      <div class="rep-stat"><b>${stats.runCount}회</b><span>운동 횟수</span></div>
+      <div class="rep-stat"><b>${stats.avgPace||"—"}</b><span>평균 페이스(/km)</span></div>
+      <div class="rep-stat"><b>${stats.totalTrimp}</b><span>총 TRIMP</span></div>
+      <div class="rep-stat"><b>${stats.raceCount}회</b><span>완주 대회</span></div>
+    </div>`;}
+function reportMonthlyHTML(start,end){
+  const byMonth={};
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).forEach(d=>{const mo=d.slice(0,7);
+    dayLogs(d).forEach(l=>{byMonth[mo]=(byMonth[mo]||0)+(l.dist||0);});});
+  const months=Object.keys(byMonth).sort();if(!months.length)return"";
+  const max=Math.max(...months.map(m=>byMonth[m]),1);
+  return`<h2>월별 마일리지 추이</h2>`+months.map(m=>{const km=+byMonth[m].toFixed(1);
+    return`<div class="rep-bar-row"><span style="width:52px">${m}</span>
+      <div class="rep-bar-track"><div class="rep-bar-fill" style="width:${km/max*100}%;background:#2563eb"></div></div>
+      <span style="width:56px;text-align:right">${km}km</span></div>`;}).join("");}
+function reportZoneHTML(start,end){
+  const trimpByZone={1:0,2:0,3:0,4:0,5:0};let total=0;
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).forEach(d=>dayLogs(d).forEach(l=>{
+    if(l.zone>=1&&l.zone<=5){trimpByZone[l.zone]+=(l.trimp||0);total+=(l.trimp||0);}}));
+  if(total<=0)return"";
+  const colors={1:"#64748b",2:"#10b981",3:"#eab308",4:"#f97316",5:"#dc2626"};
+  return`<h2>심박존 분포 (TRIMP 기준)</h2>`+[1,2,3,4,5].map(z=>{const pct=Math.round(trimpByZone[z]/total*100);
+    return`<div class="rep-bar-row"><span style="width:30px">Z${z}</span>
+      <div class="rep-bar-track"><div class="rep-bar-fill" style="width:${pct}%;background:${colors[z]}"></div></div>
+      <span style="width:36px;text-align:right">${pct}%</span></div>`;}).join("");}
+function reportPRHTML(){const rows=PR_DISTANCES.filter(d=>DB.records[d.m]);if(!rows.length)return"";
+  return`<h2>개인기록(PR)</h2><table><tr><th>거리</th><th>기록</th><th>페이스(/km)</th><th>일자</th></tr>
+    ${rows.map(d=>{const r=DB.records[d.m];return`<tr><td>${d.label}</td><td>${fmtTime(r.sec)}</td><td>${pacePerKm(r.sec,d.m)}</td><td>${r.date||""}</td></tr>`;}).join("")}
+    </table>`;}
+function reportShoesHTML(){const shoes=DB.shoes||[];if(!shoes.length)return"";
+  return`<h2>신발 마일리지</h2><table><tr><th>이름</th><th>누적거리</th><th>진행률</th><th>상태</th></tr>
+    ${shoes.map(s=>{const km=shoeMileageKm(s.id),pct=Math.round(km/s.retireKm*100);
+      return`<tr><td>${escHtml(s.name)}</td><td>${km}km / ${s.retireKm}km</td><td>${pct}%</td><td>${s.retired?"은퇴":pct>=100?"교체 권장":"사용중"}</td></tr>`;}).join("")}
+    </table>`;}
+function reportRacesHTML(start,end){const races=(DB.raceArchive||[]).filter(r=>r.date>=start&&r.date<=end).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!races.length)return"";
+  return`<h2>대회 출전 이력</h2><table><tr><th>일자</th><th>대회명</th><th>목표</th><th>결과</th></tr>
+    ${races.map(r=>`<tr><td>${r.date}</td><td>${escHtml(r.name)}</td><td>${fmtDur(r.targetSec)}</td><td>${r.result&&r.result.finishSec!=null?fmtDur(r.result.finishSec):"미기록"}</td></tr>`).join("")}
+    </table>`;}
+function reportLogsHTML(start,end){const rows=collectLogRows().filter(r=>r.날짜>=start&&r.날짜<=end);if(!rows.length)return"";
+  return`<h2>상세 운동 기록 (${rows.length}건)</h2><table><tr><th>날짜</th><th>유형</th><th>거리</th><th>시간</th><th>평균HR</th><th>존</th><th>TRIMP</th><th>페이스</th></tr>
+    ${rows.map(r=>`<tr><td>${r.날짜}</td><td>${r.유형}</td><td>${r["거리(km)"]||""}</td><td>${r["시간(분)"]||""}</td><td>${r.평균HR||""}</td><td>${r.존||""}</td><td>${r.TRIMP||""}</td><td>${r["페이스(/km)"]||""}</td></tr>`).join("")}
+    </table>`;}
+function reportDiaryHTML(start,end){const rows=[];
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).sort().forEach(d=>{const t=((DB.calendar[d]||{}).diary||"").trim();if(t)rows.push({d,t});});
+  if(!rows.length)return"";
+  return`<h2>일지</h2>`+rows.map(r=>`<div style="margin-bottom:10px"><strong>${r.d}</strong><div style="font-size:12px;color:#334155;white-space:pre-wrap">${escHtml(r.t)}</div></div>`).join("");}
+function openReportPreview(){
+  const period=document.getElementById("report-period").value;
+  const{start,end}=reportPeriodRange(period);
+  const on=id=>document.getElementById(id).checked;
+  let html=reportCoverHTML(start,end,period);
+  const sections=[];
+  if(on("rep-inc-monthly"))sections.push(reportMonthlyHTML(start,end));
+  if(on("rep-inc-zone"))sections.push(reportZoneHTML(start,end));
+  if(on("rep-inc-pr"))sections.push(reportPRHTML());
+  if(on("rep-inc-shoes"))sections.push(reportShoesHTML());
+  if(on("rep-inc-races"))sections.push(reportRacesHTML(start,end));
+  if(on("rep-inc-logs"))sections.push(reportLogsHTML(start,end));
+  if(on("rep-inc-diary"))sections.push(reportDiaryHTML(start,end));
+  html+=sections.filter(Boolean).map(s=>`<div class="rep-section">${s}</div>`).join("");
+  document.getElementById("report-print-area").innerHTML=html;
+  document.getElementById("reportSetupModal").classList.remove("active");
+  document.getElementById("reportPreviewView").style.display="block";
+  document.getElementById("reportPreviewView").scrollTop=0;}
 function collectLogRows(){const rows=[];Object.keys(DB.calendar).sort().forEach(date=>dayLogs(date).sort((a,b)=>a.time.localeCompare(b.time)).forEach(l=>{
   rows.push({날짜:date,시작:l.time,유형:(ACT_BY_ID[l.sport]||{}).label||(l.type==="cross"?"크로스":"달리기"),제목:l.title,"거리(km)":l.dist,"시간(분)":l.duration,평균HR:l.avghr,최대HR:l.maxhr,존:l.type==="cross"?"크로스":("Z"+l.zone),TRIMP:l.trimp,"페이스(/km)":l.dist>0&&l.duration>0?fmtPace(l.duration*60/l.dist):"",자기평가:l.rating?RATINGS[l.rating].t:"",메모:l.notes||""});}));return rows;}
 function exportExcel(){
@@ -6430,7 +6856,8 @@ function exportExcel(){
     evalRows.push({날짜:date,계획:p,상태:st.txt,"완성률(%)":cp==null?"":cp,자기평가:linked&&linked.rating?RATINGS[linked.rating].t:""});}));S("이행평가",evalRows);
   const lapRows=[];Object.keys(DB.calendar).sort().forEach(date=>dayLogs(date).forEach(l=>{if(l.laps&&l.laps.length)l.laps.forEach(lap=>{
     lapRows.push({날짜:date,운동:l.title,[l.lapsTrackMode?"바퀴":"km"]:lap.n,랩타임:fmtDur(lap.t)});});}));S("랩기록",lapRows);
-  XLSX.writeFile(wb,`run2080-export-${TODAY}.xlsx`);showToast("엑셀 파일(8개 시트)을 내보냈습니다.");}
+  S("신발",(DB.shoes||[]).map(sh=>({이름:sh.name,누적거리:shoeMileageKm(sh.id),운동횟수:shoeRunCount(sh.id),"교체기준(km)":sh.retireKm,"진행률(%)":Math.round(shoeMileageKm(sh.id)/sh.retireKm*100),상태:sh.retired?"은퇴":"사용중",시작일:sh.startDate})));
+  XLSX.writeFile(wb,`run2080-export-${TODAY}.xlsx`);showToast("엑셀 파일(9개 시트)을 내보냈습니다.");}
 function exportCSV(){const rows=collectLogRows();const head=["날짜","시작","유형","제목","거리(km)","시간(분)","평균HR","최대HR","존","TRIMP","페이스(/km)","메모"];
   const esc=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`;
   const csv="\ufeff"+[head.map(esc).join(",")].concat(rows.map(r=>head.map(h=>esc(r[h])).join(","))).join("\r\n");
@@ -6603,7 +7030,7 @@ function buildNav(){
 }
 /* ===== 탭별 목차(펼침/접힘+즐겨찾기+클릭시 이동) — 섹션 목록은 각 카드 제목에서 자동 구성 ===== */
 const TAB_SECTIONS={
-  0:[{id:"weather-card",label:"오늘의 러닝 환경"},{id:"runtip-card",label:"오늘의 달리기 상식"},{id:"sec-0-2",label:"이번 주 계획 대비 성과"},{id:"sec-0-3",label:"오늘 처방 훈련"}],
+  0:[{id:"lifetime-card",label:"나의 러닝 인생"},{id:"onthisday-card",label:"1년 전 오늘"},{id:"yearcompare-card",label:"작년의 나와 비교"},{id:"weather-card",label:"오늘의 러닝 환경"},{id:"runtip-card",label:"오늘의 달리기 상식"},{id:"sec-0-2",label:"이번 주 계획 대비 성과"},{id:"sec-0-3",label:"오늘 처방 훈련"}],
   1:[{id:"run-setup-card",label:"러닝 시작"},{id:"sec-1-1",label:"랩 기록"}],
   2:[{id:"sec-2-0",label:"대회 & 주기화 플래너"},{id:"sec-2-1",label:"4대 주기화 블록 로드맵"}],
   3:[{id:"sec-3-0",label:"선택일 상세"},{id:"sec-3-1",label:"주간 일지 보기"}],
@@ -6613,7 +7040,7 @@ const TAB_SECTIONS={
   7:[{id:"sec-7-0",label:"통합 기록 예측 환산표"},{id:"sec-7-1",label:"목표 대비 & 지구력 현실성 보정"},{id:"sec-7-2",label:"목표 페이스 · 구간 스플릿"}],
   8:[{id:"sec-8-0",label:"내 현재 위치"},{id:"sec-8-1",label:"풀코스 완주 기록 기준 분류"},{id:"sec-8-2",label:"월간 훈련 마일리지 기준 분류"},{id:"sec-8-3",label:"보스턴 마라톤 BQ 기준 (2026·2027)"},{id:"sec-8-4",label:"에이지 그레이딩 (나이·성별 보정 등급)"},{id:"sec-8-5",label:"참고: VDOT & 분류 기준"}],
   9:[{id:"sec-9-0",label:"출전 대회 · 출사표 & 결과 기록"}],
-  10:[{id:"sec-10-0",label:"러너 프로필 & 심박 공식"},{id:"sec-10-1",label:"산출된 5단계 심박 타깃존"},{id:"sec-10-2",label:"데이터 내보내기 & 백업"},{id:"sec-10-11",label:"저장소 상태 & 보호"},{id:"sec-10-12",label:"소리 끊김 진단"},{id:"sec-10-3",label:"메트로놈 기본값"},{id:"sec-10-4",label:"인트로 화면 편집"},{id:"sec-10-10",label:"버전 정보"},{id:"sec-10-5",label:"사용 방법"},{id:"sec-10-6",label:"앱 정보 · 용어 설명 · 이용 정책"},{id:"sec-10-8",label:"예시 데이터 생성"},{id:"sec-10-9",label:"데이터 초기화"}]
+  10:[{id:"sec-10-0",label:"러너 프로필 & 심박 공식"},{id:"sec-10-1",label:"산출된 5단계 심박 타깃존"},{id:"sec-10-2",label:"데이터 내보내기 & 백업"},{id:"sec-10-11",label:"저장소 상태 & 보호"},{id:"sec-10-12",label:"소리 끊김 진단"},{id:"sec-10-13",label:"신발 마일리지"},{id:"sec-10-3",label:"메트로놈 기본값"},{id:"sec-10-4",label:"인트로 화면 편집"},{id:"sec-10-10",label:"버전 정보"},{id:"sec-10-5",label:"사용 방법"},{id:"sec-10-6",label:"앱 정보 · 용어 설명 · 이용 정책"},{id:"sec-10-8",label:"예시 데이터 생성"},{id:"sec-10-9",label:"데이터 초기화"}]
 };
 function tocState(){return Store.get("tocPanelState")||{};}
 function tocFavorites(){return DB.tocFavorites||(DB.tocFavorites=[]);}
@@ -6670,7 +7097,7 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
   if(index===0)renderDashboard();else if(index===1)prepareRunTab();else if(index===2){renderRaceList();renderPeriodizationBlocks();populateTemplateSelect();renderWeeksHint();renderPlanStartHint();}else if(index===3)renderCalendar();
   else if(index===4)renderWorkoutList();
   else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();},80);}
-  else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderVersionInfo();renderStorageInfo();renderAudioLog();applyAllSettingSections();}
+  else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
   window.scrollTo({top:0,behavior:dotsDragging?"auto":"smooth"});}
