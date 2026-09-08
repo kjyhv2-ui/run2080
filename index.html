@@ -2090,8 +2090,13 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.6.1",APP_BUILD="2026-09-06";
+const APP_VERSION="2.6.2",APP_BUILD="2026-09-06";
 const CHANGELOG=[
+  {v:"2.6.2",d:"2026-09-07",title:"마라톤온라인 화면 가독성 개선",items:[
+    "원본의 옆으로 잘리던 표를 앱 스타일의 세로 카드 목록으로 자동 재구성",
+    "날짜를 배지로, 대회명을 굵은 링크로, 거리·장소를 한 줄로 정리",
+    "구식 흰 배경(bgcolor)과 광고성 이미지를 제거해 다크 테마로 통일",
+    "재구성에 실패해도 원본 내용은 그대로 남아 화면이 비지 않음"]},
   {v:"2.6.1",d:"2026-09-06",title:"페이스·시간 표시 반올림 버그 수정",items:[
     "특정 페이스에서 '5:60/km'처럼 초가 60으로 표시되는 버그 수정(정상은 '6:00') — 분과 초를 따로 반올림하다 생긴 문제",
     "전체 초를 먼저 반올림한 뒤 분·초로 나누도록 수정해 근본 해결(fmtPace, fmtDur 공통)",
@@ -3507,11 +3512,46 @@ function cleanRoadrunHtml(html){ // 팝업 스크립트를 실제 링크로, 원
     a{color:#38bdf8;text-decoration:none} table{width:100%;border-collapse:collapse;font-size:12.5px}
     td,th{padding:7px 4px;border-bottom:1px solid #1e293b;vertical-align:top;text-align:left} strong{color:#fff}</style>
     </head><body>${html}</body></html>`;}
+/* 원본 사이트의 표는 폭이 고정돼 있어 폰 화면에서 옆으로 잘린다. 정확한 태그 구조를 알 수 없으므로,
+   "행이 가장 많은 표 = 대회 목록"이라는 일반적인 규칙으로 찾아낸 뒤, 각 행에서 날짜·링크·나머지 텍스트를
+   뽑아 우리 앱 스타일의 세로 카드로 다시 그린다. 재구성에 실패해도 원본 표가 그대로 남으므로 안전하다. */
+function reformatRoadrunView(doc){
+  try{
+    doc.querySelectorAll("img").forEach(img=>img.remove()); // 광고·깨진 아이콘 이미지 제거
+    doc.querySelectorAll("[bgcolor]").forEach(el=>el.removeAttribute("bgcolor")); // 옛날 방식의 흰 배경 지정을 걷어내 우리 다크 테마가 보이게 함
+    doc.querySelectorAll("*").forEach(el=>{if(el.style&&el.style.backgroundColor)el.style.backgroundColor="";});
+    doc.querySelectorAll("table,td,th").forEach(el=>{el.removeAttribute("width");el.removeAttribute("height");}); // 고정 폭 때문에 잘리는 문제 방지
+
+    const tables=[...doc.querySelectorAll("table")];if(!tables.length)return;
+    let listTable=tables[0],maxRows=0;
+    tables.forEach(t=>{const n=t.querySelectorAll("tr").length;if(n>maxRows){maxRows=n;listTable=t;}});
+    const cards=[];
+    listTable.querySelectorAll("tr").forEach(tr=>{
+      const tds=[...tr.querySelectorAll("td")];if(tds.length<2)return;
+      const dateTxt=(tds[0].innerText||"").replace(/\s+/g," ").trim();
+      if(!dateTxt||!/\d/.test(dateTxt))return; // 날짜가 없는 줄(광고·구분줄)은 건너뜀
+      const link=tr.querySelector("a[href]");
+      const nameTxt=(link?link.innerText:(tds[1]?tds[1].innerText:"")).replace(/\s+/g," ").trim();
+      if(!nameTxt)return;
+      const restTxt=tds.slice(1).map(td=>td.innerText||"").join(" ").replace(nameTxt,"").replace(/\s+/g," ").trim();
+      cards.push({dateTxt,nameTxt,restTxt,href:link?link.getAttribute("href"):"#"});});
+    if(!cards.length)return; // 못 찾으면 원본 표를 그대로 둠(정보는 어쨌든 보임)
+
+    const wrap=doc.createElement("div");
+    wrap.innerHTML=cards.map(c=>`
+      <div style="background:#0d1420;border:1px solid #1e293b;border-radius:10px;padding:12px 14px;margin-bottom:9px">
+        <span style="display:inline-block;background:#1e3a5f;color:#7dd3fc;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;margin-bottom:6px">${c.dateTxt}</span>
+        <a href="${c.href}" target="_blank" rel="noopener" style="display:block;font-size:14.5px;font-weight:700;color:#f1f5f9;text-decoration:none;line-height:1.4;margin-bottom:4px">${c.nameTxt}</a>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.5">${c.restTxt}</div>
+      </div>`).join("");
+    listTable.replaceWith(wrap);
+  }catch(e){/* 재구성 실패해도 원본 표가 남아있으므로 화면이 비지는 않음 */}}
 function showInRoadrunFrame(html){
   document.getElementById("roadrun-loading").style.display="none";
   const iframe=document.getElementById("roadrun-iframe");iframe.style.display="block";
   const doc=iframe.contentDocument||iframe.contentWindow.document;
-  doc.open();doc.write(html);doc.close();}
+  doc.open();doc.write(html);doc.close();
+  reformatRoadrunView(doc);}
 function openRoadrunViewer(){
   const loading=document.getElementById("roadrun-loading"),iframe=document.getElementById("roadrun-iframe"),fb=document.getElementById("roadrun-fallback");
   loading.style.display="flex";iframe.style.display="none";fb.style.display="none";
