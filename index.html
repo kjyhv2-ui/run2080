@@ -1292,6 +1292,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">나의 러닝 인생</strong> — 대시보드 상단에 기록이 시작된 날부터 오늘까지의 전체 조망이 표시됩니다. 누적 거리·시간·운동 횟수·완주 대회 수와 함께, 누적 거리를 지구 둘레(40,075km)와 비교한 "지구 O%를 뛴 셈" 문구가 함께 나옵니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">1년 전 오늘</strong> — 오늘과 같은 날짜(월/일)에 과거 어느 해든 운동 기록이나 일지가 있으면 대시보드에 자동으로 보여줍니다. 여러 해에 기록이 있으면 각 연도별로 모두 표시됩니다. 기록이 없는 날짜에는 카드 자체가 나타나지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">다양성 추구형 템플릿 & 휴식일 크로스트레이닝 제안</strong> — 기록 향상을 위한 정규 훈련(인터벌·템포·장거리)은 그대로 유지하면서, 트레일 러닝과 크로스트레이닝(자전거·수영)을 곁들여 지루하지 않게 구성한 템플릿입니다. 또한 모든 템플릿의 휴식일에는 "원하면 가벼운 자전거·수영·스트레칭 20~30분"이라는 선택지가 함께 표시됩니다(강제가 아니라 제안이며, 대회 직전 마지막 주는 회복을 위해 순수 휴식으로 유지됩니다).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">신발 마일리지 추적</strong> — 설정에서 신발을 등록하고(교체 기준 km 지정, 기본 700km) 운동 기록에 연결하면, 그 신발로 뛴 모든 거리가 자동으로 누적됩니다. 진행률이 80%를 넘으면 "교체 시기 임박", 100%를 넘으면 "교체 권장!"으로 표시됩니다. 신발을 삭제해도 이미 기록된 운동 자체의 거리는 지워지지 않고 신발 연결만 해제됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">출력용 리포트 (PDF/인쇄)</strong> — 기간(이번 달·최근 3개월·올해·전체 기간)과 포함할 항목을 골라 인쇄용 문서를 만듭니다. "PDF로 저장"은 화면을 사진처럼 캡처하는 방식이 아니라 <strong>브라우저 자체의 인쇄 기능</strong>을 이용합니다 — 그래서 별도 프로그램 설치 없이 가볍고, 글자와 그래프가 흐려지지 않습니다. 인쇄 대화상자에서 "PDF로 저장"을 선택하면 파일로 남습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">자유 달리기 목표 (거리주·시간주·페이스주)</strong> — 러닝 시작의 자유 달리기 모드에서 거리·시간·페이스 중 하나 이상을 채우면 목표가 생깁니다. 거리를 넣으면 그 거리 도달 시, 시간만 넣으면 그 시간 경과 시 완료로 처리됩니다. 페이스만 넣으면 끝나는 기준 없이 그 페이스로 계속 코칭만 하며 직접 종료할 때까지 이어집니다. 거리와 시간을 함께 넣으면 필요한 페이스(시간÷거리)를 자동으로 계산해 목표 페이스로 씁니다.</div>
@@ -2214,8 +2215,13 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.9.1",APP_BUILD="2026-09-08";
+const APP_VERSION="2.10.0",APP_BUILD="2026-09-08";
 const CHANGELOG=[
+  {v:"2.10.0",d:"2026-09-08",title:"즐거움을 더한 훈련 다양성 — 트레일·크로스트레이닝",items:[
+    "새 템플릿 '다양성 추구형' 추가 — 정규 훈련(인터벌·템포·장거리)은 유지하되 트레일 러닝(주말)과 크로스트레이닝(자전거·수영, 평일)을 섞어 지루하지 않게 구성",
+    "모든 템플릿의 휴식일에 '원하면 가벼운 자전거·수영·스트레칭 20~30분' 선택지를 기본으로 함께 표시(강제 아님)",
+    "트레일 러닝 거리는 최근 롱런 실적에 비례해 자동 조정, 페이스는 지형 특성상 목표 수치 대신 '여유있게'로 안내",
+    "대회 직전 마지막 주는 여전히 순수 휴식으로 유지(회복 우선)"]},
   {v:"2.9.1",d:"2026-09-08",title:"워크아웃 시작 흐름 개선 · 계획 상세 미리보기",items:[
     "워크아웃 라이브러리의 미리보기에 빨간 'Run' 버튼 추가 — 누르면 러닝 탭으로 이동해 해당 워크아웃이 자동 선택되고 스텝이 바로 펼쳐짐",
     "오늘 계획(플랜) 모드도 저장된 워크아웃처럼 시작 전에 전체 스텝(구간별 거리·페이스·심박존)이 상세히 펼쳐짐",
@@ -2617,11 +2623,16 @@ const SESSION_CODES=[
   {id:"cruise",label:"크루즈 인터벌(Z3 반복)"},{id:"fastfinish",label:"패스트 피니시 런"},
   {id:"longfast",label:"패스트 피니시 롱런"},{id:"shortint",label:"숏 인터벌(Z5)"},
   {id:"longint",label:"롱 인터벌(Z4)"},{id:"mixedint",label:"믹스드 인터벌(Z3~5)"},
-  {id:"hill",label:"언덕 반복"},{id:"fartlek",label:"파틀렉(스피드 플레이)"}];
+  {id:"hill",label:"언덕 반복"},{id:"fartlek",label:"파틀렉(스피드 플레이)"},
+  {id:"trail",label:"트레일 러닝"},{id:"xtrain",label:"크로스트레이닝(자전거·수영 등)"},{id:"mobility",label:"스트레칭·모빌리티"}];
 function slotText(slot,ctx){const{code}=slot;const P=s=>` @${fmtPace(s)}/km`;const{LR,pc,dist,gpace,block,readiness}=ctx;
   const beginner=isBeginnerRunner(readiness); // 훈련 실적이 낮거나 마라톤 환산 페이스 7:07/km 이상(풀 5시간↑)이면 초급 — 시간 기반 처방 + 고강도 완화
   const readyPct=readiness!=null?Math.min(1,readiness/0.35):0.5;
-  if(code==="rest"||!code)return"휴식";
+  if(code==="rest"||!code)return slot.pure?"휴식":"휴식 (원하면 가벼운 자전거·수영·스트레칭 20~30분)"; // "즐거운 러닝 인생"을 위해 완전 휴식을 강요하지 않고 가벼운 선택지를 함께 제안. slot.pure=true인 경우(대회 직전 등)는 순수 휴식 유지
+  if(code==="xtrain")return"크로스트레이닝 40분 — 자전거·수영·일립티컬 중 선택 (Z1~2, 관절 부담 적은 유산소)";
+  if(code==="mobility")return"스트레칭 · 모빌리티 15분 (회복 목적, 페이스 없음)";
+  if(code==="trail"){const km=slot.amt!=null?slot.amt:Math.max(5,Math.round(LR*0.6));
+    return`트레일 러닝 ${km}km (Z2, 지형에 따라 페이스는 여유있게 · 오르막에서 심박 위주로 조절)`;}
   if(code==="strides")return beginner?"짧은 질주 200m×4 (Z4)":"짧은 질주 400m×4 (Z5)";
   if(code==="easy"){
     if(slot.amt!=null)return slot.unit==="time"?`이지런 ${slot.amt}분 (Z2)`:`이지런 ${slot.amt}km (Z2)`;
@@ -2702,7 +2713,12 @@ const PLAN_TEMPLATES={
     base:[{code:"rest"},{code:"easy"},{code:"recovery"},{code:"fastfinish"},{code:"rest"},{code:"midlong"},{code:"long"}],
     build:[{code:"rest"},{code:"cruise"},{code:"recovery"},{code:"midlong"},{code:"rest"},{code:"easy"},{code:"long"}],
     peak:[{code:"rest"},{code:"longint"},{code:"recovery"},{code:"quality_racepace"},{code:"rest"},{code:"easy"},{code:"longfast"}],
-    taper:[{code:"rest"},{code:"quality_racepace",amt:5},{code:"recovery"},{code:"strides"},{code:"rest"},{code:"easy"},{code:"long"}]}};
+    taper:[{code:"rest"},{code:"quality_racepace",amt:5},{code:"recovery"},{code:"strides"},{code:"rest"},{code:"easy"},{code:"long"}]},
+  variety:{name:"다양성 추구형 (즐거움 중시)",desc:"기록 향상용 정규 훈련(인터벌·템포·장거리)은 그대로 유지하되, 수요일엔 크로스트레이닝(자전거·수영)으로 몸에 변화를 주고, 토요일엔 트레일 러닝으로 지형을 바꿔 지루하지 않게 구성합니다. 초보든 숙련자든 '기록보다 즐거운 경험'을 함께 추구하고 싶을 때 적합합니다.",builtin:true,
+    base:[{code:"rest"},{code:"easy"},{code:"xtrain"},{code:"easy"},{code:"recovery"},{code:"trail"},{code:"long"}],
+    build:[{code:"rest"},{code:"quality_speed"},{code:"xtrain"},{code:"quality_threshold"},{code:"recovery"},{code:"trail"},{code:"long"}],
+    peak:[{code:"rest"},{code:"quality_speed"},{code:"mobility"},{code:"quality_racepace"},{code:"xtrain"},{code:"trail",amt:8},{code:"long"}],
+    taper:[{code:"rest"},{code:"quality_speed",amt:3},{code:"mobility"},{code:"quality_racepace",amt:6},{code:"rest"},{code:"trail",amt:5},{code:"recovery"}]}};
 function getTemplate(tplId){return PLAN_TEMPLATES[tplId]||(DB.customTemplates||[]).find(t=>t.id===tplId)||PLAN_TEMPLATES.balanced;}
 function allTemplates(){return[...Object.entries(PLAN_TEMPLATES).map(([id,t])=>({id,...t})),...(DB.customTemplates||[])];}
 function weekTemplate(week,a,LR,pc,dist,gpace,tplId,readiness){
