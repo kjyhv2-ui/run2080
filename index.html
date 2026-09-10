@@ -543,21 +543,31 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       </div>
       <div class="grid-2col">
         <div class="card" id="sec-4-1">
-          <div class="card-header"><div class="card-title"><i class="bi bi-link-45deg"></i> 웨어러블 연동 (수신)</div></div>
+          <div class="card-header"><div class="card-title"><i class="bi bi-link-45deg"></i> 외부 기기 데이터 가져오기</div></div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">Garmin·Coros·Apple Watch 등에서 뛴 운동을 이 앱에 가져옵니다. Garmin Connect 웹사이트(또는 앱)의 운동 상세 화면 → <strong>내보내기(Export) → GPX 또는 TCX</strong>로 파일을 받은 뒤 아래에 올려주세요.</div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-card);border-radius:8px;margin-bottom:10px">
-            <div><strong>Garmin Connect API</strong><div style="font-size:12px;color:var(--text-secondary)">Forerunner 실시간 Sync</div></div><span class="zone-badge z2">연결됨</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-card);border-radius:8px">
-            <div><strong>.FIT 파일 업로드</strong><div style="font-size:12px;color:var(--text-secondary)">Coros / Apple Watch 로그</div></div>
-            <input type="file" id="fit-upload" style="display:none" onchange="simulateFitUpload(event)">
+            <div><strong>GPX / TCX 파일 가져오기</strong><div style="font-size:12px;color:var(--text-secondary)">실제 거리·시간·심박·경로를 그대로 읽어옵니다</div></div>
+            <input type="file" id="fit-upload" accept=".gpx,.tcx,.xml" style="display:none" onchange="importActivityFile(event)">
             <button class="btn btn-sm btn-secondary" onclick="document.getElementById('fit-upload').click()">파일 선택</button>
           </div>
-          <div style="font-size:11.5px;color:var(--text-secondary);margin-top:10px"><i class="bi bi-magic"></i> 연동 기록은 심박으로 존을 자동 판정하고, 5K·10K·하프·풀 표준거리와 일치하는 고강도 세션은 <strong>PR 자동 등록</strong>을 제안합니다.</div>
+          <div style="font-size:11px;color:#64748b;line-height:1.6"><i class="bi bi-info-circle"></i> 자동 동기화가 아니라 파일을 직접 받아 올리는 방식입니다. 실제 활동 날짜·시간을 파일에서 그대로 읽어 그 날짜의 캘린더에 기록됩니다.</div>
+        </div>
+        <div class="card" id="sec-4-1b">
+          <div class="card-header"><div class="card-title"><i class="bi bi-cloud-arrow-down"></i> Strava 연동 (준비 중)</div></div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;line-height:1.7">Garmin 앱에서 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 활동을 가져올 수 있습니다. 사용하려면 아래 절차가 필요합니다:</div>
+          <ol style="font-size:11.5px;color:#94a3b8;line-height:1.9;padding-left:18px;margin-bottom:10px">
+            <li><a href="https://www.strava.com/settings/api" target="_blank" style="color:#38bdf8">strava.com/settings/api</a>에서 내 앱 등록 (Strava 유료 구독 필요)</li>
+            <li>발급받은 <strong>Client ID</strong>를 아래에 입력</li>
+            <li><strong>Client Secret</strong>은 Vercel 프로젝트의 환경 변수(STRAVA_CLIENT_SECRET)로 등록 — 절대 이 화면에 직접 입력하지 않습니다</li>
+            <li>아래 "Strava로 연결하기"로 인증</li>
+          </ol>
+          <div class="form-group"><label>Strava Client ID</label><input type="text" id="strava-client-id" placeholder="예: 123456" oninput="saveStravaClientId(this.value)"></div>
+          <button class="btn btn-sm" style="width:100%" onclick="connectStrava()"><i class="bi bi-strava"></i> Strava로 연결하기</button>
+          <div id="strava-status" style="font-size:11.5px;color:#64748b;margin-top:8px"></div>
         </div>
         <div class="card" id="sec-4-2">
-          <div class="card-header"><div class="card-title"><i class="bi bi-cpu"></i> 수신 로그 매핑 터미널</div></div>
-          <div class="term" id="device-sync-terminal">[System Ready] Garmin Webhook listener active.
-[Sync] 실측 데이터가 캘린더에 자동 렌더링됩니다.</div>
+          <div class="card-header"><div class="card-title"><i class="bi bi-cpu"></i> 가져오기 로그</div></div>
+          <div class="term" id="device-sync-terminal">파일을 가져오면 여기에 파싱 결과가 표시됩니다.</div>
         </div>
       </div>
     </div>
@@ -1096,6 +1106,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     </div>
 
     <div class="form-group"><label>템플릿 이름</label><input type="text" id="ctpl-name" placeholder="예: 나만의 화목토 플랜"></div>
+    <div class="form-group"><label>적용 종목 (선택)</label>
+      <select id="ctpl-dist">
+        <option value="">전체 종목 (기본)</option>
+        <option value="5K">5K</option><option value="10K">10K</option>
+        <option value="HALF">하프</option><option value="FULL">풀코스</option><option value="ULTRA">울트라</option>
+      </select>
+      <div style="font-size:10.5px;color:#64748b;margin-top:4px">지정해두면, 그 종목의 대회를 준비할 때 이 템플릿이 자동으로 추천됩니다.</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <button class="btn btn-sm btn-secondary" style="width:100%" onclick="toggleCtplImport()"><i class="bi bi-clipboard-plus"></i> 가지고 있는 계획을 텍스트로 붙여넣기</button>
+      <div id="ctpl-import-row" style="display:none;margin-top:8px">
+        <textarea id="ctpl-import-text" rows="7" placeholder="월: 휴식&#10;화: 인터벌 5x1km (Z5)&#10;수: 이지런 8km&#10;목: 템포 6km&#10;금: 휴식&#10;토: 크로스트레이닝&#10;일: 장거리 20km" style="width:100%;background:#0d1420;border:1px solid var(--border-light);border-radius:8px;padding:10px;color:#e2e8f0;font-size:12.5px;resize:vertical"></textarea>
+        <div style="font-size:10.5px;color:#64748b;margin:5px 0">한 줄에 하루씩, "요일: 내용" 형식으로 적어주세요. 지금 선택된 <strong id="ctpl-import-target">기초</strong> 단계에 적용됩니다. 인터벌·템포·이지런·장거리·휴식·크로스트레이닝·트레일 등의 단어를 자동으로 알아봅니다.</div>
+        <button class="btn btn-sm" style="width:100%" onclick="importPlanText()"><i class="bi bi-magic"></i> 이 단계에 반영하기</button>
+      </div>
+    </div>
 
     <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px;padding:12px;margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
@@ -1292,6 +1318,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">나의 러닝 인생</strong> — 대시보드 상단에 기록이 시작된 날부터 오늘까지의 전체 조망이 표시됩니다. 누적 거리·시간·운동 횟수·완주 대회 수와 함께, 누적 거리를 지구 둘레(40,075km)와 비교한 "지구 O%를 뛴 셈" 문구가 함께 나옵니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">1년 전 오늘</strong> — 오늘과 같은 날짜(월/일)에 과거 어느 해든 운동 기록이나 일지가 있으면 대시보드에 자동으로 보여줍니다. 여러 해에 기록이 있으면 각 연도별로 모두 표시됩니다. 기록이 없는 날짜에는 카드 자체가 나타나지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">외부 기기 데이터 가져오기 (GPX/TCX)</strong> — Garmin·Coros 등에서 내보낸 GPX 또는 TCX 파일을 실제로 읽어 거리·시간·심박·GPS 경로를 그대로 가져옵니다. 자동 동기화가 아니라 직접 파일을 받아 올리는 방식이며, 활동의 실제 날짜와 시각을 파일에서 읽어 그 날짜의 캘린더에 기록합니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">Strava 연동</strong> — Garmin의 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 러닝 기록을 가져올 수 있습니다. Client Secret은 절대 이 화면에 입력하지 않고 서버(Vercel 환경 변수)에만 보관되며, 배포하지 않은 상태(파일을 직접 연 경우)에서는 이 기능이 동작하지 않는다는 안내가 뜹니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">종목별 커스텀 템플릿 & 텍스트로 계획 가져오기</strong> — 커스텀 템플릿을 만들 때 "적용 종목"(5K·10K·하프·풀·울트라)을 지정해두면, 그 종목의 대회를 주 목표로 설정할 때 자동으로 추천됩니다(⭐ 표시와 함께 "내 10K용"처럼 표기). 또한 가지고 계신 계획을 "월: 인터벌 5x1km" 같은 텍스트로 붙여넣으면, 요일과 훈련 종류를 자동으로 인식해 해당 단계에 반영합니다. 어떤 커스텀 템플릿이든 실제 페이스·거리는 등록된 PR과 준비도에 맞춰 자동으로 미세조정됩니다(기본 제공 템플릿과 동일한 방식).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">다양성 추구형 템플릿 & 휴식일 크로스트레이닝 제안</strong> — 기록 향상을 위한 정규 훈련(인터벌·템포·장거리)은 그대로 유지하면서, 트레일 러닝과 크로스트레이닝(자전거·수영)을 곁들여 지루하지 않게 구성한 템플릿입니다. 또한 모든 템플릿의 휴식일에는 "원하면 가벼운 자전거·수영·스트레칭 20~30분"이라는 선택지가 함께 표시됩니다(강제가 아니라 제안이며, 대회 직전 마지막 주는 회복을 위해 순수 휴식으로 유지됩니다).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">신발 마일리지 추적</strong> — 설정에서 신발을 등록하고(교체 기준 km 지정, 기본 700km) 운동 기록에 연결하면, 그 신발로 뛴 모든 거리가 자동으로 누적됩니다. 진행률이 80%를 넘으면 "교체 시기 임박", 100%를 넘으면 "교체 권장!"으로 표시됩니다. 신발을 삭제해도 이미 기록된 운동 자체의 거리는 지워지지 않고 신발 연결만 해제됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">출력용 리포트 (PDF/인쇄)</strong> — 기간(이번 달·최근 3개월·올해·전체 기간)과 포함할 항목을 골라 인쇄용 문서를 만듭니다. "PDF로 저장"은 화면을 사진처럼 캡처하는 방식이 아니라 <strong>브라우저 자체의 인쇄 기능</strong>을 이용합니다 — 그래서 별도 프로그램 설치 없이 가볍고, 글자와 그래프가 흐려지지 않습니다. 인쇄 대화상자에서 "PDF로 저장"을 선택하면 파일로 남습니다.</div>
@@ -2215,8 +2244,19 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.10.0",APP_BUILD="2026-09-08";
+const APP_VERSION="2.12.0",APP_BUILD="2026-09-08";
 const CHANGELOG=[
+  {v:"2.12.0",d:"2026-09-08",title:"진짜 웨어러블 연동 — GPX/TCX 가져오기 & Strava 준비",items:[
+    "이전 '웨어러블 연동' 화면이 실제로는 아무 데이터도 읽지 않고 무작위 숫자를 생성하던 목업이었음을 확인하고 전면 교체",
+    "GPX/TCX 파일을 실제로 파싱해 거리·시간·심박·GPS 경로를 정확히 가져오는 기능 구현 — 활동의 실제 날짜로 캘린더에 기록",
+    "Strava 연동 준비 — OAuth 인증, 토큰 자동 갱신, 활동 가져오기(중복 방지)까지 클라이언트 로직 완성",
+    "Client Secret은 서버(Vercel 환경 변수)에만 보관하는 구조로 설계, api/strava.js 서버 함수 추가",
+    "구글 폴리라인 디코더로 Strava의 경로 데이터도 지도에 표시 가능"]},
+  {v:"2.11.0",d:"2026-09-08",title:"종목별 커스텀 템플릿 & 텍스트로 계획 가져오기",items:[
+    "커스텀 템플릿에 '적용 종목'(5K·10K·하프·풀·울트라) 태그 추가 — 그 종목의 대회를 목표로 설정하면 자동으로 추천됨",
+    "가지고 있는 계획을 텍스트로 붙여넣으면 요일·훈련 종류를 자동 인식해 반영(예: '화: 인터벌 5x1km')",
+    "인터벌·템포·이지런·장거리·휴식·크로스트레이닝·트레일 등 다양한 표현을 키워드로 인식",
+    "어떤 커스텀 템플릿이든 실제 페이스·거리는 기본 제공 템플릿과 동일하게 PR·준비도 기반으로 자동 미세조정됨(기존부터 있던 엔진을 그대로 재사용)"]},
   {v:"2.10.0",d:"2026-09-08",title:"즐거움을 더한 훈련 다양성 — 트레일·크로스트레이닝",items:[
     "새 템플릿 '다양성 추구형' 추가 — 정규 훈련(인터벌·템포·장거리)은 유지하되 트레일 러닝(주말)과 크로스트레이닝(자전거·수영, 평일)을 섞어 지루하지 않게 구성",
     "모든 템플릿의 휴식일에 '원하면 가벼운 자전거·수영·스트레칭 20~30분' 선택지를 기본으로 함께 표시(강제 아님)",
@@ -2895,9 +2935,14 @@ function deleteRacePlans(raceId){ // 대회는 그대로 두고, 그 대회가 �
 
 /* ===== 템플릿 선택 UI & 커스텀 템플릿 빌더 ===== */
 function populateTemplateSelect(){const sel=document.getElementById("plan-template");if(!sel)return;
-  const r=primaryRace();
-  sel.innerHTML=allTemplates().map(t=>`<option value="${t.id}">${t.builtin?"":"⭐ "}${t.name}</option>`).join("");
-  const want=(r&&r.templateId)||"balanced";
+  const r=primaryRace(),rDist=(r&&r.dist)||"FULL";
+  sel.innerHTML=allTemplates().map(t=>{
+    const matched=!t.builtin&&t.dist&&t.dist===rDist;
+    const label=(t.builtin?"":"⭐ ")+t.name+(matched?` (내 ${DIST_LABEL[rDist]||rDist}용)`:"");
+    return`<option value="${t.id}">${label}</option>`;}).join("");
+  let want=r&&r.templateId;
+  if(!want){const matched=(DB.customTemplates||[]).find(t=>t.dist===rDist); // 아직 이 대회에 템플릿을 정한 적 없으면 종목이 맞는 내 커스텀 템플릿을 우선 추천
+    want=matched?matched.id:"balanced";}
   sel.value=allTemplates().some(t=>t.id===want)?want:"balanced";
   updateTemplateDesc();}
 /* 종목·현재 수준에 맞는 권장 플랜 길이 안내 — 14~20주가 근거 있는 범위이고, 종목과 기반에 따라 그 안에서 조정 */
@@ -3028,6 +3073,9 @@ function openCustomTemplateModal(editId){
   document.getElementById("ctpl-editid").value=editId||"";
   const existing=editId?(DB.customTemplates||[]).find(t=>t.id===editId):null;
   document.getElementById("ctpl-name").value=existing?existing.name:"";
+  const distSel=document.getElementById("ctpl-dist");if(distSel)distSel.value=existing?(existing.dist||""):"";
+  const impRow=document.getElementById("ctpl-import-row");if(impRow)impRow.style.display="none";
+  const impText=document.getElementById("ctpl-import-text");if(impText)impText.value="";
   document.getElementById("ctpl-delete-btn").style.display=existing?"block":"none";
   const blank=()=>Array.from({length:7},()=>({code:"rest"}));
   ctplData=existing?{base:existing.base.map(s=>({...s})),build:existing.build.map(s=>({...s})),peak:existing.peak.map(s=>({...s})),taper:existing.taper.map(s=>({...s}))}
@@ -3041,7 +3089,8 @@ function closeCustomTemplateModal(){document.getElementById("customTplModal").cl
 function renderCtplTabs(){const names={base:"기초",build:"빌드",peak:"피크",taper:"테이퍼"};
   document.getElementById("ctpl-block-tabs").innerHTML=Object.keys(names).map(b=>
     `<button class="btn btn-sm ${b===ctplActiveBlock?"":"btn-secondary"}" style="flex:1" onclick="switchCtplBlock('${b}')">${names[b]}</button>`).join("");}
-function switchCtplBlock(b){ctplActiveBlock=b;renderCtplTabs();renderCtplGrid();renderCtplBlockGuide();}
+function switchCtplBlock(b){ctplActiveBlock=b;renderCtplTabs();renderCtplGrid();renderCtplBlockGuide();
+  const t=document.getElementById("ctpl-import-target");if(t)t.textContent={base:"기초",build:"빌드업",peak:"피크",taper:"테이퍼"}[b];}
 function renderCtplGrid(){const days=["월","화","수","목","금","토","일"];
   document.getElementById("ctpl-day-grid").innerHTML=days.map((d,i)=>{const slot=ctplData[ctplActiveBlock][i],cur=slot.code;
     const showAmt=cur!=="rest"&&cur!=="strides";
@@ -3059,13 +3108,61 @@ function setCtplUnit(dayIdx,v){ctplData[ctplActiveBlock][dayIdx].unit=v;}
 function saveCustomTemplate(){const name=document.getElementById("ctpl-name").value.trim();
   if(!name){showToast("템플릿 이름을 입력하세요.");return;}
   const id=document.getElementById("ctpl-editid").value||("ctpl_"+uid());
-  const tpl={id,name,builtin:false,base:ctplData.base,build:ctplData.build,peak:ctplData.peak,taper:ctplData.taper};
+  const dist=(document.getElementById("ctpl-dist")||{}).value||"";
+  const tpl={id,name,dist,builtin:false,base:ctplData.base,build:ctplData.build,peak:ctplData.peak,taper:ctplData.taper};
   if(!DB.customTemplates)DB.customTemplates=[];
   const idx=DB.customTemplates.findIndex(t=>t.id===id);
   if(idx>=0)DB.customTemplates[idx]=tpl;else DB.customTemplates.push(tpl);
   save();closeCustomTemplateModal();populateTemplateSelect();
   const sel=document.getElementById("plan-template");if(sel)sel.value=id;updateTemplateDesc();
   showToast(`'${name}' 템플릿을 저장했습니다.`);}
+function toggleCtplImport(){const row=document.getElementById("ctpl-import-row");
+  row.style.display=row.style.display==="none"?"block":"none";}
+/* ===== 텍스트로 계획 가져오기 =====
+   "월: 인터벌 5x1km (Z5)" 같은 줄을 요일 + 훈련 종류로 해석해 커스텀 템플릿의 해당 요일에 채워 넣는다.
+   키워드 매칭이라 완벽하지 않을 수 있으니, 반영 후 화면에서 드롭다운으로 바로 확인·수정할 수 있게 한다. */
+const CTPL_IMPORT_KEYWORDS=[ // 더 구체적인 키워드를 먼저 검사해야 오매칭이 적음
+  {code:"rest",kw:["휴식","레스트","off","오프"]},
+  {code:"long",kw:["장거리","롱런","lsd"]},
+  {code:"quality_speed",kw:["인터벌","interval","vo2","반복주"]},
+  {code:"quality_threshold",kw:["템포","threshold","역치"]},
+  {code:"quality_racepace",kw:["목표페이스","지속주","racepace"]},
+  {code:"cruise",kw:["크루즈"]},
+  {code:"fastfinish",kw:["패스트피니시","패스트 피니시","fast finish"]},
+  {code:"hill",kw:["언덕","힐","hill"]},
+  {code:"fartlek",kw:["파틀렉","fartlek"]},
+  {code:"trail",kw:["트레일","trail"]},
+  {code:"xtrain",kw:["자전거","수영","크로스","사이클","cycling","swim"]},
+  {code:"mobility",kw:["스트레칭","모빌리티","stretch"]},
+  {code:"recovery",kw:["회복"]},
+  {code:"midlong",kw:["중장거리"]},
+  {code:"strides",kw:["스트라이드","질주"]},
+  {code:"easy",kw:["이지런","조깅","이지","easy","가볍"]}];
+function guessSessionCode(text){const low=text.toLowerCase();
+  for(const{code,kw} of CTPL_IMPORT_KEYWORDS)if(kw.some(k=>low.includes(k.toLowerCase())))return code;
+  return"easy";} // 매칭 안 되면 무난한 기본값(이후 화면에서 바로 고칠 수 있음)
+function parsePlanTextLine(line){
+  const dayMap={"월":0,"화":1,"수":2,"목":3,"금":4,"토":5,"일":6,"mon":0,"tue":1,"wed":2,"thu":3,"fri":4,"sat":5,"sun":6};
+  const m=line.match(/^\s*([월화수목금토일]|mon|tue|wed|thu|fri|sat|sun)\S*\s*[:：\-\.\)]\s*(.+)$/i);
+  if(!m)return null;
+  const key=m[1].length===1?m[1]:m[1].toLowerCase().slice(0,3);
+  const dayIdx=dayMap[key];if(dayIdx==null)return null;
+  const desc=m[2].trim();const code=guessSessionCode(desc);
+  const amtM=desc.match(/(\d+(?:\.\d+)?)\s*(km|분|min)/i);
+  let amt=null,unit;
+  if(amtM){amt=parseFloat(amtM[1]);if(/분|min/i.test(amtM[2]))unit="time";}
+  const confident=CTPL_IMPORT_KEYWORDS.find(k=>k.code===code&&k.code!=="easy")||/이지|조깅|easy|가볍/i.test(desc);
+  return{dayIdx,code,amt,unit,raw:desc,confident:!!confident};}
+function importPlanText(){const text=document.getElementById("ctpl-import-text").value;
+  if(!text.trim()){showToast("붙여넣을 계획 텍스트를 입력하세요.");return;}
+  const lines=text.split("\n");let applied=0,unsure=[];
+  const newSlots=ctplData[ctplActiveBlock].map(s=>({...s}));
+  for(const line of lines){const parsed=parsePlanTextLine(line);if(!parsed)continue;
+    newSlots[parsed.dayIdx]={code:parsed.code,amt:parsed.amt,unit:parsed.unit};applied++;
+    if(!parsed.confident)unsure.push("월화수목금토일"[parsed.dayIdx]+": "+parsed.raw);}
+  if(!applied){showToast(`요일을 인식하지 못했습니다. "월: 내용" 형식으로 줄마다 입력해주세요.`);return;}
+  ctplData[ctplActiveBlock]=newSlots;renderCtplGrid();
+  showToast(`${applied}개 요일을 반영했습니다.`+(unsure.length?` 종류를 확실히 못 찾은 ${unsure.length}개는 '이지런'으로 지정했으니 드롭다운에서 확인해주세요.`:""));}
 function deleteCustomTemplate(){const id=document.getElementById("ctpl-editid").value;if(!id)return;
   if(!confirm("이 템플릿을 삭제할까요? 이미 이 템플릿으로 생성된 계획은 그대로 남습니다."))return;
   DB.customTemplates=(DB.customTemplates||[]).filter(t=>t.id!==id);
@@ -7079,13 +7176,157 @@ function executeReset(){
   bootUI();
   showToast(`초기화 완료 — ${detail.replace(/\n/g," · ")}`);
 }
-function simulateFitUpload(e){const term=document.getElementById("device-sync-terminal");
-  const name=(e.target.files[0]||{}).name||"activity.fit";
-  const hr=130+Math.floor(Math.random()*50),dist=+(6+Math.random()*15).toFixed(2),dur=30+Math.floor(Math.random()*90),z=zoneFromHR(hr,calculatedZones);
-  const log={id:uid(),time:"07:00",type:"run",dist,duration:dur,avghr:hr,maxhr:hr+12,notes:"FIT 자동 파싱"};log.title=autoTitle(log);
-  if(!DB.calendar[TODAY])DB.calendar[TODAY]={plans:[],logs:[]};DB.calendar[TODAY].logs.push(log);save();refreshAll();
-  term.textContent=`[.FIT Parser] ${name}\n> 거리 ${dist}km · ${dur}분 · 평균 ${hr}bpm\n> 자동 존 판정: Zone ${z}\n[OK] ${TODAY} 캘린더에 매핑 완료 ✓`;
-  showToast("FIT 파일을 파싱해 오늘 캘린더에 매핑했습니다.");autoDetectPR(log,TODAY);e.target.value="";}
+/* ===== GPX/TCX 실제 파일 가져오기 =====
+   이전 버전은 파일 내용을 전혀 읽지 않고 무작위 숫자를 생성했다(프로토타입 목업이었음).
+   지금은 실제 XML을 파싱해 진짜 거리·시간·심박·GPS 경로를 읽어온다.
+   GPX/TCX는 표준 XML 포맷이라 외부 라이브러리 없이 브라우저 내장 DOMParser만으로 충분하다. */
+function findByLocalName(el,name){ // 네임스페이스가 붙은 태그(예: gpxtpx:hr)도 이름만으로 찾기 위함
+  const found=el.getElementsByTagNameNS?el.getElementsByTagNameNS("*",name):null;
+  return found&&found.length?found[0]:null;}
+function parseGPXPoints(doc){
+  const trkpts=[...doc.getElementsByTagName("trkpt")];
+  if(!trkpts.length)throw new Error("트랙포인트(trkpt)를 찾을 수 없습니다. GPX 파일이 맞는지 확인해주세요.");
+  return trkpts.map(pt=>{
+    const lat=parseFloat(pt.getAttribute("lat")),lon=parseFloat(pt.getAttribute("lon"));
+    const timeEl=findByLocalName(pt,"time");
+    const time=timeEl?new Date(timeEl.textContent).getTime():null;
+    const hrEl=findByLocalName(pt,"hr");
+    const hr=hrEl?parseInt(hrEl.textContent):null;
+    return{lat,lon,time,hr};});}
+function parseTCXPoints(doc){
+  const tps=[...doc.getElementsByTagName("Trackpoint")];
+  if(!tps.length)throw new Error("Trackpoint을 찾을 수 없습니다. TCX 파일이 맞는지 확인해주세요.");
+  return tps.map(tp=>{
+    const timeEl=tp.getElementsByTagName("Time")[0];
+    const time=timeEl?new Date(timeEl.textContent).getTime():null;
+    const latEl=tp.getElementsByTagName("LatitudeDegrees")[0],lonEl=tp.getElementsByTagName("LongitudeDegrees")[0];
+    const lat=latEl?parseFloat(latEl.textContent):null,lon=lonEl?parseFloat(lonEl.textContent):null;
+    const hrBpm=tp.getElementsByTagName("HeartRateBpm")[0];
+    const hr=hrBpm?parseInt(hrBpm.getElementsByTagName("Value")[0].textContent):null;
+    const distEl=tp.getElementsByTagName("DistanceMeters")[0];
+    const cumDist=distEl?parseFloat(distEl.textContent):null;
+    return{lat,lon,time,hr,cumDist};});}
+/* ===== Strava 연동 =====
+   Garmin 기기는 이미 "Strava로 자동 전송" 기능이 있어서, Strava를 경유하면 준자동 동기화가 가능하다.
+   OAuth 인증 코드 교환·토큰 갱신은 반드시 서버(api/strava.js)를 거친다 — Client Secret은
+   브라우저에 절대 노출하면 안 되기 때문이다. 이 파일만으로는 동작하지 않고, Vercel에 배포한 뒤
+   STRAVA_CLIENT_SECRET 환경 변수를 등록해야 실제로 연결된다. */
+function saveStravaClientId(id){DB.stravaClientId=id.trim();save();}
+function stravaRedirectUri(){return location.origin+location.pathname;} // 인증 후 같은 페이지로 돌아오게
+function connectStrava(){
+  const id=DB.stravaClientId||(document.getElementById("strava-client-id")||{}).value.trim();
+  if(!id){showToast("Strava Client ID를 먼저 입력하세요.");return;}
+  saveStravaClientId(id);
+  if(location.protocol==="file:"){showToast("이 기능은 Vercel 등에 배포한 뒤에만 동작합니다.");return;}
+  const redirect=encodeURIComponent(stravaRedirectUri());
+  location.href=`https://www.strava.com/oauth/authorize?client_id=${encodeURIComponent(id)}&redirect_uri=${redirect}&response_type=code&approval_prompt=auto&scope=activity:read_all`;}
+async function handleStravaCallback(){
+  const params=new URLSearchParams(location.search);
+  const code=params.get("code");if(!code)return;
+  history.replaceState({},"",location.pathname); // code 파라미터를 지워 새로고침 시 재사용되지 않게 함
+  const id=DB.stravaClientId;
+  if(!id){showToast("Strava Client ID 정보가 없습니다. 다시 연결해주세요.");return;}
+  try{
+    const r=await fetch(`/api/strava?action=exchange&code=${encodeURIComponent(code)}&client_id=${encodeURIComponent(id)}`);
+    const data=await r.json();
+    if(!r.ok||!data.access_token)throw new Error(data.error||"토큰 교환 실패");
+    DB.strava={accessToken:data.access_token,refreshToken:data.refresh_token,expiresAt:data.expires_at,
+      athlete:data.athlete?[data.athlete.firstname,data.athlete.lastname].filter(Boolean).join(" "):null};
+    save();showToast("Strava 연결 완료!"+(DB.strava.athlete?` (${DB.strava.athlete})`:""));
+    renderStravaStatus();syncStravaActivities();
+  }catch(e){showToast("Strava 연결 실패: "+e.message);}}
+function renderStravaStatus(){const box=document.getElementById("strava-status");if(!box)return;
+  if(DB.strava&&DB.strava.accessToken)
+    box.innerHTML=`<span style="color:#10b981"><i class="bi bi-check-circle-fill"></i> 연결됨${DB.strava.athlete?" — "+escHtml(DB.strava.athlete):""}</span>
+      <button class="btn btn-sm btn-secondary" style="margin-left:6px;padding:3px 10px" onclick="syncStravaActivities()"><i class="bi bi-arrow-repeat"></i> 지금 가져오기</button>`;
+  else box.innerHTML=`<span style="color:#64748b">아직 연결되지 않았습니다.</span>`;}
+async function getValidStravaToken(){if(!DB.strava)return null;
+  if(DB.strava.expiresAt&&DB.strava.expiresAt*1000>Date.now()+60000)return DB.strava.accessToken; // 아직 유효
+  try{ // 만료됐거나 곧 만료 -> 갱신
+    const r=await fetch(`/api/strava?action=refresh&refresh_token=${encodeURIComponent(DB.strava.refreshToken)}&client_id=${encodeURIComponent(DB.stravaClientId)}`);
+    const data=await r.json();if(!r.ok||!data.access_token)throw new Error("토큰 갱신 실패");
+    DB.strava.accessToken=data.access_token;DB.strava.refreshToken=data.refresh_token;DB.strava.expiresAt=data.expires_at;
+    save();return DB.strava.accessToken;
+  }catch(e){return null;}}
+function decodePolyline(str){ // Strava가 쓰는 구글 폴리라인 인코딩 방식의 좌표 복원
+  let index=0,lat=0,lng=0;const coords=[];
+  while(index<str.length){
+    let b,shift=0,result=0;
+    do{b=str.charCodeAt(index++)-63;result|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
+    lat+=(result&1)?~(result>>1):(result>>1);
+    shift=0;result=0;
+    do{b=str.charCodeAt(index++)-63;result|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
+    lng+=(result&1)?~(result>>1):(result>>1);
+    coords.push([lat/1e5,lng/1e5,0]);}
+  return coords;}
+function stravaActivityToLog(act){const startMs=new Date(act.start_date_local).getTime();
+  const log={id:uid(),stravaId:act.id,time:new Date(startMs).toTimeString().slice(0,5),type:"run",sport:"run",
+    dist:+(act.distance/1000).toFixed(2),duration:Math.round(act.moving_time/60),
+    avghr:act.average_heartrate?Math.round(act.average_heartrate):null,
+    maxhr:act.max_heartrate?Math.round(act.max_heartrate):null,
+    notes:"Strava 가져오기: "+(act.name||""),hasRoute:!!(act.map&&act.map.summary_polyline)};
+  log.title=autoTitle(log);return{...log,_date:ymd(new Date(startMs))};}
+async function syncStravaActivities(){
+  const token=await getValidStravaToken();
+  if(!token){showToast("Strava 연결이 필요합니다.");return;}
+  try{
+    const r=await fetch(`/api/strava?action=activities&access_token=${encodeURIComponent(token)}`);
+    const activities=await r.json();if(!r.ok)throw new Error(activities.error||"활동 목록을 가져오지 못했습니다.");
+    let imported=0;
+    for(const act of activities){
+      if(!/run/i.test(act.type||""))continue; // 러닝류만 가져옴
+      const{_date,...pureLog}=stravaActivityToLog(act);
+      if(!DB.calendar[_date])DB.calendar[_date]={plans:[],logs:[]};
+      if(DB.calendar[_date].logs.some(l=>l.stravaId===act.id))continue; // 이미 가져온 활동은 건너뜀
+      DB.calendar[_date].logs.push(pureLog);
+      if(act.map&&act.map.summary_polyline)saveRouteData(pureLog.id,decodePolyline(act.map.summary_polyline));
+      autoDetectPR(pureLog,_date);imported++;}
+    save();refreshAll();checkDistanceMilestones();
+    showToast(`Strava에서 ${imported}건의 러닝 기록을 가져왔습니다.`);
+  }catch(e){showToast("가져오기 실패: "+e.message);}}
+function importActivityFile(e){const file=e.target.files[0];if(!file)return;
+  const term=document.getElementById("device-sync-terminal");
+  term.textContent=`[읽는 중] ${file.name} ...`;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const text=reader.result;
+      const doc=new DOMParser().parseFromString(text,"application/xml");
+      if(doc.querySelector("parsererror"))throw new Error("파일 형식을 해석할 수 없습니다(손상되었거나 XML이 아님).");
+      const isTCX=/\.tcx$/i.test(file.name)||doc.getElementsByTagName("Trackpoint").length>0;
+      const points=(isTCX?parseTCXPoints(doc):parseGPXPoints(doc)).filter(p=>p.lat!=null&&p.lon!=null);
+      if(!points.length)throw new Error("좌표가 있는 지점을 찾지 못했습니다.");
+      // 거리: TCX가 자체 누적거리(DistanceMeters)를 주면 그대로 신뢰(기기 자체 계산이라 더 정확), 없으면 좌표 간 haversine 합산
+      let distM;
+      const lastCum=points[points.length-1].cumDist;
+      if(lastCum!=null&&lastCum>0)distM=lastCum;
+      else{distM=0;for(let i=1;i<points.length;i++)distM+=haversine(points[i-1],points[i]);} // haversine()은 이미 미터 단위 반환
+      const withTime=points.filter(p=>p.time!=null);
+      const startMs=withTime.length?withTime[0].time:null,endMs=withTime.length?withTime[withTime.length-1].time:null;
+      const durationMin=(startMs!=null&&endMs!=null)?Math.round((endMs-startMs)/60000):null;
+      if(!durationMin||durationMin<=0)throw new Error("운동 시간을 계산할 수 없습니다(시각 정보 없음).");
+      const hrs=points.map(p=>p.hr).filter(h=>h!=null&&h>30&&h<230);
+      const avghr=hrs.length?Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length):null;
+      const maxhr=hrs.length?Math.max(...hrs):null;
+      const dateStr=startMs?ymd(new Date(startMs)):TODAY;
+      const timeStr=startMs?new Date(startMs).toTimeString().slice(0,5):"07:00";
+      const route=points.map(p=>[p.lat,p.lon,0]); // 3번째 값 0=실제 GPS 포인트(신호두절 추정 아님)
+      const log={id:uid(),time:timeStr,type:"run",sport:"run",dist:+(distM/1000).toFixed(2),duration:durationMin,
+        avghr,maxhr,notes:`${isTCX?"TCX":"GPX"} 파일 가져오기 (${file.name})`,hasRoute:true,routePts:route.length};
+      log.title=autoTitle(log);
+      if(!DB.calendar[dateStr])DB.calendar[dateStr]={plans:[],logs:[]};
+      DB.calendar[dateStr].logs.push(log);
+      saveRouteData(log.id,route);
+      save();refreshAll();autoDetectPR(log,dateStr);checkDistanceMilestones();
+      term.textContent=`[가져오기 완료] ${file.name}\n> 날짜 ${dateStr} ${timeStr}\n> 거리 ${log.dist}km · ${durationMin}분${avghr?` · 평균 ${avghr}bpm`:""}\n> GPS 포인트 ${route.length}개\n[OK] 캘린더에 저장 완료 ✓`;
+      showToast(`${isTCX?"TCX":"GPX"} 파일을 가져왔습니다 — ${dateStr} · ${log.dist}km`);
+    }catch(err){
+      term.textContent=`[오류] ${file.name}\n> ${err.message}`;
+      showToast("파일을 읽는 중 문제가 발생했습니다: "+err.message);
+    }
+    e.target.value="";};
+  reader.onerror=()=>{term.textContent=`[오류] 파일을 읽지 못했습니다.`;};
+  reader.readAsText(file);}
 
 /* ===== 내비 & 스와이프 ===== */
 function buildNav(){
@@ -7101,7 +7342,7 @@ const TAB_SECTIONS={
   1:[{id:"run-setup-card",label:"러닝 시작"},{id:"sec-1-1",label:"랩 기록"}],
   2:[{id:"sec-2-0",label:"대회 & 주기화 플래너"},{id:"sec-2-1",label:"4대 주기화 블록 로드맵"}],
   3:[{id:"sec-3-0",label:"선택일 상세"},{id:"sec-3-1",label:"주간 일지 보기"}],
-  4:[{id:"sec-4-0",label:"나의 워크아웃 라이브러리"},{id:"sec-4-1",label:"웨어러블 연동 (수신)"},{id:"sec-4-2",label:"수신 로그 매핑 터미널"}],
+  4:[{id:"sec-4-0",label:"나의 워크아웃 라이브러리"},{id:"sec-4-1",label:"외부 기기 데이터 가져오기"},{id:"sec-4-1b",label:"Strava 연동"},{id:"sec-4-2",label:"가져오기 로그"}],
   5:[{id:"sec-5-0",label:"계획 대비 실측 이행 리포트"},{id:"sec-5-1",label:"3단계 편극 강도 분포"},{id:"sec-5-2",label:"일별 TRIMP 부하 추세"}],
   6:[{id:"sec-6-0",label:"거리별 개인기록 (PR)"}],
   7:[{id:"sec-7-0",label:"통합 기록 예측 환산표"},{id:"sec-7-1",label:"목표 대비 & 지구력 현실성 보정"},{id:"sec-7-2",label:"목표 페이스 · 구간 스플릿"}],
@@ -7162,7 +7403,9 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
   for(let i=0;i<totalSlides;i++){const b=document.getElementById(`tabbtn-${i}`);if(b)b.classList.toggle("active",i===index);
     const d=document.getElementById(`dot-${i}`);if(d)d.classList.toggle("active",i===index);}
   if(index===0)renderDashboard();else if(index===1)prepareRunTab();else if(index===2){renderRaceList();renderPeriodizationBlocks();populateTemplateSelect();renderWeeksHint();renderPlanStartHint();}else if(index===3)renderCalendar();
-  else if(index===4)renderWorkoutList();
+  else if(index===4){renderWorkoutList();
+    const idInput=document.getElementById("strava-client-id");if(idInput)idInput.value=DB.stravaClientId||"";
+    renderStravaStatus();}
   else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();},80);}
   else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();applyAllSettingSections();}
   renderTabTOC(index);
@@ -7323,6 +7566,7 @@ function wireOnboardDrag(){const vp=document.getElementById("onboardViewport");i
   window.addEventListener("mousemove",e=>obDragMove(e.clientX,e));
   window.addEventListener("mouseup",e=>obDragEnd(e.clientX));}
 if(shouldShowOnboarding())showOnboarding();
+handleStravaCallback(); // Strava 인증 후 돌아왔을 때(?code=...) 처리
 </script>
 </body>
 </html>
