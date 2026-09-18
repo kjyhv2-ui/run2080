@@ -339,6 +339,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div id="gps-prewarm-fill" style="height:100%;width:0%;background:#38bdf8;transition:width .4s ease,background .4s ease"></div>
         </div>
         <div id="gps-precheck" style="display:none;background:#1a1408;border:1px solid #f59e0b;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#fde68a;line-height:1.6"></div>
+        <div class="form-group"><label>활동 종류</label>
+          <select id="run-acttype" onchange="onActTypeChange()"></select>
+        </div>
+        <div id="run-mode-block">
         <div class="form-group"><label>모드 선택</label>
           <select id="run-mode" onchange="onRunModeChange()">
             <option value="free">자유 달리기 (거리·페이스만 측정)</option>
@@ -391,8 +395,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div class="form-group" style="margin-bottom:0"><label>자동 안내 간격</label>
             <select id="run-announce"><option value="1">1km마다</option><option value="0.5">500m마다</option><option value="0">끄기</option></select></div>
         </div>
+        </div>
+        <div id="run-simple-block" style="display:none;background:#080e1a;border-radius:8px;padding:12px;margin-bottom:4px">
+          <div id="run-simple-desc" style="font-size:12.5px;color:#cbd5e1;line-height:1.6"></div>
+        </div>
         <button class="btn btn-success" style="width:100%;margin-top:14px;padding:14px;font-size:15px" onclick="startRunSession()"><i class="bi bi-play-fill"></i> 러닝 시작</button>
         <div style="font-size:11.5px;color:var(--text-secondary);margin-top:10px"><i class="bi bi-info-circle"></i> 시작하면 위치 권한을 요청합니다. 야외에서 하늘이 보이는 곳에서 신호가 잡힐 때까지 잠시 기다려 주세요. 측정 중에는 화면 꺼짐이 방지됩니다.</div>
+        <div id="run-simple-note" style="display:none;font-size:11.5px;color:var(--text-secondary);margin-top:10px"><i class="bi bi-info-circle"></i> 시간을 측정합니다. 종료 후 거리·메모를 직접 입력할 수 있습니다.</div>
       </div>
 
       <div id="run-live-panel" style="display:none">
@@ -1337,6 +1346,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">나의 러닝 인생</strong> — 대시보드 상단에 기록이 시작된 날부터 오늘까지의 전체 조망이 표시됩니다. 누적 거리·시간·운동 횟수·완주 대회 수와 함께, 누적 거리를 지구 둘레(40,075km)와 비교한 "지구 O%를 뛴 셈" 문구가 함께 나옵니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">1년 전 오늘</strong> — 오늘과 같은 날짜(월/일)에 과거 어느 해든 운동 기록이나 일지가 있으면 대시보드에 자동으로 보여줍니다. 여러 해에 기록이 있으면 각 연도별로 모두 표시됩니다. 기록이 없는 날짜에는 카드 자체가 나타나지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">운동 이어서 진행 (복구)</strong> — 앱이 강제 종료되는 등으로 운동 기록이 중단되면, 다음에 앱을 열 때 자동으로 발견해 "이어서 진행 / 여기까지만 기록 저장 / 삭제" 중 고를 수 있게 안내합니다. 진행 중인 운동은 5초마다 자동으로 저장되어, 최악의 경우에도 5초 안쪽의 기록만 손실됩니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">활동 종류별 러닝 탭</strong> — 러닝 시작 전 "활동 종류"를 먼저 고릅니다. 달리기·트랙러닝·트레일러닝은 기존처럼 모드·존·메트로놈까지 전체 메뉴가 나오고, 걷기·등산·사이클(야외)은 GPS로 거리와 시간을 함께 재는 간소화 메뉴, 수영·헬스·줄넘기·요가 등은 GPS 없이 시간만 재는 메뉴로 자동 전환됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">외부 기기 데이터 가져오기 (GPX/TCX)</strong> — Garmin·Coros 등에서 내보낸 GPX 또는 TCX 파일을 실제로 읽어 거리·시간·심박·GPS 경로를 그대로 가져옵니다. 자동 동기화가 아니라 직접 파일을 받아 올리는 방식이며, 활동의 실제 날짜와 시각을 파일에서 읽어 그 날짜의 캘린더에 기록합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">Strava 연동</strong> — Garmin의 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 러닝 기록을 가져올 수 있습니다. Client Secret은 절대 이 화면에 입력하지 않고 서버(Vercel 환경 변수)에만 보관되며, 배포하지 않은 상태(파일을 직접 연 경우)에서는 이 기능이 동작하지 않는다는 안내가 뜹니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">종목별 커스텀 템플릿 & 텍스트로 계획 가져오기</strong> — 커스텀 템플릿을 만들 때 "적용 종목"(5K·10K·하프·풀·울트라)을 지정해두면, 그 종목의 대회를 주 목표로 설정할 때 자동으로 추천됩니다(⭐ 표시와 함께 "내 10K용"처럼 표기). 또한 가지고 계신 계획을 "월: 인터벌 5x1km" 같은 텍스트로 붙여넣으면, 요일과 훈련 종류를 자동으로 인식해 해당 단계에 반영합니다. 어떤 커스텀 템플릿이든 실제 페이스·거리는 등록된 PR과 준비도에 맞춰 자동으로 미세조정됩니다(기본 제공 템플릿과 동일한 방식).</div>
@@ -1532,6 +1543,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <button class="btn btn-sm" onclick="window.print()"><i class="bi bi-file-earmark-pdf"></i> PDF로 저장</button>
   </div>
   <div id="report-print-area"></div>
+</div>
+<div class="modal-overlay" id="runRecoveryModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="card-header"><div class="card-title"><i class="bi bi-arrow-clockwise" style="color:#f59e0b"></i> 중단된 운동 발견</div></div>
+    <div id="run-recovery-body" style="margin-bottom:16px"></div>
+    <button class="btn" style="width:100%;margin-bottom:8px" onclick="recoveryResume()"><i class="bi bi-play-fill"></i> 이어서 진행하기</button>
+    <button class="btn btn-secondary" style="width:100%;margin-bottom:8px" onclick="recoverySaveOnly()"><i class="bi bi-save"></i> 여기까지만 기록 저장</button>
+    <button class="btn btn-secondary" style="width:100%;color:#fca5a5" onclick="recoveryDiscard()"><i class="bi bi-trash"></i> 삭제하기</button>
+  </div>
 </div>
 <div class="modal-overlay" id="milestoneModal">
   <div class="modal-box" style="max-width:360px;text-align:center;padding:28px 20px">
@@ -2263,8 +2283,15 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.13.0",APP_BUILD="2026-09-13";
+const APP_VERSION="2.14.0",APP_BUILD="2026-09-13";
 const CHANGELOG=[
+  {v:"2.14.0",d:"2026-09-13",title:"중대 버그 4건 수정 + 운동 종류별 러닝 탭 재구성",items:[
+    "[긴급수정] 화면이 꺼졌다 켜지면 거리·시간이 멈춰 보이던 문제 해결 — 경과시간을 실제 시각 기준으로 재계산하고, 화면 복귀 즉시 강제 새로고침하도록 수정",
+    "[긴급수정] 진행 중인 운동이 강제종료로 사라지지 않도록 이중·삼중 안전장치 추가 — 5초마다 자동 저장, 탭 종료 시 추가 저장, 재실행 시 '이어서 진행/기록만 저장/삭제' 복구 제안",
+    "러닝 시작 시 자동으로 뜨던 배터리 설정 안내 팝업 제거(시간이 이미 흐르고 있는 상태에서 안내가 떠 있던 문제)",
+    "러닝 탭에 '활동 종류' 선택 추가 — 달리기·트랙·트레일은 기존 전체 메뉴 그대로, 걷기·등산·사이클은 GPS 거리+시간, 수영·헬스·요가 등은 시간만 재는 간소화 메뉴로 자동 전환",
+    "기타 활동은 짧은 거리라도 저장 확인 팝업이 뜨지 않도록 처리(애초에 거리 측정 대상이 아니므로)",
+    "종료 시 실제 선택한 활동 종류로 정확히 저장됨(예전엔 무조건 '달리기'로 저장)"]},
   {v:"2.13.0",d:"2026-09-13",title:"플레이스토어 출시 준비 — 실제 아이콘·매니페스트·서비스워커",items:[
     "'RUN HEART LAB' 로고를 실제 앱 아이콘으로 적용 — 심박×정밀공학을 상징하는 하트+기어+러너+ECG 디자인",
     "SVG 임시 아이콘을 실제 PNG로 교체(192·512·적응형 아이콘 포함 총 6종) — 안드로이드 앱 아이콘 요구사항 충족",
@@ -5889,6 +5916,65 @@ function copyAudioLog(){const log=Store.get("audioLog")||[];
   const txt=log.map(e=>`${((e.t-t0)/1000).toFixed(0)}s ${e.tag} ctx:${e.ctx}(${e.ctxTime}) track:${e.track||"-"} spk:${e.spk||"-"} beats:${e.beats!=null?e.beats:"-"} silent:${e.silent}(${e.silentT}) wa:${e.wa||"-"} metro:${e.metro?1:0} hidden:${e.hidden?1:0} wake:${e.wake}${e.x?" "+e.x:""}`).join("\n");
   try{navigator.clipboard.writeText(txt);showToast("진단 로그를 복사했습니다.");}
   catch(e){showToast("복사에 실패했습니다.");}}
+/* ===== 진행 중인 운동 이중·삼중 안전장치 =====
+   앱이 강제 종료되거나 브라우저가 죽어도 운동 기록이 통째로 사라지지 않도록,
+   진행 중인 러닝 상태를 주기적으로 localStorage에 저장해둔다.
+   ① tickRun()에서 5초마다 자동 저장 ② 탭이 닫히거나 화면이 꺼지는 순간에도 한 번 더 저장
+   ③ 다음에 앱을 열었을 때 저장된 게 있으면 복구를 제안 — 3중 안전장치. */
+const RUN_SNAPSHOT_KEY="run2080_active_run";
+function saveRunSnapshot(){if(!RUN||!RUN.active)return;
+  try{localStorage.setItem(RUN_SNAPSHOT_KEY,JSON.stringify({
+    mode:RUN.mode,title:RUN.title,steps:RUN.steps,planIdx:RUN.planIdx,refDist:RUN.refDist,refTimeSec:RUN.refTimeSec,
+    stepI:RUN.stepI,stepStartT:RUN.stepStartT,stepStartD:RUN.stepStartD,
+    startTs:RUN.startTs,pausedMs:RUN.pausedMs||0,dist:RUN.dist,pts:RUN.pts,laps:RUN.laps,
+    lastLapD:RUN.lastLapD,lastAnnD:RUN.lastAnnD,
+    trackMode:RUN.trackMode,trackLane:RUN.trackLane,trackLapDist:RUN.trackLapDist,trackStartPoint:RUN.trackStartPoint,
+    trackAway:RUN.trackAway,trackLapsDone:RUN.trackLapsDone,distAtLapStart:RUN.distAtLapStart,
+    overSpeedCount:RUN.overSpeedCount,savedAt:Date.now()}));}catch(e){}}
+function clearRunSnapshot(){try{localStorage.removeItem(RUN_SNAPSHOT_KEY);}catch(e){}}
+window.addEventListener("pagehide",()=>{if(RUN&&RUN.active)saveRunSnapshot();});
+window.addEventListener("beforeunload",()=>{if(RUN&&RUN.active)saveRunSnapshot();});
+function checkRunRecovery(){let snap;
+  try{snap=JSON.parse(localStorage.getItem(RUN_SNAPSHOT_KEY)||"null");}catch(e){snap=null;}
+  if(!snap)return;
+  const elapsedSec=Math.max(0,Math.floor((snap.savedAt-snap.startTs-(snap.pausedMs||0))/1000));
+  const km=+((snap.dist||0)/1000).toFixed(2);
+  const ageMin=Math.round((Date.now()-snap.savedAt)/60000);
+  document.getElementById("run-recovery-body").innerHTML=
+    `<div style="font-size:12.5px;color:#cbd5e1;line-height:1.7">이전에 마무리하지 못한 운동 기록이 있습니다.<br>
+     <strong style="color:#fff">${km}km · ${fmtDur(elapsedSec)}</strong> · ${ageMin<1?"방금 전":ageMin+"분 전"}까지 기록됨</div>`;
+  window._pendingRecoverySnap=snap;
+  document.getElementById("runRecoveryModal").classList.add("active");}
+function recoveryResume(){const snap=window._pendingRecoverySnap;document.getElementById("runRecoveryModal").classList.remove("active");
+  if(!snap)return;
+  RUN={mode:snap.mode,title:snap.title,steps:snap.steps,planIdx:snap.planIdx,refDist:snap.refDist,refTimeSec:snap.refTimeSec,
+    stepI:snap.stepI||0,stepStartT:snap.stepStartT||0,stepStartD:snap.stepStartD||0,
+    voice:(document.getElementById("run-voice")||{}).value||"on",ann:0.5,
+    startTs:snap.startTs,elapsed:0,paused:false,active:true,dist:snap.dist||0,pts:snap.pts||[],laps:snap.laps||[],
+    lastLapD:snap.lastLapD||0,lastAnnD:snap.lastAnnD||0,prev:null,prev2:null,lastCoach:0,
+    acc:null,bestAcc:null,accEMA:null,recent:[],allSegs:[],overSpeedCount:snap.overSpeedCount||0,
+    trackMode:snap.trackMode,trackLane:snap.trackLane,trackLapDist:snap.trackLapDist,trackStartPoint:snap.trackStartPoint,
+    trackAway:snap.trackAway,trackLapsDone:snap.trackLapsDone||0,distAtLapStart:snap.distAtLapStart||0,
+    pausedMs:snap.pausedMs||0,pauseStartTs:null,tickCount:0,metroWant:{on:false},metro:null};
+  document.getElementById("run-setup-card").style.display="none";
+  document.getElementById("run-live-panel").style.display="block";
+  document.getElementById("live-step-card").style.display=RUN.steps?"block":"none";
+  requestWakeLock();stopPrewarmGps();
+  watchId=navigator.geolocation.watchPosition(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+  startSilentKeepAlive();
+  if(RUN.steps)renderLiveStep();
+  renderLaps();updateLiveAudioButtons();
+  showToast("이전 운동을 이어서 진행합니다.");
+  runTimer=setInterval(tickRun,1000);tickRun();}
+function recoverySaveOnly(){const snap=window._pendingRecoverySnap;document.getElementById("runRecoveryModal").classList.remove("active");
+  if(!snap)return;
+  RUN={mode:snap.mode,title:snap.title,steps:snap.steps,planIdx:snap.planIdx,refDist:snap.refDist,refTimeSec:snap.refTimeSec,
+    startTs:snap.startTs,elapsed:Math.max(0,Math.floor((snap.savedAt-snap.startTs-(snap.pausedMs||0))/1000)),
+    dist:snap.dist||0,pts:snap.pts||[],laps:snap.laps||[],
+    trackMode:snap.trackMode,trackLane:snap.trackLane,trackLapsDone:snap.trackLapsDone||0,
+    overSpeedCount:snap.overSpeedCount||0,allSegs:[]};
+  clearRunSnapshot();finishRunSession();}
+function recoveryDiscard(){document.getElementById("runRecoveryModal").classList.remove("active");clearRunSnapshot();window._pendingRecoverySnap=null;}
 function isAndroid(){return /Android/i.test(navigator.userAgent||"");}
 function showBatteryGuideIfNeeded(){
   if(!isAndroid())return;
@@ -6181,6 +6267,26 @@ function saveMetroDefaults(){const bpm=parseInt(document.getElementById("set-met
 function updateTrackLaneInfo(){const lane=parseInt(document.getElementById("run-track-lane").value);
   const info=document.getElementById("run-track-info");
   info.innerHTML=`<i class="bi bi-record-circle"></i> ${lane}레인 규정거리 <strong>${TRACK_LANE_DIST[lane-1].toFixed(2)}m</strong>/바퀴 — 출발점으로 돌아올 때마다 정확한 규정거리로 자동 보정됩니다. 워크아웃 구간(인터벌)의 거리 판정에도 이 보정값이 그대로 쓰입니다.`;}
+/* ===== 활동 종류 선택 (러닝 탭 재구성) =====
+   bucket:"run"(달리기·트랙·트레일)은 기존 전체 메뉴(모드선택·존·메트로놈 등) 그대로.
+   그 외(걷기·등산·사이클·수영·헬스 등)는 간소화된 메뉴 — GPS 지원 여부(gps 필드)에 따라
+   거리+시간을 재는지, 시간만 재는지가 자동으로 정해진다. */
+let selectedActType=null;
+function populateActTypeSelect(){const sel=document.getElementById("run-acttype");if(!sel)return;
+  sel.innerHTML=ACTIVITY_TYPES.map(a=>`<option value="${a.id}">${a.label}</option>`).join("");
+  sel.value="run";onActTypeChange();}
+function onActTypeChange(){
+  const id=document.getElementById("run-acttype").value;
+  selectedActType=ACT_BY_ID[id]||ACT_BY_ID.run;
+  const isRun=selectedActType.bucket==="run";
+  document.getElementById("run-mode-block").style.display=isRun?"block":"none";
+  document.getElementById("run-simple-block").style.display=isRun?"none":"block";
+  document.getElementById("run-simple-note").style.display=isRun?"none":"block";
+  if(!isRun){
+    const gpsTxt=selectedActType.gps?`GPS로 거리·시간을 함께 측정합니다.`:`시간만 측정합니다(이 활동은 GPS 거리 측정 대상이 아닙니다).`;
+    document.getElementById("run-simple-desc").innerHTML=`<i class="bi ${selectedActType.icon}"></i> <strong>${selectedActType.label}</strong> — ${gpsTxt}`;
+  }
+  if(isRun)onRunModeChange();}
 function onRunModeChange(){const m=document.getElementById("run-mode").value;
   document.getElementById("run-workout-row").style.display=m==="workout"?"block":"none";
   document.getElementById("run-free-target-row").style.display=m==="free"?"block":"none";
@@ -6242,7 +6348,9 @@ function renderWorkoutPreview(){const box=document.getElementById("run-workout-p
     ${workoutProfileBar(w)}
     <div style="border-top:1px solid var(--border-light);padding-top:8px">${w.steps.map(s=>runWorkoutStepLine(s,w.refDist,w.refTimeSec)).join("")}</div>
   </div>`;}
-function prepareRunTab(){onRunModeChange();
+function prepareRunTab(){
+  const actSel=document.getElementById("run-acttype");
+  if(actSel&&!actSel.options.length)populateActTypeSelect();else onActTypeChange(); // 최초 1회만 옵션을 채움 — 매번 다시 채우면 선택해둔 활동이 초기화되어버림
   const st=document.getElementById("gps-status"),warn=document.getElementById("gps-precheck");
   if(!navigator.geolocation){st.textContent="GPS 미지원";st.className="zone-badge z5";
     if(warn){warn.style.display="block";warn.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#ef4444"></i> 이 브라우저는 위치 기능을 지원하지 않습니다.`;}return;}
@@ -6283,25 +6391,30 @@ async function requestWakeLock(){try{if("wakeLock"in navigator)wakeLock=await na
 function releaseWakeLock(){try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}}
 const GPS_GOOD_ACC=20,GPS_TIMEOUT_MS=20000;
 function startRunSession(){
-  if(!navigator.geolocation){showToast("이 브라우저는 GPS를 지원하지 않습니다.");return;}
-  const mode=document.getElementById("run-mode").value;let steps=null,title="자유 달리기",planIdx=null,refDist=null,refTimeSec=null;
-  if(mode==="free"){const fs=buildFreeRunStep();if(fs){steps=fs;title=fs[0].label;}}
-  else if(mode==="plan"){const src=pendingRunPlan||{date:TODAY,idx:0,text:(dayPlans(TODAY)[0]||null),fromLog:false};
-    if(src.text){steps=planToSteps(src.text);title=src.text.replace(/\s*@[\d:]+\/km/g,"");planIdx=(!src.fromLog&&src.date===TODAY)?src.idx:null;}
-    else{showToast("계획이 없어 자유 달리기로 시작합니다.");}
-    pendingRunPlan=null;} // 사용 후 초기화 — 다음 진입 시 다시 오늘 계획이 기본값
-  else if(mode==="workout"){const id=document.getElementById("run-workout-pick").value;
-    const w=(DB.workouts||[]).find(x=>x.id===id);
-    if(!w){showToast("워크아웃을 선택하세요.");return;}steps=flattenSteps(w.steps);title=w.name;refDist=w.refDist||null;refTimeSec=w.refTimeSec||null;}
-  const trackOn=document.getElementById("run-track-toggle").checked;
-  let trackLane=null,trackLapDist=null;
-  if(trackOn){trackLane=parseInt(document.getElementById("run-track-lane").value);trackLapDist=TRACK_LANE_DIST[trackLane-1];title=title+` (${trackLane}레인)`;}
-  const metroOn=document.getElementById("run-metro-toggle").checked;
-  const metroBpm=metroOn?(parseInt(document.getElementById("run-metro-bpm").value)||170):null;
-  const metroSound=metroOn?document.getElementById("run-metro-sound").value:null;
+  const actType=selectedActType||ACT_BY_ID.run;
+  const isRun=actType.bucket==="run";
+  if(actType.gps&&!navigator.geolocation){showToast("이 브라우저는 GPS를 지원하지 않습니다.");return;}
+  let mode="free",steps=null,title=actType.label,planIdx=null,refDist=null,refTimeSec=null;
+  let trackOn=false,trackLane=null,trackLapDist=null,metroOn=false,metroBpm=null,metroSound=null;
+  if(isRun){
+    mode=document.getElementById("run-mode").value;
+    if(mode==="free"){const fs=buildFreeRunStep();if(fs){steps=fs;title=fs[0].label;}}
+    else if(mode==="plan"){const src=pendingRunPlan||{date:TODAY,idx:0,text:(dayPlans(TODAY)[0]||null),fromLog:false};
+      if(src.text){steps=planToSteps(src.text);title=src.text.replace(/\s*@[\d:]+\/km/g,"");planIdx=(!src.fromLog&&src.date===TODAY)?src.idx:null;}
+      else{showToast("계획이 없어 자유 달리기로 시작합니다.");}
+      pendingRunPlan=null;} // 사용 후 초기화 — 다음 진입 시 다시 오늘 계획이 기본값
+    else if(mode==="workout"){const id=document.getElementById("run-workout-pick").value;
+      const w=(DB.workouts||[]).find(x=>x.id===id);
+      if(!w){showToast("워크아웃을 선택하세요.");return;}steps=flattenSteps(w.steps);title=w.name;refDist=w.refDist||null;refTimeSec=w.refTimeSec||null;}
+    trackOn=document.getElementById("run-track-toggle").checked;
+    if(trackOn){trackLane=parseInt(document.getElementById("run-track-lane").value);trackLapDist=TRACK_LANE_DIST[trackLane-1];title=title+` (${trackLane}레인)`;}
+    metroOn=document.getElementById("run-metro-toggle").checked;
+    metroBpm=metroOn?(parseInt(document.getElementById("run-metro-bpm").value)||170):null;
+    metroSound=metroOn?document.getElementById("run-metro-sound").value:null;}
   RUN={mode,title,steps,planIdx,refDist,refTimeSec,stepI:0,stepStartT:0,stepStartD:0,
+    actType:actType.id,actGps:actType.gps,actUnit:actType.unit,
     voice:document.getElementById("run-voice").value,ann:parseFloat(document.getElementById("run-announce").value),
-    startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:prewarmBestAcc,bestAcc:prewarmBestAcc,accEMA:prewarmBestAcc,
+    startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,
     trackMode:trackOn,trackLane,trackLapDist,trackStartPoint:null,trackAway:false,trackLapsDone:0,distAtLapStart:0,
     metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null};
   document.getElementById("run-setup-card").style.display="none";
@@ -6309,9 +6422,17 @@ function startRunSession(){
   const eb=document.getElementById("gps-error-banner");if(eb)eb.style.display="none";
   document.getElementById("live-step-card").style.display=steps?"block":"none";
   requestWakeLock();
-  stopPrewarmGps(); // 예열 감시를 종료하고 세션 감시(거리 계산 포함)로 전환 — 예열된 정확도(bestAcc)는 이어받음
-  watchId=navigator.geolocation.watchPosition(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
-  beginGpsAcquire();}
+  if(actType.gps){
+    stopPrewarmGps(); // 예열 감시를 종료하고 세션 감시(거리 계산 포함)로 전환 — 예열된 정확도(bestAcc)는 이어받음
+    watchId=navigator.geolocation.watchPosition(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+    beginGpsAcquire();
+  }else{
+    stopPrewarmGps();
+    document.getElementById("countdownOverlay").classList.add("active");
+    document.getElementById("gps-acquire-stage").style.display="none";
+    document.getElementById("gps-countdown-stage").style.display="block";
+    runCountdown(3);} // GPS가 필요 없는 활동은 신호 대기 없이 바로 카운트다운
+}
 function beginGpsAcquire(){
   const ov=document.getElementById("countdownOverlay");
   document.getElementById("gps-acquire-stage").style.display="block";
@@ -6375,9 +6496,9 @@ function buildRunStartAnnouncement(){ // 이번 러닝 자체의 조건만 안�
 function activateRun(){if(!RUN)return;
   RUN.active=true;RUN.startTs=Date.now();RUN.elapsed=0;RUN.dist=0;RUN.pts=[];RUN.laps=[];RUN.prev2=null;
   RUN.lastLapD=0;RUN.lastAnnD=0;RUN.lastCoach=0;RUN.stepI=0;RUN.stepStartT=0;RUN.stepStartD=0;RUN.recent=[];RUN.allSegs=[];RUN.overSpeedCount=0;
+  RUN.pausedMs=0;RUN.pauseStartTs=null;RUN.tickCount=0; // elapsed을 실제 시각 기반으로 계산하기 위한 누적 일시정지 시간
   if(RUN.trackMode){RUN.trackStartPoint=null;RUN.trackAway=false;RUN.trackLapsDone=0;RUN.distAtLapStart=0;}
   startSilentKeepAlive();alog("run-start"); // 화면이 잠겨도 앱이 살아있도록(무음 재생 + MediaSession 등록)
-  setTimeout(showBatteryGuideIfNeeded,1500); // 첫 러닝 때 배터리 설정 안내(한 번만)
   if(RUN.metroWant&&RUN.metroWant.on)startMetronome(RUN.metroWant.bpm,RUN.metroWant.sound);
   updateLiveAudioButtons();
   renderLiveStep();
@@ -6497,7 +6618,10 @@ function onGpsPoint(pos){if(!RUN||RUN.paused)return;
 function curPaceSec(){if(!RUN||!RUN.recent||!RUN.recent.length)return null;
   const d=RUN.recent.reduce((s,x)=>s+x.d,0),t=RUN.recent.reduce((s,x)=>s+x.dt,0);
   return d>5?t/(d/1000):null;}
-function tickRun(){if(!RUN||RUN.paused)return;RUN.elapsed++;
+function tickRun(){if(!RUN||RUN.paused)return;
+  RUN.elapsed=Math.max(0,Math.floor((Date.now()-RUN.startTs-(RUN.pausedMs||0))/1000)); // 순차증가(RUN.elapsed++) 대신 실제 경과시각으로 계산 — 백그라운드에서 setInterval이 지연되어도 항상 정확
+  RUN.tickCount=(RUN.tickCount||0)+1;
+  if(RUN.tickCount%5===0)saveRunSnapshot(); // 5초마다 진행 중인 운동을 저장(앱이 강제 종료돼도 복구 가능하도록)
   const km=(RUN.trackMode?trackCalibratedDist():RUN.dist)/1000,cp=curPaceSec(),ap=km>0.05?RUN.elapsed/km:null;
   document.getElementById("live-dist").textContent=km.toFixed(2);
   document.getElementById("live-time").textContent=fmtDur(RUN.elapsed);
@@ -6569,7 +6693,8 @@ function reviveRunAudio(){if(!RUN||!RUN.active)return;
     if(RUN.metro.useTrack)startClickTrack(RUN.metro.bpm,RUN.metro.sound);
     else metronomeTick();}
   updateLiveAudioButtons();}
-document.addEventListener("visibilitychange",()=>{alog(document.hidden?"hidden":"visible");if(!document.hidden)reviveRunAudio();});
+document.addEventListener("visibilitychange",()=>{alog(document.hidden?"hidden":"visible");
+  if(!document.hidden){reviveRunAudio();if(RUN&&RUN.active&&!RUN.paused)tickRun();}}); // 화면 복귀 즉시 거리·시간 표시를 최신값으로 강제 갱신(다음 1초 틱까지 기다리지 않음)
 window.addEventListener("focus",reviveRunAudio); // 전화 통화 후 복귀 등
 window.addEventListener("pageshow",reviveRunAudio);
 /* 전화가 오면 오디오 컨텍스트가 중단(interrupted/suspended)되는데, 통화가 끝나도 자동으로 재개되지 않는 기기가 있어
@@ -6641,6 +6766,8 @@ function toggleLiveMetro(){if(!RUN)return;
     startMetronome(bpm,snd);showToast(`메트로놈을 켰습니다 (${bpm}spm).`);}
   updateLiveAudioButtons();}
 function togglePauseRun(){if(!RUN)return;RUN.paused=!RUN.paused;
+  if(RUN.paused){RUN.pauseStartTs=Date.now();}
+  else if(RUN.pauseStartTs){RUN.pausedMs=(RUN.pausedMs||0)+(Date.now()-RUN.pauseStartTs);RUN.pauseStartTs=null;}
   document.getElementById("pause-btn-label").textContent=RUN.paused?"재개":"일시정지";
   if(RUN.paused){speak("일시정지");releaseWakeLock();pauseMetronomeOnly();}else{speak("재개합니다");requestWakeLock();RUN.prev=null;resumeMetronome();}}
 function lapsSummaryText(laps,trackMode){ // 랩 기록을 "1바퀴 1:32, 2바퀴 1:35..." 형태의 읽기 쉬운 문자열로 변환
@@ -6659,8 +6786,9 @@ function bestSegmentPace(segs){ // segs: [{d,dt}...] — 롤링 윈도우로 가
         if(pace>0&&(best===null||pace<best))best=pace;break;}}}
   return best;}
 function finishRunSession(){if(!RUN)return;
+  clearRunSnapshot(); // 정상적으로 종료됐으니 복구용 스냅샷은 더 이상 필요 없음
   const finalDist=RUN.trackMode?trackCalibratedDist():RUN.dist;
-  if(finalDist<50&&!confirm("측정 거리가 매우 짧습니다(50m 미만). 그래도 저장할까요?")){return;}
+  if(RUN.actGps!==false&&finalDist<50&&!confirm("측정 거리가 매우 짧습니다(50m 미만). 그래도 저장할까요?")){return;} // 시간 기준 활동(수영·헬스 등)은 거리가 0이어도 정상이므로 이 확인을 건너뜀
   stopMetronome();stopSilentKeepAlive();
   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
   clearInterval(runTimer);runTimer=null;releaseWakeLock();
@@ -6673,10 +6801,10 @@ function finishRunSession(){if(!RUN)return;
     if(planKm>0&&km<planKm*0.95)showToast(`계획 ${planKm}km 중 실제 ${km}km 완료 — 실측 기록으로 저장됩니다.`);}
   // 기록 모달 프리필
   const z=calculatedZones[2]||{min:130,max:150};
-  document.getElementById("m-log-editid").value="";document.getElementById("log-modal-title").textContent="GPS 러닝 결과 저장";
+  document.getElementById("m-log-editid").value="";document.getElementById("log-modal-title").textContent=`${(ACT_BY_ID[RUN.actType]||ACT_BY_ID.run).label} 결과 저장`;
   document.getElementById("m-log-date").value=TODAY;
   document.getElementById("m-log-time").value=new Date(RUN.startTs).toTimeString().slice(0,5);
-  document.getElementById("m-log-type").value="run";
+  document.getElementById("m-log-type").value=RUN.actType||"run";
   document.getElementById("m-log-dist").value=km;document.getElementById("m-log-duration").value=min;
   document.getElementById("m-log-avghr").value=Math.round((z.min+z.max)/2);document.getElementById("m-log-maxhr").value=z.max;
   const lapSummary=pendingLaps?lapsSummaryText(pendingLaps.laps,pendingLaps.trackMode):"";
@@ -7585,6 +7713,7 @@ function wireOnboardDrag(){const vp=document.getElementById("onboardViewport");i
   window.addEventListener("mouseup",e=>obDragEnd(e.clientX));}
 if(shouldShowOnboarding())showOnboarding();
 handleStravaCallback(); // Strava 인증 후 돌아왔을 때(?code=...) 처리
+checkRunRecovery(); // 강제종료 등으로 중단된 운동이 있으면 복구 제안
 </script>
 </body>
 </html>
