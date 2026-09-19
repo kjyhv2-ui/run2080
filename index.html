@@ -2296,8 +2296,12 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.16.1",APP_BUILD="2026-09-19";
+const APP_VERSION="2.17.0",APP_BUILD="2026-09-19";
 const CHANGELOG=[
+  {v:"2.17.0",d:"2026-09-19",title:"운동 중 뒤로가기로 앱이 빠져나가는 문제 해결, 아이콘 배경 복원",items:[
+    "[긴급수정] 운동 측정 중 안드로이드 뒤로가기를 누르면 앱이 통째로 빠져나가던 문제 해결 — 운동 중에는 뒤로가기를 가로채 화면에 머무르게 하고 안내 문구 표시",
+    "종료·저장이 완료된 뒤에는 뒤로가기가 다시 정상적으로 동작",
+    "앱 아이콘을 배경이 있는 원래 이미지로 복원 — 투명 배경이 일부 안드로이드 런처에서 부자연스럽게 보이는 문제 방지"]},
   {v:"2.16.1",d:"2026-09-19",title:"앱 잠금 — PIN 방식 + 10회 실패 시 10분 대기",items:[
     "비밀번호를 자유 문자열에서 숫자 4자리(PIN) 전용으로 변경",
     "10회 연속으로 틀리면 10분간 재시도를 막는 잠금 시간 추가 — 남은 시간이 실시간으로 표시됨",
@@ -6040,6 +6044,21 @@ function copyAudioLog(){const log=Store.get("audioLog")||[];
    ① tickRun()에서 5초마다 자동 저장 ② 탭이 닫히거나 화면이 꺼지는 순간에도 한 번 더 저장
    ③ 다음에 앱을 열었을 때 저장된 게 있으면 복구를 제안 — 3중 안전장치. */
 const RUN_SNAPSHOT_KEY="run2080_active_run";
+/* ===== 운동 중 뒤로가기 방지 =====
+   안드로이드 뒤로가기(제스처/버튼)를 누르면 브라우저가 "이전 페이지로"로 처리해서 앱이 통째로
+   빠져나가버렸다. 운동이 진행 중일 때는 더미 히스토리를 쌓아두고 popstate를 가로채서,
+   뒤로가기가 눌려도 화면에 그대로 머물게 하고 안내만 띄운다. */
+let runBackGuardArmed=false;
+function armRunBackGuard(){if(runBackGuardArmed)return;runBackGuardArmed=true;
+  history.pushState({runGuard:true},"",location.href);
+  window.addEventListener("popstate",onRunBackPress);}
+function disarmRunBackGuard(){if(!runBackGuardArmed)return;runBackGuardArmed=false;
+  window.removeEventListener("popstate",onRunBackPress);}
+function onRunBackPress(){
+  if(RUN&&RUN.active){
+    history.pushState({runGuard:true},"",location.href); // 뒤로가기를 취소하고 제자리로 되돌림
+    showToast("운동 중에는 뒤로가기 대신 '일시정지' 또는 '종료 & 저장'을 이용해주세요.");
+  }else{disarmRunBackGuard();}}
 function saveRunSnapshot(){if(!RUN||!RUN.active)return;
   try{localStorage.setItem(RUN_SNAPSHOT_KEY,JSON.stringify({
     mode:RUN.mode,title:RUN.title,steps:RUN.steps,planIdx:RUN.planIdx,refDist:RUN.refDist,refTimeSec:RUN.refTimeSec,
@@ -6083,7 +6102,7 @@ function recoveryResume(){const snap=window._pendingRecoverySnap;document.getEle
   if(RUN.steps)renderLiveStep();
   renderLaps();updateLiveAudioButtons();
   showToast("이전 운동을 이어서 진행합니다.");
-  runTimer=setInterval(tickRun,1000);tickRun();}
+  runTimer=setInterval(tickRun,1000);tickRun();armRunBackGuard();}
 function recoverySaveOnly(){const snap=window._pendingRecoverySnap;document.getElementById("runRecoveryModal").classList.remove("active");
   if(!snap)return;
   RUN={mode:snap.mode,title:snap.title,steps:snap.steps,planIdx:snap.planIdx,refDist:snap.refDist,refTimeSec:snap.refTimeSec,
@@ -6621,7 +6640,8 @@ function activateRun(){if(!RUN)return;
   updateLiveAudioButtons();
   renderLiveStep();
   speak(buildRunStartAnnouncement());
-  runTimer=setInterval(tickRun,1000);}
+  runTimer=setInterval(tickRun,1000);
+  armRunBackGuard();}
 function isSecureCtx(){try{if(typeof window!=="undefined"&&window.isSecureContext===true)return true;
   if(typeof location==="undefined")return false;
   return location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1";}catch(e){return false;}}
@@ -6907,6 +6927,7 @@ function finishRunSession(){if(!RUN)return;
   clearRunSnapshot(); // 정상적으로 종료됐으니 복구용 스냅샷은 더 이상 필요 없음
   const finalDist=RUN.trackMode?trackCalibratedDist():RUN.dist;
   if(RUN.actGps!==false&&finalDist<50&&!confirm("측정 거리가 매우 짧습니다(50m 미만). 그래도 저장할까요?")){return;} // 시간 기준 활동(수영·헬스 등)은 거리가 0이어도 정상이므로 이 확인을 건너뜀
+  disarmRunBackGuard(); // 이제부터는 정말 종료되는 경로 — 뒤로가기를 다시 정상적으로 허용
   stopMetronome();stopSilentKeepAlive();
   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
   clearInterval(runTimer);runTimer=null;releaseWakeLock();
