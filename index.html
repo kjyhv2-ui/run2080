@@ -275,6 +275,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="card-header"><div class="card-title"><i class="bi bi-infinity" style="color:#38bdf8"></i> 나의 러닝 스토리</div></div>
         <div id="lifetime-body"></div>
       </div>
+      <div class="card" id="todaynotify-card" style="margin-bottom:16px;display:none;border-left:3px solid #10b981">
+        <div class="card-header"><div class="card-title"><i class="bi bi-bell-fill" style="color:#10b981"></i> 오늘의 운동 알림</div></div>
+        <div id="todaynotify-body"></div>
+      </div>
       <div class="card" id="onthisday-card" style="margin-bottom:16px;display:none;border-left:3px solid #fcd34d">
         <div class="card-header"><div class="card-title"><i class="bi bi-clock-history" style="color:#fcd34d"></i> 1년 전 오늘</div></div>
         <div id="onthisday-body"></div>
@@ -646,6 +650,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
       </div>
       <div class="card">
+        <div class="card-header"><div class="card-title"><i class="bi bi-bar-chart-steps"></i> 훈련부하 포커스 (최근 4주)</div></div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:10px">무산소·고강도유산소·저강도유산소로 나눠, 최근 12주 평균 대비 지금 얼마나 뛰고 있는지 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"와 같은 방식입니다.</div>
+        <div id="loadFocusChart"></div>
+      </div>
+      <div class="card">
         <div class="card-header"><div class="card-title"><i class="bi bi-graph-up"></i> 레이스 예상 성과 추세</div>
           <select id="race-trend-window" style="width:auto" onchange="onRaceTrendWindowChange()">
             <option value="0">현재</option><option value="7">7일(1주)</option><option value="14">2주</option><option value="28">4주</option><option value="90" selected>3개월</option>
@@ -824,6 +833,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">화면을 끈 동안 메트로놈·음성이 멈추면, 그 순간 무엇이 중단됐는지 여기에 기록됩니다. 러닝 후 열어보시고 <strong>복사해서 알려주시면</strong> 정확한 원인을 찾을 수 있습니다.</div>
         <div id="audio-log-body"></div>
       </div></div>
+      <div class="card" id="sec-10-15">
+        <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-15')"><div class="card-title"><i class="bi bi-bell-fill" style="color:#10b981"></i> 운동 알림</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-15" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-15">
+        <div id="notify-permission-row" style="margin-bottom:12px"></div>
+        <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px"><input type="checkbox" id="notify-enabled" style="width:18px;height:18px" onchange="saveNotifySettings()"> 운동 알림 사용</label>
+        <div class="form-group"><label>기본 알림 시점</label>
+          <select id="notify-default-lead" onchange="saveNotifySettings()">
+            <option value="15">15분 전</option><option value="30">30분 전</option><option value="60" selected>1시간 전</option><option value="120">2시간 전</option><option value="custom">직접 입력(분)</option>
+          </select></div>
+        <div class="form-group" id="notify-custom-row" style="display:none"><label>직접 입력 (분 전)</label><input type="number" id="notify-custom-min" placeholder="예: 90" onchange="saveNotifySettings()"></div>
+        <div style="font-size:11px;color:#64748b;line-height:1.7"><i class="bi bi-info-circle"></i> 이 앱은 서버가 없는 구조라, <strong>브라우저(앱)가 열려있는 동안에만</strong> 알림이 정확히 울립니다. 화면이 꺼져 있어도 어느 정도는 동작하지만, 몇 시간씩 완전히 닫아두면 못 울릴 수 있습니다. 대시보드의 "오늘의 운동 알림"에서 시각·리드타임을 설정하세요.</div>
+      </div></div>
       <div class="card" id="sec-10-14">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-14')"><div class="card-title"><i class="bi bi-shield-lock-fill" style="color:#38bdf8"></i> 앱 잠금</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-14" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-14">
         <div id="applock-settings-body"></div>
@@ -855,6 +875,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <button class="btn btn-sm" style="flex:1" onclick="saveMetroDefaults()"><i class="bi bi-save"></i> 저장</button>
           <button class="btn btn-sm btn-secondary" style="flex:1" onclick="previewMetroSound('set-metro-sound')"><i class="bi bi-volume-up"></i> 미리듣기</button>
         </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light)">
+          <div style="font-size:12.5px;font-weight:700;color:#e2e8f0;margin-bottom:4px"><i class="bi bi-calculator"></i> 추천 케이던스 계산기</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:10px">키·체중·나이·성별·수준은 프로필 값이 화면에 없어도 자동으로 반영됩니다.</div>
+          <div class="grid-2col" style="gap:10px;margin-bottom:8px">
+            <div class="form-group" style="margin-bottom:0"><label>운동 목표</label>
+              <select id="cad-goal" onchange="renderCadenceCalc()">
+                <option value="endurance">지구력 향상</option><option value="speed">속도 향상</option><option value="injury">부상방지(가벼운 조깅)</option>
+              </select></div>
+            <div class="form-group" style="margin-bottom:0"><label>거리 조건</label>
+              <select id="cad-disttier" onchange="renderCadenceCalc()">
+                <option value="short">단거리 (5K 이하)</option><option value="mid" selected>중거리 (10K~하프)</option><option value="long">장거리 (풀코스 이상)</option>
+              </select></div>
+          </div>
+          <div class="form-group"><label>기준 페이스 (선택 — 비워두면 내 기록 기준 자동)</label><input type="text" id="cad-pace" placeholder="예: 5:30" oninput="renderCadenceCalc()"></div>
+          <div id="cadence-calc-result"></div>
+        </div>
       </div></div>
       <div class="card" id="sec-10-4">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-4')"><div class="card-title"><i class="bi bi-play-btn-fill" style="color:#38bdf8"></i> 인트로 화면 편집</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-4" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-4">
@@ -866,6 +902,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-10')"><div class="card-title"><i class="bi bi-tag" style="color:#a855f7"></i> 버전 정보</div>
           <span class="zone-badge z4" id="version-badge">v—</span><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-10" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-10">
         <div id="version-body"></div>
+      </div></div>
+      <div class="card" id="sec-10-16">
+        <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-16')"><div class="card-title"><i class="bi bi-shield-check" style="color:#10b981"></i> 자체진단</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-16" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-16">
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px">핵심 기능이 정상 배선되어 있는지 자동으로 점검합니다. 앱을 열 때마다 조용히 한 번 실행되며(콘솔에만 기록), 여기서 직접 눌러 결과를 볼 수도 있습니다.</div>
+        <button class="btn btn-sm" style="width:100%;margin-bottom:10px" onclick="renderSelfTestUI()"><i class="bi bi-play-fill"></i> 지금 진단 실행</button>
+        <div id="selftest-result"></div>
       </div></div>
       <div class="card" id="sec-10-5">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-5')"><div class="card-title"><i class="bi bi-lightbulb" style="color:#fcd34d"></i> 사용 방법</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-5" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-5">
@@ -1358,6 +1400,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">나의 러닝 인생</strong> — 대시보드 상단에 기록이 시작된 날부터 오늘까지의 전체 조망이 표시됩니다. 누적 거리·시간·운동 횟수·완주 대회 수와 함께, 누적 거리를 지구 둘레(40,075km)와 비교한 "지구 O%를 뛴 셈" 문구가 함께 나옵니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">1년 전 오늘</strong> — 오늘과 같은 날짜(월/일)에 과거 어느 해든 운동 기록이나 일지가 있으면 대시보드에 자동으로 보여줍니다. 여러 해에 기록이 있으면 각 연도별로 모두 표시됩니다. 기록이 없는 날짜에는 카드 자체가 나타나지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">자체진단</strong> — 설정 → 자체진단에서 핵심 기능의 배선(HTML 버튼이 실제 존재하는 함수를 가리키는지, 과거 있었던 버그 패턴이 재발하지 않았는지, 핵심 계산이 예외 없이 도는지)을 자동으로 점검합니다. 앱을 열 때마다 조용히 한 번 실행되어 문제가 있으면 개발자 콘솔에 기록되고, 이 화면에서 직접 실행해 눈으로 결과를 볼 수도 있습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">추천 케이던스 계산기</strong> — 설정의 메트로놈 기본값에서, 목표(속도향상·지구력향상·부상방지)와 거리 조건(단·중·장거리)을 고르면 케이던스(분당 스텝수)를 추천합니다. 키·수준은 프로필 값이 화면에 없어도 자동으로 반영됩니다. VDOT처럼 검증된 회귀식이 있는 건 아니라서, 널리 알려진 페이스별 케이던스 범위와 코칭 원칙(오버스트라이드 방지를 위한 170~180spm 권장 등)을 투명하게 조합한 추정치입니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">훈련부하 포커스</strong> — 통계 탭에서 무산소·고강도유산소·저강도유산소로 나눠 최근 4주 누적 TRIMP를 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"를 참고했습니다. "적정범위"는 개인화된 학습 모델이 없어, 최근 12주 평균을 4주 단위로 환산한 값의 80~120%로 근사합니다(ACWR과 같은 원리).</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">운동 알림</strong> — 대시보드의 "오늘의 운동 알림"에서 각 계획의 시각을 정하고 알림을 켜면, 설정한 시간 전(기본 1시간)에 운동 종류를 알려줍니다. 서버가 없는 구조라 <strong>브라우저(앱)가 열려있는 동안에만</strong> 정확히 동작하며, 몇 시간씩 완전히 닫아두면 못 울릴 수 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">앱 잠금</strong> — 이 기기에서 앱을 열 때 비밀번호를 물어보게 할 수 있습니다(설정 → 앱 잠금). 비밀번호는 평문이 아니라 해시로 저장됩니다. 여러 기기에서 같은 계정으로 접속하는 "로그인"은 아니며, 서버 없이 이 기기·이 브라우저에서만 동작하는 잠금입니다. 비밀번호는 숫자 4자리이며, 10회 연속으로 틀리면 10분간 재시도할 수 없습니다(새로고침해도 대기시간은 유지됨). 비밀번호를 잊으면 복구할 방법이 없으니 주의해주세요.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 이어서 진행 (복구)</strong> — 앱이 강제 종료되는 등으로 운동 기록이 중단되면, 다음에 앱을 열 때 자동으로 발견해 "이어서 진행 / 여기까지만 기록 저장 / 삭제" 중 고를 수 있게 안내합니다. 진행 중인 운동은 5초마다 자동으로 저장되어, 최악의 경우에도 5초 안쪽의 기록만 손실됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">활동 종류별 러닝 탭</strong> — 러닝 시작 전 "활동 종류"를 먼저 고릅니다. 달리기·트랙러닝·트레일러닝은 기존처럼 모드·존·메트로놈까지 전체 메뉴가 나오고, 걷기·등산·사이클(야외)은 GPS로 거리와 시간을 함께 재는 간소화 메뉴, 수영·헬스·줄넘기·요가 등은 GPS 없이 시간만 재는 메뉴로 자동 전환됩니다.</div>
@@ -2269,6 +2315,25 @@ svg.leaflet-image-layer.leaflet-interactive path {
 <script>
 "use strict";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   RUN2080 개발 원칙 — 절대 잊지 말 것 (모든 세션·모든 수정에 적용됨)
+   ═══════════════════════════════════════════════════════════════════════════
+   목표: "세상에서 제일 정확하고 사용하기 쉽고 직관적인 러닝앱"
+
+   1. 검증 없는 완료 선언 금지 — 새 기능이나 수정은 추측·논리적 확신만으로 "완료"라고
+      하지 않는다. 실제로 재현 가능한 시나리오를 직접 실행해서 결과를 확인한 뒤에만 끝난 것이다.
+   2. 파괴적 변경 금지 — 기존 코드를 건드릴 땐 아래 runSelfTests()를 통과하는지 반드시
+      확인한다. 특히 str_replace/문자열 치환 후에는 의도치 않게 다른 함수 선언이 함께
+      지워지지 않았는지 확인한다(실제로 이런 사고가 있었다).
+   3. 일관성 — 같은 개념엔 항상 같은 함수·필드명을 재사용한다(fmtDur, fmtPace, zone,
+      DB.profile.height 등). 새 기능을 만들 때 비슷한 기존 함수가 있는지 먼저 확인한다.
+   4. 정직함 — 확실하지 않은 것(외부 API 한도, 브라우저 정책, "검증된 회귀식이 있는가" 등)은
+      추측으로 단정하지 않고 명시적으로 한계를 알린다. 없는 걸 있다고 하지 않는다.
+   5. 시간 낭비 방지 — 매번 새로 테스트 스크립트를 짜지 말고, 아래 runSelfTests()를
+      먼저 돌려 기본적인 배선(wiring)이 안 깨졌는지부터 확인한 뒤, 그 기능 특유의
+      시나리오만 추가로 검증한다.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 /* ===== 당겨서 새로고침(pull-to-refresh) 방지 — CSS(overscroll-behavior)의 보조 폴백. 최상단에서 아래로 당기는 제스처만 막고, 일반 스크롤은 그대로 허용 ===== */
 (function preventPullToRefresh(){
   let startX=0,startY=0,skipBlock=false;
@@ -2296,8 +2361,18 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.17.0",APP_BUILD="2026-09-19";
+const APP_VERSION="2.19.0",APP_BUILD="2026-09-20";
 const CHANGELOG=[
+  {v:"2.19.0",d:"2026-09-20",title:"자체진단 시스템 추가 — 개발 원칙을 코드로 강제",items:[
+    "코드 최상단에 개발 원칙(검증 없는 완료 금지·파괴적 변경 금지·일관성·정직함) 명시",
+    "설정 → 자체진단 추가 — HTML 버튼/입력창이 실제 존재하는 함수를 가리키는지, 과거 버그 패턴(페이스 반올림 이월 등)이 재발하지 않았는지, 핵심 계산 함수들이 예외 없이 도는지 자동 점검",
+    "앱을 열 때마다 조용히 자동 1회 실행되어 콘솔에 기록됨(화면 방해 없음)",
+    "고장을 일부러 주입한 테스트로 이 진단 도구 자체가 실제로 문제를 잡아내는 것까지 확인 — 검증 과정에서 진단 로직 자체의 버그(핸들러 검사 정규식 오탐)도 하나 발견해 수정"]},
+  {v:"2.18.0",d:"2026-09-20",title:"케이던스 추천, 훈련부하 포커스, 운동 알림 추가",items:[
+    "메트로놈 기본값 설정에 케이던스 추천 계산기 통합 — 목표·거리조건·페이스로 계산, 키·수준은 프로필에서 자동 반영",
+    "통계 탭에 가민식 '훈련부하 포커스' 추가 — 무산소·고강도유산소·저강도유산소별 최근 4주 누적과 적정범위(최근 12주 평균 기준) 표시",
+    "운동 알림 기능 추가 — 대시보드에서 오늘 계획별 시각·알림을 설정하면, 지정 시간 전(기본 1시간, 직접 입력 가능)에 운동 종류를 알려주는 브라우저 알림 발송",
+    "인터벌 생성(반복 세트)은 기존에 이미 구현되어 있었음을 확인"]},
   {v:"2.17.0",d:"2026-09-19",title:"운동 중 뒤로가기로 앱이 빠져나가는 문제 해결, 아이콘 배경 복원",items:[
     "[긴급수정] 운동 측정 중 안드로이드 뒤로가기를 누르면 앱이 통째로 빠져나가던 문제 해결 — 운동 중에는 뒤로가기를 가로채 화면에 머무르게 하고 안내 문구 표시",
     "종료·저장이 완료된 뒤에는 뒤로가기가 다시 정상적으로 동작",
@@ -2568,6 +2643,51 @@ let currentSlideIndex=0;
 function uid(){return Math.random().toString(36).slice(2,9);}
 function save(){return Store.set(SKEY,DB);}
 function escapeHtml(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+/* ═══════════════════════════════════════════════════════════════════════════
+   자체진단 시스템 — 위 개발 원칙 2번·5번을 실제로 강제하는 자동 점검 도구.
+   매번 새 Playwright 스크립트를 처음부터 짜는 대신, 이 함수를 먼저 돌려 기본 배선이
+   안 깨졌는지 확인한다. 부팅 시 자동 1회 실행되어 콘솔에 경고를 남기고, 설정 화면에서
+   수동으로도 실행해 결과를 눈으로 볼 수 있다. ①번(핸들러 무결성)이 특히 유용한데,
+   지금까지 세션 중 여러 번 "onclick이 가리키는 함수가 실수로 지워짐" 사고가 있었고,
+   그때마다 매번 수동으로 grep+comm 명령을 돌려서 찾아냈던 걸 자동화한 것이다. */
+function runSelfTests(){
+  const results=[];
+  const check=(name,fn)=>{try{const r=fn();results.push({name,pass:!!r.pass,detail:r.detail||""});}
+    catch(e){results.push({name,pass:false,detail:"예외 발생: "+e.message});}};
+
+  check("① 모든 HTML 핸들러(onclick/onchange/oninput/onkeydown)가 실제 함수로 존재",()=>{
+    const attrs=["onclick","onchange","oninput","onkeydown"],missing=new Set();
+    const jsKeywords=new Set(["if","for","while","switch","function","return","typeof","new","catch","else","confirm","alert"]);
+    document.querySelectorAll("*").forEach(el=>{attrs.forEach(a=>{const v=el.getAttribute(a);
+      if(!v)return;
+      const re=/(?:^|[^.\w])([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;let m; // 앞에 .이 오면(메서드 호출) 제외하고, 한 속성 안의 여러 호출을 전부 검사
+      while((m=re.exec(v))){const name=m[1];
+        if(jsKeywords.has(name))continue;
+        if(typeof window[name]!=="function")missing.add(name);}});});
+    return{pass:missing.size===0,detail:missing.size?"누락된 함수: "+[...missing].join(", "):""};});
+
+  check("② fmtPace 반올림 이월(과거 실제 버그: 5:60 표시)",()=>({pass:fmtPace(359.6)==="6:00"&&fmtPace(299.6)==="5:00"}));
+  check("③ fmtDur 시/분 단위 이월",()=>({pass:fmtDur(3599.6)==="1:00:00"&&fmtDur(59.6)==="1:00"}));
+  check("④ normalizeDB 예외 없이 실행 + 핵심 필드 생성",()=>{normalizeDB();
+    return{pass:typeof DB.records==="object"&&Array.isArray(DB.workouts)&&Array.isArray(DB.shoes)};});
+  check("⑤ recommendCadence 예외 없이 동작 + 범위 클램핑(140~200)",()=>{
+    const c=recommendCadence({paceSec:300,goal:"endurance",distTier:"mid",heightCm:170,runnerType:"club"});
+    const extreme=recommendCadence({paceSec:60,goal:"speed",distTier:"short",heightCm:140,runnerType:"novice"});
+    return{pass:c>=140&&c<=200&&extreme<=200};});
+  check("⑥ loadFocusCompute 예외 없이 동작",()=>({pass:Array.isArray(loadFocusCompute())&&loadFocusCompute().length===3}));
+  check("⑦ 심박존 계산(computeZones) 예외 없이 동작",()=>{const z=computeZones(DB.profile||{});return{pass:z&&z[1]&&z[5]&&z[1].min<z[5].min};});
+  check("⑧ TRIMP/케이던스 등 핵심 상수 배열이 비어있지 않음",()=>({pass:ACTIVITY_TYPES.length>0&&RUNNER_TYPES.length>0&&CHANGELOG.length>0}));
+  check("⑨ 자동저장 관련 함수 존재(운동 데이터 유실 방지 체계)",()=>({pass:typeof saveRunSnapshot==="function"&&typeof checkRunRecovery==="function"&&typeof armRunBackGuard==="function"}));
+  check("⑩ APP_VERSION 형식이 유효(x.y.z)",()=>({pass:/^\d+\.\d+\.\d+$/.test(APP_VERSION)}));
+
+  return results;}
+function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
+  box.innerHTML=`<div style="font-size:11.5px;color:#64748b">진단 실행 중...</div>`;
+  setTimeout(()=>{const results=runSelfTests();const failCount=results.filter(r=>!r.pass).length;
+    box.innerHTML=`<div style="font-size:12.5px;font-weight:700;color:${failCount?"#f87171":"#6ee7b7"};margin-bottom:8px">
+        ${failCount?`⚠️ ${failCount}개 실패`:"✅ 전체 통과 ("+results.length+"개 항목)"}</div>`+
+      results.map(r=>`<div style="font-size:11px;color:${r.pass?"#94a3b8":"#f87171"};padding:3px 0">
+        ${r.pass?"✓":"✗"} ${r.name}${r.detail?`<div style="color:#fca5a5;margin-left:14px">${escHtml(r.detail)}</div>`:""}</div>`).join("");},50);}
 function normalizeDB(){if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
   if(!DB.races||!DB.races.length){const r=DB.race||{name:"내 목표 대회",date:addDays(TODAY,112),target:"SUB3"};
     DB.races=[{id:"r_"+uid(),name:r.name,date:r.date,dist:r.dist||"FULL",targetSec:r.targetSec||TARGET_SEC[r.target]||10800,weeks:r.weeks||16,primary:true}];}
@@ -3782,7 +3902,7 @@ function dashWeekMon(){return addDays(mondayOf(TODAY),-dashWeekOffset*7);}
 function dashWeekEnd(){return addDays(dashWeekMon(),6);}
 function shiftDashWeek(dir){const n=dashWeekOffset+(dir<0?1:-1);if(n<0)return;dashWeekOffset=n;renderDashboard();}
 /* ===== 설정 탭 소주제 접기/펼치기 — 펼침 상태는 기기에 저장되어 다음에 열 때 그대로 ===== */
-const SETTING_SECTIONS=["sec-10-0","sec-10-1","sec-10-2","sec-10-11","sec-10-12","sec-10-13","sec-10-14","sec-10-3","sec-10-4","sec-10-10","sec-10-5","sec-10-6","sec-10-8","sec-10-9"];
+const SETTING_SECTIONS=["sec-10-0","sec-10-1","sec-10-2","sec-10-11","sec-10-12","sec-10-13","sec-10-14","sec-10-15","sec-10-3","sec-10-4","sec-10-10","sec-10-16","sec-10-5","sec-10-6","sec-10-8","sec-10-9"];
 function settingOpenState(){return Store.get("settingOpenState")||{"sec-10-0":true};} // 첫 방문 시 프로필만 펼침
 function applySettingSection(id){const st=settingOpenState(),open=st[id]===true;
   const body=document.getElementById("body-"+id),caret=document.getElementById("caret-"+id);
@@ -4074,7 +4194,7 @@ async function tryUnlockApp(){
     document.getElementById("applock-pw-input").value="";
     if(err)err.style.display="none";
     if(shouldShowOnboarding())showOnboarding(); // 잠금 때문에 미뤄뒀던 나머지 부팅 동작을 이제 진행
-    handleStravaCallback();checkRunRecovery();
+    handleStravaCallback();checkRunRecovery();startNotifyChecker();
   }else{
     DB.appLock.failCount=(DB.appLock.failCount||0)+1;
     document.getElementById("applock-pw-input").value="";
@@ -4156,7 +4276,7 @@ function renderWeekHeatmap(){const box=document.getElementById("week-heatmap");i
     <span>높이 = 거리</span>
   </div>`;}
 function renderDashboard(){
-  renderLifetimeCard();renderOnThisDay();renderYearCompare();
+  renderLifetimeCard();renderOnThisDay();renderYearCompare();renderTodayNotifyCard();
   const r=primaryRace(),cur=currentBlockIndex(),blocks=periodBlocksFor(r);
   document.getElementById("hero-race-title").innerHTML=`<i class="bi bi-trophy-fill" style="color:#fcd34d"></i> ${r.name}`;
   document.getElementById("hero-race-details").innerHTML=`<i class="bi bi-calendar-event"></i> ${r.date} · 목표: <strong>${raceGoalLabel(r)}</strong> · 현재: <span class="zone-badge z4">${cur<0?"준비기":cur>3?"완료":blocks[cur].stage.split(" ")[1]||"진행"}</span>`;
@@ -5022,6 +5142,43 @@ function dominantZone(logs){const t={};let best=null,bmax=0;for(const l of logs)
 let repOffset=0,anaOffset=0; // 0=최근, 1=한 기간 이전...
 function onRepWindowChange(){repOffset=0;renderComplianceReport();}
 function shiftRepWindow(dir){const n=repOffset+(dir<0?1:-1);if(n<0)return;repOffset=n;renderComplianceReport();}
+/* ===== 훈련부하 포커스 (가민식) =====
+   가민 등 GPS 워치의 "Training Load Focus"를 참고한 시각화. 존별 TRIMP를 무산소(Z4~5)/
+   고강도유산소(Z3)/저강도유산소(Z1~2) 3개로 나눠 최근 4주 누적을 보여주고, "적정범위"는
+   가민처럼 기기 내부에 학습된 개인 피트니스 모델이 없으므로, 최근 12주 평균을 4주 단위로
+   환산한 값의 80~120%로 근사한다(이미 있는 ACWR의 급성:만성 비율과 같은 원리). */
+function loadFocusCatOf(zone){return zone>=4?"anaerobic":zone===3?"highAerobic":"lowAerobic";}
+function loadFocusCompute(){
+  const sums4={anaerobic:0,highAerobic:0,lowAerobic:0},sums12={anaerobic:0,highAerobic:0,lowAerobic:0};
+  const start4=addDays(TODAY,-27),start12=addDays(TODAY,-83);
+  Object.keys(DB.calendar).forEach(d=>{if(d<start12||d>TODAY)return;
+    dayLogs(d).forEach(l=>{if(!l.zone||!l.trimp)return;const cat=loadFocusCatOf(l.zone);
+      if(d>=start4)sums4[cat]+=l.trimp;sums12[cat]+=l.trimp;});});
+  const cats=[{id:"anaerobic",label:"무산소",color:"#dc2626"},{id:"highAerobic",label:"고강도유산소",color:"#f59e0b"},{id:"lowAerobic",label:"저강도유산소",color:"#10b981"}];
+  return cats.map(c=>{const cur=sums4[c.id],avg4wkEquiv=sums12[c.id]*(4/12);
+    const rangeMin=avg4wkEquiv*0.8,rangeMax=avg4wkEquiv*1.2;
+    let status="baseline";
+    if(avg4wkEquiv>0){if(cur<rangeMin)status="low";else if(cur>rangeMax)status="high";else status="optimal";}
+    return{...c,cur:Math.round(cur),rangeMin:Math.round(rangeMin),rangeMax:Math.round(rangeMax),status};});}
+const LOADFOCUS_STATUS_LABEL={optimal:"적정 범위",low:"부족",high:"과다",baseline:"기준 데이터 부족"};
+const LOADFOCUS_STATUS_COLOR={optimal:"#10b981",low:"#64748b",high:"#f59e0b",baseline:"#475569"};
+function renderLoadFocusChart(){const box=document.getElementById("loadFocusChart");if(!box)return;
+  const data=loadFocusCompute();
+  const maxVal=Math.max(1,...data.map(d=>Math.max(d.cur,d.rangeMax)))*1.15;
+  const W=300,barH=26,gap=34,padL=88,padR=46,H=data.length*gap+10;
+  let svg=`<svg viewBox="0 0 ${W+padL+padR} ${H}" style="width:100%;height:auto;font-family:inherit">`;
+  data.forEach((d,i)=>{const y=i*gap+6;
+    const x=v=>padL+(v/maxVal)*W;
+    if(d.rangeMax>0)svg+=`<rect x="${x(d.rangeMin)}" y="${y}" width="${x(d.rangeMax)-x(d.rangeMin)}" height="${barH}" fill="#10b981" opacity=".15" rx="4"/>`;
+    svg+=`<rect x="${padL}" y="${y}" width="${W}" height="${barH}" fill="#0d1420" rx="4"/>`;
+    svg+=`<rect x="${padL}" y="${y}" width="${Math.max(2,x(d.cur)-padL)}" height="${barH}" fill="${d.color}" rx="4"/>`;
+    svg+=`<text x="${padL-8}" y="${y+barH/2+4}" text-anchor="end" font-size="11" fill="#cbd5e1">${d.label}</text>`;
+    svg+=`<text x="${padL+W+8}" y="${y+barH/2+4}" font-size="11" fill="${LOADFOCUS_STATUS_COLOR[d.status]}" font-weight="700">${d.cur}</text>`;});
+  svg+=`</svg>`;
+  box.innerHTML=svg+`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:10.5px;color:#64748b">
+    <span><span style="display:inline-block;width:8px;height:8px;background:#10b981;opacity:.3;border-radius:2px;margin-right:3px"></span>적정범위(최근 12주 평균 기준 80~120%)</span></div>`+
+    data.filter(d=>d.status!=="baseline"&&d.status!=="optimal").map(d=>
+      `<div style="font-size:11px;color:${LOADFOCUS_STATUS_COLOR[d.status]};margin-top:4px">· ${d.label}: ${LOADFOCUS_STATUS_LABEL[d.status]} (${d.cur} / 적정 ${d.rangeMin}~${d.rangeMax})</div>`).join("");}
 function onAnaWindowChange(){anaOffset=0;renderAnalyticsCharts();}
 function shiftAnaWindow(dir){const n=anaOffset+(dir<0?1:-1);if(n<0)return;anaOffset=n;renderAnalyticsCharts();}
 function renderComplianceReport(){
@@ -6398,6 +6555,49 @@ function onMetroUiToggle(){const on=document.getElementById("run-metro-toggle").
 function fillMetroDefaultsUI(){const def=DB.metronomeDefault||{bpm:170,sound:"click"};
   const bpmEl=document.getElementById("set-metro-bpm"),soundEl=document.getElementById("set-metro-sound");
   if(bpmEl)bpmEl.value=def.bpm;if(soundEl)soundEl.value=def.sound;}
+/* ===== 케이던스(분당 스텝수) 추천 =====
+   VDOT·Riegel과 같은 원칙 — 개인 비밀 AI모델이 아니라, 공개적으로 알려진 러닝 코칭 원칙을
+   투명한 공식으로 구현한 것이다. 학계에 "키가 몇이면 케이던스는 몇" 같은 검증된 회귀식은
+   없어서(VDOT처럼), 대신 흔히 인용되는 페이스별 케이던스 범위(느린 조깅 150대 ~ 빠른 페이스
+   180대 후반)를 기준선으로 삼고, 널리 알려진 코칭 원칙(오버스트라이드 방지를 위한 170~180spm
+   권장, 초급자는 보폭을 짧고 빠르게 등)으로 보정한다.
+   출처가 명확한 통계식이 아니므로 앱 정보에도 "추정치이며 개인차가 크다"고 명시한다. */
+const CADENCE_PACE_ANCHORS=[[450,150],[420,155],[360,164],[300,170],[240,176],[180,184],[150,188]]; // [페이스(초/km), 기준케이던스(spm)]
+function baseCadenceFromPace(paceSec){
+  const A=CADENCE_PACE_ANCHORS;
+  if(paceSec>=A[0][0])return A[0][1];
+  if(paceSec<=A[A.length-1][0])return A[A.length-1][1];
+  for(let i=0;i<A.length-1;i++){const[p1,c1]=A[i],[p2,c2]=A[i+1];
+    if(paceSec<=p1&&paceSec>=p2)return c1+(c2-c1)*(p1-paceSec)/(p1-p2);}
+  return 170;}
+function recommendCadence(opts){ // opts:{paceSec, goal, distTier, heightCm, runnerType}
+  let c=baseCadenceFromPace(opts.paceSec);
+  if(opts.heightCm){const delta=opts.heightCm-168;c-=delta*0.12;} // 키가 크면 자연스러운 보폭이 커져 케이던스는 살짝 낮아지는 경향(경미한 보정)
+  const levelBoost={novice:5,beginner:4,fun:3,club:1,advanced:0,subelite:0,elite:0};
+  c+=levelBoost[opts.runnerType]!=null?levelBoost[opts.runnerType]:2; // 숙련도가 낮을수록 "짧고 빠르게" 코칭 원칙 반영
+  if(opts.distTier==="short")c+=2;else if(opts.distTier==="long")c-=2; // 단거리는 회전을 조금 더, 장거리는 무리하지 않게
+  if(opts.goal==="speed")c+=4;
+  else if(opts.goal==="injury")c=Math.max(c,172); // 부상방지 목표는 오버스트라이드 방지를 위해 172spm 하한 적용(유명한 코칭 경험칙)
+  return Math.round(Math.min(200,Math.max(140,c)));}
+function currentProfilePaceSec(){const rec=currentBasisRecord();if(!rec)return null;
+  const mp=currentMPace();return mp||null;} // 초/km, 등록된 기록이 없으면 null
+function renderCadenceCalc(){const box=document.getElementById("cadence-calc-result");if(!box)return;
+  const goal=document.getElementById("cad-goal").value,distTier=document.getElementById("cad-disttier").value;
+  const paceInput=(document.getElementById("cad-pace")||{}).value.trim();
+  let paceSec=paceInput?parseTime(paceInput):currentProfilePaceSec();
+  const p=DB.profile||{};
+  if(!paceSec){box.innerHTML=`<div style="font-size:11.5px;color:#64748b">등록된 PR이나 목표 대회 기록이 없어 페이스를 추정할 수 없습니다. 위에 직접 페이스를 입력해주세요(예: 5:30).</div>`;return;}
+  const rec=recommendCadence({paceSec,goal,distTier,heightCm:p.height,runnerType:p.runnerType||"club"});
+  box.innerHTML=`<div style="background:#0d1420;border:1px solid #1e293b;border-radius:10px;padding:14px;text-align:center;margin-bottom:8px">
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px">추천 케이던스 (${paceInput?"직접 입력":"내 기록 기준"} ${fmtPace(paceSec)}/km)</div>
+      <div style="font-size:32px;font-weight:800;color:#38bdf8">${rec}<span style="font-size:14px;color:#64748b"> spm</span></div>
+    </div>
+    <button class="btn btn-sm" style="width:100%" onclick="applyCadenceRecommendation(${rec})"><i class="bi bi-check2-circle"></i> 이 값을 메트로놈 기본값으로 적용</button>
+    <div style="font-size:10.5px;color:#64748b;margin-top:6px;line-height:1.6">키·수준(${(RUNNER_TYPES.find(t=>t.id===(p.runnerType||"club"))||{}).label||"동호인"})은 프로필 값이 자동 반영됩니다. 검증된 회귀식이 아니라 공개된 코칭 원칙 기반 추정치이니, 실제 뛰어보고 몸에 맞게 조정하세요.</div>`;}
+function applyCadenceRecommendation(bpm){
+  document.getElementById("set-metro-bpm").value=bpm;
+  DB.metronomeDefault={bpm,sound:(document.getElementById("set-metro-sound")||{}).value||"click"};save();
+  showToast(`메트로놈 기본값을 ${bpm}spm으로 적용했습니다.`);}
 function saveMetroDefaults(){const bpm=parseInt(document.getElementById("set-metro-bpm").value)||170;
   const sound=document.getElementById("set-metro-sound").value;
   DB.metronomeDefault={bpm,sound};save();showToast("메트로놈 기본값을 저장했습니다.");}
@@ -7089,6 +7289,69 @@ function onThisDayEntries(){const mmdd=TODAY.slice(5),results=[];
     const logs=dayLogs(dateStr),diary=((DB.calendar[dateStr]||{}).diary||"").trim();
     if(logs.length||diary)results.push({date:dateStr,ago,logs,diary});}
   return results;}
+/* ===== 운동 알림 =====
+   서버·푸시 인프라가 없는 구조라, "브라우저(탭)가 열려있는 동안" 주기적으로 확인해서
+   Notification API로 울리는 방식이다. 완전히 앱을 꺼두면 실제 OS 알람처럼 정확한 시각에
+   깨어나 울리지는 못한다 — 이 한계를 설정 화면에 명시해뒀다. 대신 앱이 열려있으면
+   헤더(무슨 운동인지)와 본문(몇 분 후인지)을 갖춘 진짜 알림을 보여준다. */
+function notifyDefaultLeadMin(){const s=DB.notifySettings||{};
+  return s.defaultLeadMin==="custom"?(s.customLeadMin||60):(s.defaultLeadMin||60);}
+function saveNotifySettings(){
+  const enabled=document.getElementById("notify-enabled").checked;
+  const sel=document.getElementById("notify-default-lead").value;
+  document.getElementById("notify-custom-row").style.display=sel==="custom"?"block":"none";
+  const customMin=parseInt(document.getElementById("notify-custom-min").value)||60;
+  DB.notifySettings={enabled,defaultLeadMin:sel==="custom"?"custom":parseInt(sel),customLeadMin:customMin};save();
+  renderNotifySettingsUI();renderTodayNotifyCard();}
+function renderNotifySettingsUI(){const s=DB.notifySettings||{enabled:false,defaultLeadMin:60};
+  const en=document.getElementById("notify-enabled");if(en)en.checked=!!s.enabled;
+  const sel=document.getElementById("notify-default-lead");if(sel)sel.value=s.defaultLeadMin==="custom"?"custom":String(s.defaultLeadMin||60);
+  const cr=document.getElementById("notify-custom-row");if(cr)cr.style.display=s.defaultLeadMin==="custom"?"block":"none";
+  const cm=document.getElementById("notify-custom-min");if(cm)cm.value=s.customLeadMin||60;
+  const permRow=document.getElementById("notify-permission-row");if(!permRow)return;
+  if(!("Notification" in window)){permRow.innerHTML=`<div style="font-size:11.5px;color:#f87171">이 브라우저는 알림 기능을 지원하지 않습니다.</div>`;return;}
+  const perm=Notification.permission;
+  if(perm==="granted")permRow.innerHTML=`<div style="font-size:11.5px;color:#6ee7b7"><i class="bi bi-check-circle-fill"></i> 알림 권한이 허용되어 있습니다.</div>`;
+  else if(perm==="denied")permRow.innerHTML=`<div style="font-size:11.5px;color:#f87171"><i class="bi bi-x-circle-fill"></i> 알림 권한이 차단되어 있습니다. 브라우저 설정에서 직접 허용해주세요.</div>`;
+  else permRow.innerHTML=`<button class="btn btn-sm" style="width:100%" onclick="requestNotifyPermission()"><i class="bi bi-bell"></i> 알림 권한 요청하기</button>`;}
+function requestNotifyPermission(){if(!("Notification" in window)){showToast("이 브라우저는 알림을 지원하지 않습니다.");return;}
+  Notification.requestPermission().then(()=>renderNotifySettingsUI());}
+function planMetaFor(date,idx){const day=DB.calendar[date];if(!day)return{};
+  if(!day.planMeta)day.planMeta=[];return day.planMeta[idx]||{};}
+function setPlanMeta(date,idx,patch){const day=DB.calendar[date];if(!day)return;
+  if(!day.planMeta)day.planMeta=[];day.planMeta[idx]={...day.planMeta[idx],...patch};save();}
+function renderTodayNotifyCard(){const card=document.getElementById("todaynotify-card");if(!card)return;
+  const plans=dayPlans(TODAY);
+  if(!plans.length||!(DB.notifySettings&&DB.notifySettings.enabled)){card.style.display="none";return;}
+  card.style.display="block";
+  const box=document.getElementById("todaynotify-body");
+  box.innerHTML=plans.map((p,i)=>{const m=planMetaFor(TODAY,i);
+    return`<div style="padding:8px 0;border-bottom:1px solid var(--border-light)">
+      <div style="font-size:12.5px;color:#e2e8f0;margin-bottom:6px">${escHtml(p.slice(0,50))}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <input type="time" id="tn-time-${i}" value="${m.time||""}" style="width:auto;padding:5px 7px;font-size:12px" onchange="onTodayNotifyChange(${i})">
+        <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#94a3b8"><input type="checkbox" id="tn-on-${i}" ${m.notify?"checked":""} style="width:15px;height:15px" onchange="onTodayNotifyChange(${i})"> 알림</label>
+        ${m.notify&&m.time?`<span style="font-size:10.5px;color:#64748b">${notifyDefaultLeadMin()}분 전</span>`:""}
+      </div></div>`;}).join("");}
+function onTodayNotifyChange(i){const time=document.getElementById(`tn-time-${i}`).value;
+  const notify=document.getElementById(`tn-on-${i}`).checked;
+  setPlanMeta(TODAY,i,{time,notify,fired:false}); // 설정을 바꾸면 이미 울린 알림도 다시 체크 대상이 되도록 초기화
+  renderTodayNotifyCard();}
+let notifyCheckTimer=null;
+function startNotifyChecker(){clearInterval(notifyCheckTimer);notifyCheckTimer=setInterval(checkDueNotifications,30000);checkDueNotifications();}
+function checkDueNotifications(){
+  if(!(DB.notifySettings&&DB.notifySettings.enabled))return;
+  if(!("Notification" in window)||Notification.permission!=="granted")return;
+  const plans=dayPlans(TODAY),day=DB.calendar[TODAY];if(!day||!day.planMeta)return;
+  const now=new Date();
+  plans.forEach((p,i)=>{const m=day.planMeta[i];if(!m||!m.notify||!m.time||m.fired)return;
+    const[hh,mm]=m.time.split(":").map(Number);
+    const target=new Date();target.setHours(hh,mm,0,0);
+    const leadMin=notifyDefaultLeadMin();
+    const fireAt=new Date(target.getTime()-leadMin*60000);
+    if(now>=fireAt&&now<target){ // 알림 시점은 지났고 실제 운동 시각은 아직 안 지났을 때만
+      try{new Notification(`곧 운동 시간입니다 — ${leadMin}분 후`,{body:p,icon:"./icons/icon-192.png",tag:"run2080-plan-"+TODAY+"-"+i});}catch(e){}
+      setPlanMeta(TODAY,i,{fired:true});}});}
 function renderOnThisDay(){const card=document.getElementById("onthisday-card");if(!card)return;
   const entries=onThisDayEntries();
   if(!entries.length){card.style.display="none";return;}
@@ -7633,7 +7896,7 @@ const TAB_SECTIONS={
   7:[{id:"sec-7-0",label:"통합 기록 예측 환산표"},{id:"sec-7-1",label:"목표 대비 & 지구력 현실성 보정"},{id:"sec-7-2",label:"목표 페이스 · 구간 스플릿"}],
   8:[{id:"sec-8-0",label:"내 현재 위치"},{id:"sec-8-1",label:"풀코스 완주 기록 기준 분류"},{id:"sec-8-2",label:"월간 훈련 마일리지 기준 분류"},{id:"sec-8-3",label:"보스턴 마라톤 BQ 기준 (2026·2027)"},{id:"sec-8-4",label:"에이지 그레이딩 (나이·성별 보정 등급)"},{id:"sec-8-5",label:"참고: VDOT & 분류 기준"}],
   9:[{id:"sec-9-0",label:"출전 대회 · 출사표 & 결과 기록"}],
-  10:[{id:"sec-10-0",label:"러너 프로필 & 심박 공식"},{id:"sec-10-1",label:"산출된 5단계 심박 타깃존"},{id:"sec-10-2",label:"데이터 내보내기 & 백업"},{id:"sec-10-11",label:"저장소 상태 & 보호"},{id:"sec-10-12",label:"소리 끊김 진단"},{id:"sec-10-13",label:"신발 마일리지"},{id:"sec-10-14",label:"앱 잠금"},{id:"sec-10-3",label:"메트로놈 기본값"},{id:"sec-10-4",label:"인트로 화면 편집"},{id:"sec-10-10",label:"버전 정보"},{id:"sec-10-5",label:"사용 방법"},{id:"sec-10-6",label:"앱 정보 · 용어 설명 · 이용 정책"},{id:"sec-10-8",label:"예시 데이터 생성"},{id:"sec-10-9",label:"데이터 초기화"}]
+  10:[{id:"sec-10-0",label:"러너 프로필 & 심박 공식"},{id:"sec-10-1",label:"산출된 5단계 심박 타깃존"},{id:"sec-10-2",label:"데이터 내보내기 & 백업"},{id:"sec-10-11",label:"저장소 상태 & 보호"},{id:"sec-10-12",label:"소리 끊김 진단"},{id:"sec-10-13",label:"신발 마일리지"},{id:"sec-10-14",label:"앱 잠금"},{id:"sec-10-15",label:"운동 알림"},{id:"sec-10-3",label:"메트로놈 기본값"},{id:"sec-10-4",label:"인트로 화면 편집"},{id:"sec-10-10",label:"버전 정보"},{id:"sec-10-16",label:"자체진단"},{id:"sec-10-5",label:"사용 방법"},{id:"sec-10-6",label:"앱 정보 · 용어 설명 · 이용 정책"},{id:"sec-10-8",label:"예시 데이터 생성"},{id:"sec-10-9",label:"데이터 초기화"}]
 };
 function tocState(){return Store.get("tocPanelState")||{};}
 function tocFavorites(){return DB.tocFavorites||(DB.tocFavorites=[]);}
@@ -7691,8 +7954,8 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
   else if(index===4){renderWorkoutList();
     const idInput=document.getElementById("strava-client-id");if(idInput)idInput.value=DB.stravaClientId||"";
     renderStravaStatus();}
-  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();},80);}
-  else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();renderAppLockSettings();applyAllSettingSections();}
+  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();},80);}
+  else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
   window.scrollTo({top:0,behavior:dotsDragging?"auto":"smooth"});}
@@ -7854,7 +8117,11 @@ if(!checkAppLock()){ // 잠겨있으면 잠금화면만 띄우고, 나머지 부
   if(shouldShowOnboarding())showOnboarding();
   handleStravaCallback(); // Strava 인증 후 돌아왔을 때(?code=...) 처리
   checkRunRecovery(); // 강제종료 등으로 중단된 운동이 있으면 복구 제안
+  startNotifyChecker(); // 운동 알림 주기 확인 시작
 }
+setTimeout(()=>{try{const r=runSelfTests(),bad=r.filter(x=>!x.pass);
+  if(bad.length){console.warn("[자체진단] "+bad.length+"개 실패:",bad);}
+  else{console.log("[자체진단] 전체 통과 ("+r.length+"개 항목)");}}catch(e){}},300); // 부팅 후 자동 1회 점검, 콘솔에만 기록(화면 방해 없음)
 </script>
 </body>
 </html>
