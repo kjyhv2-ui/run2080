@@ -36,15 +36,12 @@ function latLonToGrid(lat, lon) {
 // 발표시각 계산: 초단기실황은 매시 40분 발표(10분 후 제공), 초단기예보는 매시 30분 발표(15분 후 제공).
 // 둘 다 보수적으로 "45분 이전이면 한 시간 전 정시" 규칙을 적용해 항상 이미 발표된 값만 조회한다.
 function baseDateTime() {
-  const now = new Date(now_kst());
-  if (now.getMinutes() < 45) now.setHours(now.getHours() - 1);
-  const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, "0"), d = String(now.getDate()).padStart(2, "0");
-  const h = String(now.getHours()).padStart(2, "0");
+  // KST(UTC+9) 시각을 "UTC 필드"에 담아 계산 — 서버 시간대(UTC든 KST든)와 무관하게 항상 같은 결과가 나오도록 getUTC* 계열만 사용
+  const now = new Date(Date.now() + 9 * 3600 * 1000);
+  if (now.getUTCMinutes() < 45) now.setUTCHours(now.getUTCHours() - 1);
+  const y = now.getUTCFullYear(), m = String(now.getUTCMonth() + 1).padStart(2, "0"), d = String(now.getUTCDate()).padStart(2, "0");
+  const h = String(now.getUTCHours()).padStart(2, "0");
   return { base_date: `${y}${m}${d}`, base_time: `${h}00` };
-}
-function now_kst() {
-  // Vercel 서버는 UTC로 동작하므로 KST(UTC+9)로 명시 변환
-  return Date.now() + 9 * 3600 * 1000 - new Date().getTimezoneOffset() * 60000;
 }
 
 function ptySkyToWmo(pty, sky) {
