@@ -609,7 +609,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div class="form-group"><label>카카오맵 JavaScript 키</label><input type="text" id="kakao-js-key" placeholder="예: 1a2b3c4d5e6f..." oninput="saveKakaoJsKey(this.value)"></div>
           <div id="kakao-map-status" style="font-size:11.5px;color:#64748b"></div>
         </div>
-        <div class="card" id="sec-4-1b">
+        <div class="card" id="sec-4-1b" data-feature="strava">
           <div class="card-header"><div class="card-title"><i class="bi bi-cloud-arrow-down"></i> Strava 연동 (준비 중)</div></div>
           <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;line-height:1.7">Garmin 앱에서 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 활동을 가져올 수 있습니다. 사용하려면 아래 절차가 필요합니다:</div>
           <ol style="font-size:11.5px;color:#94a3b8;line-height:1.9;padding-left:18px;margin-bottom:10px">
@@ -946,6 +946,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-6')"><div class="card-title"><i class="bi bi-info-circle" style="color:#38bdf8"></i> 앱 정보 · 용어 설명 · 이용 정책</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-6" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-6">
         <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px">RUN2080의 방법론적 근거, VDOT 등 용어 설명, 데이터 백업 정책, 앱의 한계와 책임 범위를 한 곳에서 확인할 수 있습니다.</div>
         <button class="btn" style="width:100%" onclick="document.getElementById('appInfoModal').classList.add('active')"><i class="bi bi-book"></i> 전체 보기</button>
+      </div></div>
+      <div class="card" id="sec-10-17">
+        <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-17')"><div class="card-title"><i class="bi bi-file-earmark-text" style="color:#94a3b8"></i> 약관 · 개인정보 · 라이선스</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-17" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-17">
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;line-height:1.7">운영자: 다온솔루션 · 문의 <a href="mailto:kjyhv2@gmail.com" style="color:#38bdf8">kjyhv2@gmail.com</a></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <a class="btn btn-sm btn-secondary" href="./privacy.html" target="_blank" rel="noopener"><i class="bi bi-shield-lock"></i> 개인정보처리방침</a>
+          <a class="btn btn-sm btn-secondary" href="./terms.html" target="_blank" rel="noopener"><i class="bi bi-file-text"></i> 이용약관</a>
+          <a class="btn btn-sm btn-secondary" href="./disclaimer.html" target="_blank" rel="noopener"><i class="bi bi-heart-pulse"></i> 건강·안전 면책</a>
+          <a class="btn btn-sm btn-secondary" href="./licenses.html" target="_blank" rel="noopener"><i class="bi bi-code-slash"></i> 오픈소스 라이선스</a>
+        </div>
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#cbd5e1;line-height:1.6;cursor:pointer">
+          <input type="checkbox" id="error-report-toggle" onchange="setErrorReport(this.checked)" style="margin-top:3px">
+          <span><strong>오류 기록 전송</strong> — 앱에서 오류가 나면 앱 버전·오류 내용·브라우저 종류만 개발자에게 보내 문제를 고치는 데 씁니다. 운동 기록·위치·심박 등은 보내지 않습니다.</span>
+        </label>
       </div></div>
       <div class="card" id="sec-10-8">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-8')"><div class="card-title"><i class="bi bi-database-add" style="color:#a855f7"></i> 예시 데이터 생성</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-8" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-8">
@@ -1441,7 +1455,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 이어서 진행 (복구)</strong> — 앱이 강제 종료되는 등으로 운동 기록이 중단되면, 다음에 앱을 열 때 자동으로 발견해 "이어서 진행 / 여기까지만 기록 저장 / 삭제" 중 고를 수 있게 안내합니다. 진행 중인 운동은 5초마다 자동으로 저장되어, 최악의 경우에도 5초 안쪽의 기록만 손실됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">활동 종류별 러닝 탭</strong> — 러닝 시작 전 "활동 종류"를 먼저 고릅니다. 달리기·트랙러닝·트레일러닝은 기존처럼 모드·존·메트로놈까지 전체 메뉴가 나오고, 걷기·등산·사이클(야외)은 GPS로 거리와 시간을 함께 재는 간소화 메뉴, 수영·헬스·줄넘기·요가 등은 GPS 없이 시간만 재는 메뉴로 자동 전환됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">외부 기기 데이터 가져오기 (GPX/TCX)</strong> — Garmin·Coros 등에서 내보낸 GPX 또는 TCX 파일을 실제로 읽어 거리·시간·심박·GPS 경로를 그대로 가져옵니다. 자동 동기화가 아니라 직접 파일을 받아 올리는 방식이며, 활동의 실제 날짜와 시각을 파일에서 읽어 그 날짜의 캘린더에 기록합니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">Strava 연동</strong> — Garmin의 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 러닝 기록을 가져올 수 있습니다. Client Secret은 절대 이 화면에 입력하지 않고 서버(Vercel 환경 변수)에만 보관되며, 배포하지 않은 상태(파일을 직접 연 경우)에서는 이 기능이 동작하지 않는다는 안내가 뜹니다.</div>
+        <div style="margin-bottom:10px" data-feature="strava"><strong style="color:#fff">Strava 연동</strong> — Garmin의 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 러닝 기록을 가져올 수 있습니다. Client Secret은 절대 이 화면에 입력하지 않고 서버(Vercel 환경 변수)에만 보관되며, 배포하지 않은 상태(파일을 직접 연 경우)에서는 이 기능이 동작하지 않는다는 안내가 뜹니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">종목별 커스텀 템플릿 & 텍스트로 계획 가져오기</strong> — 커스텀 템플릿을 만들 때 "적용 종목"(5K·10K·하프·풀·울트라)을 지정해두면, 그 종목의 대회를 주 목표로 설정할 때 자동으로 추천됩니다(⭐ 표시와 함께 "내 10K용"처럼 표기). 또한 가지고 계신 계획을 "월: 인터벌 5x1km" 같은 텍스트로 붙여넣으면, 요일과 훈련 종류를 자동으로 인식해 해당 단계에 반영합니다. 어떤 커스텀 템플릿이든 실제 페이스·거리는 등록된 PR과 준비도에 맞춰 자동으로 미세조정됩니다(기본 제공 템플릿과 동일한 방식).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">다양성 추구형 템플릿 & 휴식일 크로스트레이닝 제안</strong> — 기록 향상을 위한 정규 훈련(인터벌·템포·장거리)은 그대로 유지하면서, 트레일 러닝과 크로스트레이닝(자전거·수영)을 곁들여 지루하지 않게 구성한 템플릿입니다. 또한 모든 템플릿의 휴식일에는 "원하면 가벼운 자전거·수영·스트레칭 20~30분"이라는 선택지가 함께 표시됩니다(강제가 아니라 제안이며, 대회 직전 마지막 주는 회복을 위해 순수 휴식으로 유지됩니다).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">신발 마일리지 추적</strong> — 설정에서 신발을 등록하고(교체 기준 km 지정, 기본 700km) 운동 기록에 연결하면, 그 신발로 뛴 모든 거리가 자동으로 누적됩니다. 진행률이 80%를 넘으면 "교체 시기 임박", 100%를 넘으면 "교체 권장!"으로 표시됩니다. 신발을 삭제해도 이미 기록된 운동 자체의 거리는 지워지지 않고 신발 연결만 해제됩니다.</div>
@@ -2347,6 +2361,31 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </script>
 <script>
 "use strict";
+/* ===== 오류 수집 — 실사용 중 발생한 스크립트 오류를 서버(api/log.js)로 보낸다 =====
+   보내는 것: 앱 버전, 오류 메시지·파일명·줄 번호·호출 경로(스택), 현재 탭 번호, 브라우저 종류.
+   보내지 않는 것: 운동 기록·위치·심박·프로필 등 DB 내용 전부, URL 쿼리값. (privacy.html 3항과 반드시 일치시킬 것)
+   과다 전송 방지: 같은 메시지는 1회, 앱을 한 번 열 때 최대 5건. 설정 → 약관·개인정보에서 끌 수 있다(DB.errorReportOff).
+   로컬 개발(localhost·파일로 열기)에서는 보내지 않는다(window.__RUN2080_LOG_TEST=true 이면 테스트용으로 전송). */
+const ErrorReporter=(()=>{const sent=new Set();let count=0;const MAX=5;
+  const strip=t=>String(t||"").replace(/https?:\/\/[^\s)]+/g,u=>{try{const x=new URL(u);return x.pathname.split("/").pop()||x.hostname;}catch(e){return"url";}}).replace(/[?#][^\s):]*/g,"");
+  function enabled(){if(window.__RUN2080_LOG_TEST)return true;
+    const h=location.hostname;if(location.protocol==="file:"||h==="localhost"||h==="127.0.0.1"||h==="")return false;
+    try{if(typeof DB!=="undefined"&&DB&&DB.errorReportOff)return false;}catch(e){}return true;}
+  function report(info){try{if(!enabled()||count>=MAX)return;
+      const msg=strip(info.msg).slice(0,300);if(!msg||/^Script error\.?$/i.test(msg)||/ResizeObserver loop/.test(msg))return;
+      if(/extension:\/\//.test(String(info.src||"")+String(info.stack||"")))return; // 브라우저 확장프로그램 오류는 제외
+      const key=(info.type||"error")+"|"+msg;if(sent.has(key))return;sent.add(key);count++;
+      let tab=null;try{tab=typeof currentSlideIndex!=="undefined"?currentSlideIndex:null;}catch(e){}
+      const payload=JSON.stringify({type:info.type||"error",msg,src:strip(info.src).slice(0,80),line:info.line||0,col:info.col||0,
+        stack:strip(info.stack).slice(0,1200),v:(typeof APP_VERSION!=="undefined"?APP_VERSION:"?"),tab,
+        ua:navigator.userAgent.slice(0,160),standalone:!!(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)});
+      if(navigator.sendBeacon&&navigator.sendBeacon("/api/log",new Blob([payload],{type:"text/plain"})))return;
+      fetch("/api/log",{method:"POST",headers:{"Content-Type":"text/plain"},body:payload,keepalive:true}).catch(()=>{});
+    }catch(e){}}
+  window.addEventListener("error",e=>{if(e.target&&e.target!==window)return; // 이미지·스크립트 로드 실패는 제외(지도 SDK 등 네트워크 사정)
+    report({msg:e.message,src:e.filename,line:e.lineno,col:e.colno,stack:e.error&&e.error.stack});});
+  window.addEventListener("unhandledrejection",e=>{const r=e.reason;report({type:"promise",msg:r&&r.message?r.message:String(r),stack:r&&r.stack});});
+  return{report,enabled};})();
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RUN2080 개발 원칙 — 절대 잊지 말 것 (모든 세션·모든 수정에 적용됨)
@@ -2394,8 +2433,20 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.23.1",APP_BUILD="2026-09-23";
+const APP_VERSION="2.24.0",APP_BUILD="2026-09-24";
+/* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
+   strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
+   GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다. */
+const FEATURES={strava:false};
+function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
+applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.24.0",d:"2026-09-24",title:"출시 준비 — 약관·개인정보처리방침, 오류 수집, Strava 숨김",items:[
+    "개인정보처리방침·이용약관·건강 및 안전 면책·오픈소스 라이선스 페이지 추가(privacy.html 등) — 설정 → 약관·개인정보·라이선스에서 열람, 구글플레이 제출용 주소로도 사용",
+    "오류 수집 추가 — 실사용 중 스크립트 오류가 나면 앱 버전·오류 내용·브라우저 종류만 서버로 전송(운동 기록·위치·심박은 보내지 않음). 같은 오류는 1회, 한 번 실행에 최대 5건. 설정에서 끌 수 있음",
+    "앱을 열 때 자체진단이 실패하면 그 결과도 오류 기록으로 전송 — 사용자 기기에서 깨진 배포를 조기에 발견",
+    "Strava 연동을 첫 출시에서 제외 — 화면·목차·안내문에서 숨기고 인증 콜백도 동작하지 않게 함(코드는 기능 스위치로 보존, GPX/TCX 가져오기는 그대로)",
+    "자체진단 2개 항목 추가(⑪ 숨긴 기능이 화면에 남지 않았는지, ⑫ 오류 수집기·약관 링크 존재) — 총 12개"]},
   {v:"2.23.1",d:"2026-09-23",title:"Vercel 배포 안정화 — 서비스 워커·날씨 시각 계산 정리",items:[
     "서비스 워커가 우리 도메인의 정적 파일만 캐시하도록 좁힘 — /api(날씨·Strava·대회일정)와 카카오맵 등 외부 요청은 캐시하지 않음(Strava 토큰이 든 요청이 기기 캐시에 남지 않음)",
     "정상 응답(200)만 캐시 — 배포가 일시적으로 깨져 404가 나도 오프라인용 앱 화면이 404로 덮어써지지 않음",
@@ -2741,6 +2792,12 @@ function runSelfTests(){
   check("⑧ TRIMP/케이던스 등 핵심 상수 배열이 비어있지 않음",()=>({pass:ACTIVITY_TYPES.length>0&&RUNNER_TYPES.length>0&&CHANGELOG.length>0}));
   check("⑨ 자동저장 관련 함수 존재(운동 데이터 유실 방지 체계)",()=>({pass:typeof saveRunSnapshot==="function"&&typeof checkRunRecovery==="function"&&typeof armRunBackGuard==="function"}));
   check("⑩ APP_VERSION 형식이 유효(x.y.z)",()=>({pass:/^\d+\.\d+\.\d+$/.test(APP_VERSION)}));
+  check("⑪ 기능 스위치로 끈 기능(Strava 등)이 화면에 남아있지 않음",()=>{const left=Object.keys(FEATURES).filter(k=>!FEATURES[k]&&document.querySelector(`[data-feature="${k}"]`));
+    const tocLeak=!FEATURES.strava&&(TAB_SECTIONS[4]||[]).some(x=>x.id==="sec-4-1b");
+    return{pass:!left.length&&!tocLeak,detail:left.length?"남아있음: "+left.join(", "):tocLeak?"목차에 Strava 남음":""};});
+  check("⑫ 오류 수집기 설치 + 약관·개인정보 링크 4종 존재",()=>{const need=["privacy.html","terms.html","disclaimer.html","licenses.html"];
+    const miss=need.filter(f=>!document.querySelector(`a[href="./${f}"]`));
+    return{pass:typeof ErrorReporter==="object"&&typeof ErrorReporter.report==="function"&&!miss.length,detail:miss.length?"링크 누락: "+miss.join(", "):""};});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -2750,7 +2807,9 @@ function renderSelfTestUI(){const box=document.getElementById("selftest-result")
         ${failCount?`⚠️ ${failCount}개 실패`:"✅ 전체 통과 ("+results.length+"개 항목)"}</div>`+
       results.map(r=>`<div style="font-size:11px;color:${r.pass?"#94a3b8":"#f87171"};padding:3px 0">
         ${r.pass?"✓":"✗"} ${r.name}${r.detail?`<div style="color:#fca5a5;margin-left:14px">${escHtml(r.detail)}</div>`:""}</div>`).join("");},50);}
-function normalizeDB(){if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
+function setErrorReport(on){DB.errorReportOff=!on;save();showToast(on?"오류 기록 전송을 켰습니다.":"오류 기록 전송을 껐습니다.");}
+function renderErrorReportToggle(){const el=document.getElementById("error-report-toggle");if(el)el.checked=!DB.errorReportOff;}
+function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
   if(!DB.races||!DB.races.length){const r=DB.race||{name:"내 목표 대회",date:addDays(TODAY,112),target:"SUB3"};
     DB.races=[{id:"r_"+uid(),name:r.name,date:r.date,dist:r.dist||"FULL",targetSec:r.targetSec||TARGET_SEC[r.target]||10800,weeks:r.weeks||16,primary:true}];}
   DB.races.forEach(r=>{if(!r.dist)r.dist="FULL";if(!r.targetSec)r.targetSec=TARGET_SEC[r.target]||10800;if(!r.id)r.id="r_"+uid();});
@@ -3964,7 +4023,7 @@ function dashWeekMon(){return addDays(mondayOf(TODAY),-dashWeekOffset*7);}
 function dashWeekEnd(){return addDays(dashWeekMon(),6);}
 function shiftDashWeek(dir){const n=dashWeekOffset+(dir<0?1:-1);if(n<0)return;dashWeekOffset=n;renderDashboard();}
 /* ===== 설정 탭 소주제 접기/펼치기 — 펼침 상태는 기기에 저장되어 다음에 열 때 그대로 ===== */
-const SETTING_SECTIONS=["sec-10-0","sec-10-1","sec-10-2","sec-10-11","sec-10-12","sec-10-13","sec-10-14","sec-10-15","sec-10-3","sec-10-4","sec-10-10","sec-10-16","sec-10-5","sec-10-6","sec-10-8","sec-10-9"];
+const SETTING_SECTIONS=["sec-10-0","sec-10-1","sec-10-2","sec-10-11","sec-10-12","sec-10-13","sec-10-14","sec-10-15","sec-10-3","sec-10-4","sec-10-10","sec-10-16","sec-10-5","sec-10-6","sec-10-17","sec-10-8","sec-10-9"];
 function settingOpenState(){return Store.get("settingOpenState")||{"sec-10-0":true};} // 첫 방문 시 프로필만 펼침
 function applySettingSection(id){const st=settingOpenState(),open=st[id]===true;
   const body=document.getElementById("body-"+id),caret=document.getElementById("caret-"+id);
@@ -7923,6 +7982,7 @@ function connectStrava(){
   const redirect=encodeURIComponent(stravaRedirectUri());
   location.href=`https://www.strava.com/oauth/authorize?client_id=${encodeURIComponent(id)}&redirect_uri=${redirect}&response_type=code&approval_prompt=auto&scope=activity:read_all`;}
 async function handleStravaCallback(){
+  if(!FEATURES.strava)return; // 기능 스위치로 숨긴 상태에서는 인증 콜백도 처리하지 않음
   const params=new URLSearchParams(location.search);
   const code=params.get("code");if(!code)return;
   history.replaceState({},"",location.pathname); // code 파라미터를 지워 새로고침 시 재사용되지 않게 함
@@ -8044,13 +8104,13 @@ const TAB_SECTIONS={
   1:[{id:"run-setup-card",label:"러닝 시작"},{id:"sec-1-1",label:"랩 기록"}],
   2:[{id:"sec-2-0",label:"대회 & 주기화 플래너"},{id:"sec-2-1",label:"4대 주기화 블록 로드맵"}],
   3:[{id:"sec-3-0",label:"선택일 상세"},{id:"sec-3-1",label:"주간 일지 보기"}],
-  4:[{id:"sec-4-0",label:"나의 워크아웃 라이브러리"},{id:"sec-4-1",label:"외부 기기 데이터 가져오기"},{id:"sec-4-1c",label:"지도 (카카오맵)"},{id:"sec-4-1b",label:"Strava 연동"},{id:"sec-4-2",label:"가져오기 로그"}],
+  4:[{id:"sec-4-0",label:"나의 워크아웃 라이브러리"},{id:"sec-4-1",label:"외부 기기 데이터 가져오기"},{id:"sec-4-1c",label:"지도 (카카오맵)"},...(FEATURES.strava?[{id:"sec-4-1b",label:"Strava 연동"}]:[]),{id:"sec-4-2",label:"가져오기 로그"}],
   5:[{id:"sec-5-0",label:"계획 대비 실측 이행 리포트"},{id:"sec-5-1",label:"3단계 편극 강도 분포"},{id:"sec-5-2",label:"일별 TRIMP 부하 추세"}],
   6:[{id:"sec-6-0",label:"거리별 개인기록 (PR)"}],
   7:[{id:"sec-7-0",label:"통합 기록 예측 환산표"},{id:"sec-7-1",label:"목표 대비 & 지구력 현실성 보정"},{id:"sec-7-2",label:"목표 페이스 · 구간 스플릿"}],
   8:[{id:"sec-8-0",label:"내 현재 위치"},{id:"sec-8-1",label:"풀코스 완주 기록 기준 분류"},{id:"sec-8-2",label:"월간 훈련 마일리지 기준 분류"},{id:"sec-8-3",label:"보스턴 마라톤 BQ 기준 (2026·2027)"},{id:"sec-8-4",label:"에이지 그레이딩 (나이·성별 보정 등급)"},{id:"sec-8-5",label:"참고: VDOT & 분류 기준"}],
   9:[{id:"sec-9-0",label:"출전 대회 · 출사표 & 결과 기록"}],
-  10:[{id:"sec-10-0",label:"러너 프로필 & 심박 공식"},{id:"sec-10-1",label:"산출된 5단계 심박 타깃존"},{id:"sec-10-2",label:"데이터 내보내기 & 백업"},{id:"sec-10-11",label:"저장소 상태 & 보호"},{id:"sec-10-12",label:"소리 끊김 진단"},{id:"sec-10-13",label:"신발 마일리지"},{id:"sec-10-14",label:"앱 잠금"},{id:"sec-10-15",label:"운동 알림"},{id:"sec-10-3",label:"메트로놈 기본값"},{id:"sec-10-4",label:"인트로 화면 편집"},{id:"sec-10-10",label:"버전 정보"},{id:"sec-10-16",label:"자체진단"},{id:"sec-10-5",label:"사용 방법"},{id:"sec-10-6",label:"앱 정보 · 용어 설명 · 이용 정책"},{id:"sec-10-8",label:"예시 데이터 생성"},{id:"sec-10-9",label:"데이터 초기화"}]
+  10:[{id:"sec-10-0",label:"러너 프로필 & 심박 공식"},{id:"sec-10-1",label:"산출된 5단계 심박 타깃존"},{id:"sec-10-2",label:"데이터 내보내기 & 백업"},{id:"sec-10-11",label:"저장소 상태 & 보호"},{id:"sec-10-12",label:"소리 끊김 진단"},{id:"sec-10-13",label:"신발 마일리지"},{id:"sec-10-14",label:"앱 잠금"},{id:"sec-10-15",label:"운동 알림"},{id:"sec-10-3",label:"메트로놈 기본값"},{id:"sec-10-4",label:"인트로 화면 편집"},{id:"sec-10-10",label:"버전 정보"},{id:"sec-10-16",label:"자체진단"},{id:"sec-10-5",label:"사용 방법"},{id:"sec-10-6",label:"앱 정보 · 용어 설명 · 이용 정책"},{id:"sec-10-17",label:"약관 · 개인정보 · 라이선스"},{id:"sec-10-8",label:"예시 데이터 생성"},{id:"sec-10-9",label:"데이터 초기화"}]
 };
 function tocState(){return Store.get("tocPanelState")||{};}
 function tocFavorites(){return DB.tocFavorites||(DB.tocFavorites=[]);}
@@ -8111,7 +8171,7 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
     renderKakaoMapStatus();
     renderStravaStatus();}
   else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();},80);}
-  else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
+  else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){renderErrorReportToggle();populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
   window.scrollTo({top:0,behavior:dotsDragging?"auto":"smooth"});}
@@ -8276,7 +8336,8 @@ if(!checkAppLock()){ // 잠겨있으면 잠금화면만 띄우고, 나머지 부
   startNotifyChecker(); // 운동 알림 주기 확인 시작
 }
 setTimeout(()=>{try{const r=runSelfTests(),bad=r.filter(x=>!x.pass);
-  if(bad.length){console.warn("[자체진단] "+bad.length+"개 실패:",bad);}
+  if(bad.length){console.warn("[자체진단] "+bad.length+"개 실패:",bad);
+    ErrorReporter.report({type:"selftest",msg:"자체진단 실패: "+bad.map(x=>x.name.slice(0,2)+(x.detail?"("+x.detail+")":"")).join(", ")});}
   else{console.log("[자체진단] 전체 통과 ("+r.length+"개 항목)");}}catch(e){}},300); // 부팅 후 자동 1회 점검, 콘솔에만 기록(화면 방해 없음)
 </script>
 </body>
