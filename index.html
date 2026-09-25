@@ -801,13 +801,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="grid-2col">
         <div class="card" id="sec-10-0">
           <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-0')"><div class="card-title"><i class="bi bi-person-gear"></i> 러너 프로필 & 심박 공식</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-0" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-0">
-          <div class="form-group"><label>연령(만)</label><input type="number" id="set-user-age" onchange="applyHREstimates(false)"></div>
+          <div class="form-group"><label>연령(만)</label><input type="number" id="set-user-age" placeholder="예: 40" onchange="applyHREstimates(false)"></div>
           <div class="grid-2col" style="gap:10px">
             <div class="form-group" style="margin-bottom:0"><label>키(cm) — 선택</label><input type="number" step="0.1" id="set-user-height" placeholder="예: 172" onchange="renderBodyIndex()"></div>
             <div class="form-group" style="margin-bottom:0"><label>체중(kg) — 선택</label><input type="number" step="0.1" id="set-user-weight" placeholder="예: 68" onchange="renderBodyIndex()"></div>
           </div>
           <div id="body-index-box" style="margin-bottom:14px"></div>
-          <div class="form-group"><label>성별 (TRIMP 계수)</label><select id="set-user-gender" onchange="applyHREstimates(false)"><option value="male">남성</option><option value="female">여성</option></select></div>
+          <div class="form-group"><label>성별 (TRIMP 계수)</label><select id="set-user-gender" onchange="applyHREstimates(false)"><option value="">선택하세요</option><option value="male">남성</option><option value="female">여성</option></select></div>
           <div class="form-group"><label>러너 유형 (심박존·훈련강도에 반영)</label><select id="set-user-type" onchange="recalculateSettingsZones()"></select>
             <div id="runner-type-hint" style="font-size:11px;color:#64748b;margin-top:4px"></div></div>
           <div class="form-group" style="background:#080e1a;border-radius:8px;padding:10px 12px">
@@ -821,9 +821,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <div id="type-suggest-box" style="margin-top:8px"></div>
           </div>
           <div class="form-group"><label>표시 이름 (성과카드용, 선택)</label><input type="text" id="set-user-name" placeholder="예: 영환 러너"></div>
-          <div class="form-group"><label>안정 시 심박수 RHR</label><input type="number" id="set-user-rhr" onchange="markHRManual()"></div>
-          <div class="form-group"><label>최대 심박수 Max HR</label><input type="number" id="set-user-maxhr" onchange="markHRManual()"></div>
-          <div class="form-group"><label>젖산역치 심박수 LTHR</label><input type="number" id="set-user-lthr" onchange="markHRManual()"></div>
+          <div class="form-group"><label>안정 시 심박수 RHR</label><input type="number" id="set-user-rhr" placeholder="모르면 비워두세요 — 나이·성별로 추정" onchange="markHRManual()"></div>
+          <div class="form-group"><label>최대 심박수 Max HR</label><input type="number" id="set-user-maxhr" placeholder="모르면 비워두세요 — 나이·성별로 추정" onchange="markHRManual()"></div>
+          <div class="form-group"><label>젖산역치 심박수 LTHR</label><input type="number" id="set-user-lthr" placeholder="모르면 비워두세요 — 나이·성별로 추정" onchange="markHRManual()"></div>
           <div id="hr-estimate-hint" style="margin-bottom:12px"></div>
           <div class="form-group"><label>심박존 산출 공식</label>
             <select id="set-user-formula" onchange="recalculateSettingsZones()">
@@ -2433,7 +2433,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.24.0",APP_BUILD="2026-09-24";
+const APP_VERSION="2.25.0",APP_BUILD="2026-09-26";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다. */
@@ -2441,6 +2441,14 @@ const FEATURES={strava:false};
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.25.0",d:"2026-09-26",title:"출시용 첫 실행 상태 정리 — 개인 데이터 제거, 예시 대회 1개",items:[
+    "새로 설치한 사용자가 처음 보는 상태에서 개발용 개인 데이터를 모두 제거 — 프로필(나이·성별·러너유형·심박), 8월 운동 기록·일기, 개인기록(PR), 대회 2건",
+    "그 결과 캘린더·통계·기록예측·러너 수준 분류 탭도 빈 상태에서 시작(기록을 입력하면 채워짐)",
+    "예시 대회 1개: 'JTBC 가상대회' 2027-11-14(일) 풀코스·목표 4:00:00 — 주기화 탭과 대회기록·출사표 탭에 표시되고, 출사표에는 고쳐 쓸 수 있는 예시 문구 포함",
+    "워크아웃 라이브러리의 기본 워크아웃 3개(VO2max 1km 인터벌·역치 크루즈 템포·주말 LSD)는 그대로 유지",
+    "프로필 미입력 상태 도입 — 설정의 나이·성별·러너유형·심박 칸이 비어 있고 '선택하세요' 표시. 입력 전에는 중립 기본값으로 계산만 하고, 나이·성별이 드러나는 BQ·에이지그레이딩은 '입력하면 표시' 안내로 대체",
+    "데이터 초기화(프로필·전체 삭제)도 같은 미입력 상태로 돌아가도록 통일(예전엔 35세·남성·동호인으로 채워졌음)",
+    "이미 쓰던 기기의 기존 데이터는 그대로 유지됨 — 이 변경은 처음 설치하거나 전체 초기화한 경우에만 적용"]},
   {v:"2.24.0",d:"2026-09-24",title:"출시 준비 — 약관·개인정보처리방침, 오류 수집, Strava 숨김",items:[
     "개인정보처리방침·이용약관·건강 및 안전 면책·오픈소스 라이선스 페이지 추가(privacy.html 등) — 설정 → 약관·개인정보·라이선스에서 열람, 구글플레이 제출용 주소로도 사용",
     "오류 수집 추가 — 실사용 중 스크립트 오류가 나면 앱 버전·오류 내용·브라우저 종류만 서버로 전송(운동 기록·위치·심박은 보내지 않음). 같은 오류는 1회, 한 번 실행에 최대 5건. 설정에서 끌 수 있음",
@@ -2795,6 +2803,9 @@ function runSelfTests(){
   check("⑪ 기능 스위치로 끈 기능(Strava 등)이 화면에 남아있지 않음",()=>{const left=Object.keys(FEATURES).filter(k=>!FEATURES[k]&&document.querySelector(`[data-feature="${k}"]`));
     const tocLeak=!FEATURES.strava&&(TAB_SECTIONS[4]||[]).some(x=>x.id==="sec-4-1b");
     return{pass:!left.length&&!tocLeak,detail:left.length?"남아있음: "+left.join(", "):tocLeak?"목차에 Strava 남음":""};});
+  check("⑬ 미입력 프로필(출시 첫 실행 상태)에서도 심박존·TRIMP가 숫자로 계산됨",()=>{const bp=blankProfile(),z=computeZones(bp),t=trimp(40,140,bp);
+    const ok=bp.unset===true&&[1,2,3,4,5].every(i=>Number.isFinite(z[i].min)&&Number.isFinite(z[i].max))&&Number.isFinite(t);
+    return{pass:ok,detail:ok?"":"NaN 발생"};});
   check("⑫ 오류 수집기 설치 + 약관·개인정보 링크 4종 존재",()=>{const need=["privacy.html","terms.html","disclaimer.html","licenses.html"];
     const miss=need.filter(f=>!document.querySelector(`a[href="./${f}"]`));
     return{pass:typeof ErrorReporter==="object"&&typeof ErrorReporter.report==="function"&&!miss.length,detail:miss.length?"링크 누락: "+miss.join(", "):""};});
@@ -2817,30 +2828,10 @@ function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;
   DB.race=primaryRace();}
 function load(){DB=Store.get(SKEY)||seedDB();normalizeDB();}
 
-function seedDB(){
-  const raw={
-    "2026-08-01":[["06:00","LSD 20km","run",20.1,120,136,148],["17:00","코어 보강","cross",0,40,110,120]],
-    "2026-08-02":[["07:00","이지런 8km","run",8.2,48,125,138],["17:30","수영 1500m","cross",1.5,35,130,140]],
-    "2026-08-04":[["06:15","인터벌 1km×5","run",11.2,60,168,181]],
-    "2026-08-06":[["06:20","역치 템포런","run",9.5,45,159,168],["19:00","사이클 15km","cross",15,40,125,138]],
-    "2026-08-08":[["06:00","LSD 22km","run",22.3,132,137,150]],
-    "2026-08-11":[["06:20","400m×10 질주","run",10.5,55,171,184]],
-    "2026-08-13":[["06:10","템포 30분","run",11.0,42,159,166]],
-    "2026-08-15":[["05:40","광복절 LSD 25km","run",25.0,150,138,152]],
-    "2026-08-18":[["06:15","VO2max 트랙 인터벌","run",11.4,62,172,183]],
-    "2026-08-20":[["06:20","LT 템포런","run",9.8,42,162,170]],
-    "2026-08-22":[["06:00","LSD 25km","run",25.2,135,138,152],["17:30","리커버리 수영","cross",1.5,30,125,132]]
-  };
-  const cal={};
-  for(const[date,arr]of Object.entries(raw))
-    cal[date]={plans:[],logs:arr.map(([time,title,type,dist,dur,avg,mx])=>({id:uid(),time,title,type,dist,duration:dur,avghr:avg,maxhr:mx,notes:""}))};
-  cal["2026-08-22"].diary="LSD 25km. 초반 10km까지 몸이 무거웠지만 심박은 138 근처로 안정적. 급수 2회·젤 1개. 후반 페이스가 5:20까지 자연스럽게 올라감. 무릎 컨디션 양호. 다음 주 30km 대비 자신감이 붙었다.";
-  cal["2026-08-15"].diary="광복절 새벽 LSD 25km. 선선해서 최고의 러닝 컨디션. 목표 심박존(Z2) 잘 유지. 발바닥 약간 뻐근하지만 통증은 없음.";
-  return{profile:{age:53,gender:"male",rhr:48,maxhr:182,lthr:164,formula:"KARVONEN",runnerType:"club"},
-    race:{id:"r_seed1",name:"2026 JTBC 서울마라톤",date:"2026-11-08",dist:"FULL",targetSec:10800,weeks:16,primary:true},
-    races:[{id:"r_seed1",name:"2026 JTBC 서울마라톤",date:"2026-11-08",dist:"FULL",targetSec:10800,weeks:16,primary:true},
-           {id:"r_seed2",name:"가을 10K 대회",date:"2026-09-27",dist:"10K",targetSec:2460,primary:false}],calendar:cal,
-    records:{5000:{sec:1145,date:"2026-06-14",note:"봄 5K 대회",src:"manual"},10000:{sec:2460,date:"2026-05-03",note:"",src:"manual"}},
+function seedDB(){ // 출시용 첫 실행 상태(v2.25.0) — 개인 기록·프로필은 비우고, 예시 대회 1개와 기본 워크아웃 3개만 제공
+  const exampleRace={id:"r_seed_jtbc",name:"JTBC 가상대회",date:"2027-11-14",dist:"FULL",targetSec:14400,weeks:16,primary:true,
+    pledge:"(예시 출사표) 첫 풀코스를 부상 없이 완주하는 것이 목표. 30km 이후에도 페이스를 지키고, 끝까지 즐겁게 달리자! — 자유롭게 고쳐 쓰세요."};
+  return{profile:blankProfile(),race:{...exampleRace},races:[exampleRace],calendar:{},records:{},raceArchive:[],
     workouts:[
       {id:"w_vo2",name:"VO2max 1km 인터벌",cat:"인터벌",steps:[
         {kind:"warmup",tType:"time",val:12,zone:1},
@@ -3887,7 +3878,7 @@ function metricHelpContent(key){
       H("예상 풀코스 기록")+W(predFull!=null?`<strong style="color:#fcd34d;font-size:15px">${fmtDur(predFull)}</strong> — 실제로 풀코스를 뛴 기록이 아니라, 위 근거 기록을 <strong>Riegel 공식</strong>으로 환산한 값입니다. 짧은 거리 기록으로 환산할수록 오차가 커지므로, 하프 이상 기록이 있으면 훨씬 정확해집니다.`:"기록이 없어 계산할 수 없습니다.")+
       H("추정 VDOT")+W(vd!=null?`<strong style="color:#38bdf8;font-size:15px">${vd.toFixed(1)}</strong> — 레이스 기록에서 역산한 산소섭취 능력 등가값입니다. 실험실에서 재는 VO2max와 단위는 같지만, 달리기 효율까지 반영돼 있어 완전히 같은 값은 아닙니다.`:"기록이 없어 계산할 수 없습니다.")+
       H("최근 30일 마일리지")+W(`<strong style="color:#6ee7b7;font-size:15px">${mk.toFixed(0)}km</strong> — 최근 한 달간 실제로 달린 총 거리입니다. 기록이 좋아도 마일리지가 낮으면 마라톤 후반에 무너지기 쉽습니다.`)+
-      H("BQ (보스턴 마라톤 참가 기준)")+W(`${p.age}세 ${p.gender==="female"?"여":"남"} 기준 <strong>${fmtDur(bqSec)}</strong>${predFull!=null?` · 현재 예상 ${fmtDur(predFull)}로 <strong style="color:${bqMet?"#10b981":"#f59e0b"}">${bqMet?`기준 통과 (여유 ${fmtDur(bqSec-predFull)})`:`${fmtDur(predFull-bqSec)} 단축 필요`}</strong>`:""}<br><span style="color:#64748b">참고: 기준을 넘겨도 지원자가 많으면 실제 참가는 커트오프에 걸릴 수 있어, 보통 5분 이상 여유를 권합니다.</span>`)+
+      H("BQ (보스턴 마라톤 참가 기준)")+W(!profileIsSet()?PROFILE_NEEDED_MSG:`${p.age}세 ${p.gender==="female"?"여":"남"} 기준 <strong>${fmtDur(bqSec)}</strong>${predFull!=null?` · 현재 예상 ${fmtDur(predFull)}로 <strong style="color:${bqMet?"#10b981":"#f59e0b"}">${bqMet?`기준 통과 (여유 ${fmtDur(bqSec-predFull)})`:`${fmtDur(predFull-bqSec)} 단축 필요`}</strong>`:""}<br><span style="color:#64748b">참고: 기준을 넘겨도 지원자가 많으면 실제 참가는 커트오프에 걸릴 수 있어, 보통 5분 이상 여유를 권합니다.</span>`)+
       H("지금 상태에 대한 조언")+W(advice)};}
 
   if(key==="predTable"){
@@ -4043,6 +4034,15 @@ function estimateMaxHR(age,gender){const a=Math.max(10,Math.min(90,age||35));
   return gender==="female"?Math.round(206-0.88*a):Math.round(208-0.7*a);}
 function estimateLTHR(maxhr){return Math.round(maxhr*0.88);}
 function estimateRHR(age,gender){return gender==="female"?58:55;} // 규칙적으로 달리는 성인의 대략적 평균
+/* ===== 미입력 프로필 — 출시용 첫 실행 상태 =====
+   화면에는 나이·성별·러너유형·심박이 "비어 있음"으로 보이지만, 계산 함수들이 NaN 없이 돌도록 내부 계산값은
+   중립 기본값(35세·남성 공식·펀러너 조정 0)을 채워 둔다. unset=true 인 동안 나이·성별이 드러나는 곳(BQ·에이지그레이딩 등)은
+   "프로필을 입력하면 표시" 안내로 대체한다. 나이와 성별을 모두 입력해 저장하면 unset이 해제된다. */
+function blankProfile(){const mhr=estimateMaxHR(35,"male");
+  return{age:35,gender:"male",rhr:estimateRHR(35,"male"),maxhr:mhr,lthr:estimateLTHR(mhr),formula:"KARVONEN",runnerType:"fun",
+    hrManual:false,displayName:"",weight:null,height:null,unset:true};}
+function profileIsSet(){return!!(DB&&DB.profile&&!DB.profile.unset);}
+const PROFILE_NEEDED_MSG="설정 탭에서 나이·성별을 입력하면 표시됩니다.";
 function applyHREstimates(force){ // 나이·성별을 바꾸면 아직 직접 입력하지 않은 심박값을 추정치로 채움
   const ageEl=document.getElementById("set-user-age"),genEl=document.getElementById("set-user-gender");
   if(!ageEl||!genEl)return;
@@ -4056,6 +4056,8 @@ function applyHREstimates(force){ // 나이·성별을 바꾸면 아직 직접 �
   recalculateSettingsZones();renderHREstimateHint();}
 function markHRManual(){const p=DB.profile||(DB.profile={});p.hrManual=true;save();renderHREstimateHint();recalculateSettingsZones();}
 function renderHREstimateHint(){const box=document.getElementById("hr-estimate-hint");if(!box)return;
+  if(!parseInt((document.getElementById("set-user-age")||{}).value)||!(document.getElementById("set-user-gender")||{}).value){
+    box.innerHTML=`<div style="background:#0b1a2b;border:1px solid #1e3a5f;border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.7;color:#cbd5e1"><strong style="color:#38bdf8"><i class="bi bi-person-plus"></i> 먼저 나이와 성별을 입력하세요</strong><br>입력하면 최대·젖산역치·안정시 심박을 자동으로 추정해 심박존을 계산합니다. 입력 전에는 일반적인 기본값으로 임시 계산됩니다.</div>`;return;}
   const age=parseInt((document.getElementById("set-user-age")||{}).value)||35;
   const gender=(document.getElementById("set-user-gender")||{}).value||"male";
   const mhr=estimateMaxHR(age,gender),lthr=estimateLTHR(mhr);
@@ -5647,6 +5649,7 @@ const AG_CLASSES=[[90,"엘리트 · 월드클래스","z5"],[80,"준엘리트 · 
 function agClassIdx(pct){for(let i=0;i<AG_CLASSES.length;i++)if(pct>=AG_CLASSES[i][0])return i;return AG_CLASSES.length-1;}
 function renderAgeGrade(predFull,p){const el=document.getElementById("level-agegrade");if(!el)return;
   const sex=p.gender==="female"?"female":"male",fac=ageFactor(p.age,sex),openM=OPEN_MARA[sex];
+  if(!profileIsSet()){el.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">나이·성별 보정 등급은 ${PROFILE_NEEDED_MSG}</div>`;return;}
   if(predFull==null){el.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">개인기록(PR)을 입력하면 나이·성별 보정 등급이 표시됩니다.</div>`;return;}
   const graded=predFull*fac,pct=openM/graded*100,ci=agClassIdx(pct);
   el.innerHTML=`<div class="grid-3col" style="gap:10px;margin-bottom:10px">
@@ -5695,7 +5698,7 @@ function renderLevels(){
   <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
     <div class="report-row ${ftIdx>=0?'plan':''}" style="border-left-color:${ftIdx>=0?'var(--accent)':'#334155'}"><div style="font-size:12.5px">기록 기준 수준</div><span class="zone-badge ${ftIdx>=0?FULL_TIERS[ftIdx].c:'z1'}">${ftIdx>=0?FULL_TIERS[ftIdx].name:"기록 입력 필요"}</span></div>
     <div class="report-row" style="border-left-color:#334155"><div style="font-size:12.5px">마일리지 기준 수준</div><span class="zone-badge ${MILE_TIERS[mtIdx].c}">${MILE_TIERS[mtIdx].name}</span></div>
-    <div class="report-row ${bqMet?'ok':'miss'}"><div style="font-size:12.5px">BQ (${p.age}세 ${p.gender==="female"?"여":"남"} 기준 ${fmtDur(bqSec)})<div style="font-size:11px;color:#64748b;margin-top:2px">${predFull==null?"기록 입력 필요":bqMet?`기준 통과 · 여유 ${fmtDur(bqSec-predFull)}${bqSafe?" (커트오프 안정권)":" (커트오프엔 ~5분 더 필요)"}`:`기준까지 ${fmtDur(predFull-bqSec)} 단축 필요`}</div></div><span class="zone-badge ${bqMet?'z2':'z5'}">${predFull==null?"—":bqMet?"충족":"미충족"}</span></div>
+    ${!profileIsSet()?`<div class="report-row" style="border-left-color:#334155"><div style="font-size:12.5px">BQ (보스턴 기준)<div style="font-size:11px;color:#64748b;margin-top:2px">${PROFILE_NEEDED_MSG}</div></div><span class="zone-badge z1">프로필 입력 필요</span></div>`:""}<div class="report-row ${bqMet?'ok':'miss'}" style="${profileIsSet()?'':'display:none'}"><div style="font-size:12.5px">BQ (${p.age}세 ${p.gender==="female"?"여":"남"} 기준 ${fmtDur(bqSec)})<div style="font-size:11px;color:#64748b;margin-top:2px">${predFull==null?"기록 입력 필요":bqMet?`기준 통과 · 여유 ${fmtDur(bqSec-predFull)}${bqSafe?" (커트오프 안정권)":" (커트오프엔 ~5분 더 필요)"}`:`기준까지 ${fmtDur(predFull-bqSec)} 단축 필요`}</div></div><span class="zone-badge ${bqMet?'z2':'z5'}">${predFull==null?"—":bqMet?"충족":"미충족"}</span></div>
   </div>`;
   // 풀코스 표
   const ft=document.getElementById("level-full-table");
@@ -5712,7 +5715,7 @@ function renderLevels(){
   // BQ 표
   const bt=document.getElementById("level-bq-table");
   bt.innerHTML=`<tr style="color:#64748b;font-size:11px;text-align:left;border-bottom:1px solid var(--border)"><th style="padding:6px 8px">연령대</th><th style="padding:6px 8px">남성</th><th style="padding:6px 8px">여성·논바이너리</th></tr>`+
-    BQ_2026.map(b=>{const isMe=p.age>=b[0]&&p.age<=b[1];const lab=b[1]>=120?`${b[0]}+`:`${b[0]}~${b[1]}`;
+    BQ_2026.map(b=>{const isMe=profileIsSet()&&p.age>=b[0]&&p.age<=b[1];const lab=b[1]>=120?`${b[0]}+`:`${b[0]}~${b[1]}`;
       return `<tr style="border-bottom:1px solid var(--border-light);${isMe?'background:rgba(0,122,255,.14)':''}">
         <td style="padding:7px 8px;color:#fff;white-space:nowrap">${lab}${isMe?' <span style="color:#38bdf8;font-weight:700">◀</span>':''}</td>
         <td style="padding:7px 8px;color:${isMe&&p.gender!=='female'?'#fcd34d':'#e2e8f0'};font-weight:${isMe&&p.gender!=='female'?'800':'400'}">${fmtDur(b[2])}</td>
@@ -5776,8 +5779,8 @@ function renderBodyIndex(){const box=document.getElementById("body-index-box");i
     <div style="font-size:10.5px;color:#64748b;margin-top:8px;border-top:1px solid var(--border-light);padding-top:7px"><i class="bi bi-exclamation-triangle"></i> BMI는 근육과 지방을 구분하지 못해 훈련량이 많은 사람을 과체중으로 잘못 분류하는 경우가 흔합니다. 참고용 지표일 뿐이며, 체중 목표를 세우기 전에는 전문가와 상담하세요.</div>
   </div>`;}
 function populateRunnerTypes(){const sel=document.getElementById("set-user-type");if(!sel)return;
-  const cur=(DB.profile&&DB.profile.runnerType)||"club";
-  sel.innerHTML=RUNNER_TYPES.map(t=>`<option value="${t.id}" ${t.id===cur?"selected":""}>${t.label}</option>`).join("");}
+  const un=!!(DB.profile&&DB.profile.unset),cur=un?"":((DB.profile&&DB.profile.runnerType)||"club");
+  sel.innerHTML=(un?`<option value="" selected>선택하세요</option>`:"")+RUNNER_TYPES.map(t=>`<option value="${t.id}" ${t.id===cur?"selected":""}>${t.label}</option>`).join("");}
 function renderRunnerTypeHint(){const el2=document.getElementById("runner-type-hint");if(!el2)return;
   const id=(document.getElementById("set-user-type")||{}).value||"club";
   const t=RUNNER_TYPES.find(x=>x.id===id);
@@ -5806,10 +5809,13 @@ function applyQuickPR(){const m=parseInt(document.getElementById("qk-pr-dist").v
   save();recalculateSettingsZones();renderTypeSuggestion();
   showToast("기록을 반영했습니다. 심박존·페이스가 재계산되었습니다.");}
 function recalculateSettingsZones(){
-  DB.profile={age:parseInt(document.getElementById("set-user-age").value)||53,gender:document.getElementById("set-user-gender").value,
-    rhr:parseInt(document.getElementById("set-user-rhr").value)||48,maxhr:parseInt(document.getElementById("set-user-maxhr").value)||182,
-    lthr:parseInt(document.getElementById("set-user-lthr").value)||164,formula:document.getElementById("set-user-formula").value,
-    runnerType:(document.getElementById("set-user-type")||{}).value||"club",
+  const ageIn=parseInt(document.getElementById("set-user-age").value),genIn=document.getElementById("set-user-gender").value;
+  const unset=!ageIn||!genIn; // 나이·성별이 모두 있어야 "입력된 프로필" — 빈 칸은 중립 기본값으로 계산만 함(예전엔 53세·48/182/164로 채워졌음)
+  const cAge=ageIn||35,cGen=genIn||"male",eMax=estimateMaxHR(cAge,cGen);
+  DB.profile={age:cAge,gender:cGen,unset,
+    rhr:parseInt(document.getElementById("set-user-rhr").value)||estimateRHR(cAge,cGen),maxhr:parseInt(document.getElementById("set-user-maxhr").value)||eMax,
+    lthr:parseInt(document.getElementById("set-user-lthr").value)||estimateLTHR(eMax),formula:document.getElementById("set-user-formula").value,
+    runnerType:(document.getElementById("set-user-type")||{}).value||"fun",
     hrManual:!!(DB.profile&&DB.profile.hrManual),
     weight:parseFloat((document.getElementById("set-user-weight")||{}).value)||null,
     height:parseFloat((document.getElementById("set-user-height")||{}).value)||null,
@@ -7814,7 +7820,7 @@ function generateDemoYear(){
   if(!confirm("1년치 예시 데이터를 만듭니다.\n\n기존 운동기록·계획·일기·개인기록(PR)이 모두 덮어써집니다.\n계속할까요?"))return;
   const WEEKS=52,START_FULL=4*3600,END_FULL=2*3600+59*60;
   DB.calendar={};DB.records={};
-  DB.profile={...DB.profile,age:20,gender:"male",rhr:42,maxhr:196,lthr:176,formula:"KARVONEN",runnerType:"advanced",displayName:"킵초게"};
+  DB.profile={...DB.profile,age:20,gender:"male",rhr:42,maxhr:196,lthr:176,formula:"KARVONEN",runnerType:"advanced",displayName:"킵초게",unset:false};
   const fullAt=(w)=>{const p=w/WEEKS,f=1-Math.pow(1-p,1.6);return START_FULL+(END_FULL-START_FULL)*f;}; // 초반 향상이 크고 후반은 완만
   const prBest={};
   for(let w=0;w<WEEKS;w++){
@@ -7902,7 +7908,7 @@ function applyResetDomain(id,from,to){
   else if(id==="records"){if(!from&&!to)DB.records={};else{for(const k in DB.records){const rd=DB.records[k].date;if(rd&&inResetRange(rd,from,to))delete DB.records[k];}}}
   else if(id==="workouts")DB.workouts=[];
   else if(id==="races"){DB.races=[];DB.raceArchive=[];DB.race=null;}
-  else if(id==="profile")DB.profile={age:35,gender:"male",rhr:55,maxhr:estimateMaxHR(35,"male"),lthr:estimateLTHR(estimateMaxHR(35,"male")),formula:"KARVONEN",runnerType:"club",hrManual:false};
+  else if(id==="profile")DB.profile=blankProfile(); // 출시 첫 실행과 같은 "미입력" 상태로
 }
 function pruneEmptyCalendarDays(){for(const d in DB.calendar){const day=DB.calendar[d];
   if(day&&(!day.logs||!day.logs.length)&&(!day.plans||!day.plans.length)&&!((day.diary||"").trim()))delete DB.calendar[d];}}
@@ -7912,7 +7918,7 @@ function resetEverything(){ // 시드(예시) 데이터를 포함해 기록이 �
   if(typed!=="초기화"){showToast("입력이 일치하지 않아 취소했습니다.");return;}
   DB.calendar={};DB.records={};DB.workouts=[];DB.races=[];DB.raceArchive=[];DB.race=null;
   DB.customTemplates=[];DB.myRunTips=[];DB.tocFavorites=[];DB.kebabFavorites=[];
-  DB.profile={age:35,gender:"male",rhr:55,maxhr:estimateMaxHR(35,"male"),lthr:estimateLTHR(estimateMaxHR(35,"male")),formula:"KARVONEN",runnerType:"club",displayName:"",weight:null,height:null,hrManual:false};
+  DB.profile=blankProfile();
   normalizeDB();save();calculatedZones=computeZones(DB.profile);
   bootUI();refreshAll();
   showToast("모든 데이터를 삭제했습니다. (계획 기능에 필요한 기본 목표 대회 1개만 새로 만들어집니다)");}
@@ -8257,11 +8263,12 @@ function showToast(msg){const t=document.getElementById("toast");if(!t)return;
 function refreshAll(){if(currentSlideIndex===0)renderDashboard();if(currentSlideIndex===5){renderComplianceReport();renderAnalyticsCharts();}if(currentSlideIndex===6)renderPRBoard();}
 function bootUI(){const p=DB.profile;renderVersionInfo();
   setTimeout(()=>requestPersistentStorage(true),1200); // 조용히 한 번 요청 — 실패해도 앱 사용엔 지장 없음
-  document.getElementById("set-user-age").value=p.age;document.getElementById("set-user-gender").value=p.gender;
-  document.getElementById("set-user-rhr").value=p.rhr;document.getElementById("set-user-maxhr").value=p.maxhr;
-  document.getElementById("set-user-lthr").value=p.lthr;document.getElementById("set-user-formula").value=p.formula;
+  const un=!!p.unset; // 미입력 프로필이면 입력칸을 비워 두고(자리표시 문구만) 사용자가 직접 채우게 함
+  document.getElementById("set-user-age").value=un?"":p.age;document.getElementById("set-user-gender").value=un?"":p.gender;
+  document.getElementById("set-user-rhr").value=un?"":p.rhr;document.getElementById("set-user-maxhr").value=un?"":p.maxhr;
+  document.getElementById("set-user-lthr").value=un?"":p.lthr;document.getElementById("set-user-formula").value=p.formula;
   populateRunnerTypes();
-  if(document.getElementById("set-user-type"))document.getElementById("set-user-type").value=p.runnerType||"club";
+  if(document.getElementById("set-user-type"))document.getElementById("set-user-type").value=un?"":(p.runnerType||"club");
   if(document.getElementById("set-user-name"))document.getElementById("set-user-name").value=p.displayName||"";
   if(document.getElementById("set-user-weight"))document.getElementById("set-user-weight").value=p.weight||"";
   if(document.getElementById("set-user-height"))document.getElementById("set-user-height").value=p.height||"";
