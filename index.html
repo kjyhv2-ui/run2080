@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#0a0e17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Run2080">
@@ -406,16 +406,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div id="run-cadence-advanced" style="display:none;background:#080e1a;border-radius:8px;padding:12px;margin-top:6px">
             <div class="grid-2col" style="gap:10px;margin-bottom:6px">
               <div class="form-group" style="margin-bottom:0"><label style="font-size:11px">운동 목표</label>
-                <select id="run-cad-goal" onchange="renderRunCadenceCalc()">
-                  <option value="endurance">지구력 향상</option><option value="speed">속도 향상</option><option value="injury">부상방지(가벼운 조깅)</option>
+                <select id="run-cad-goal" onchange="onCadencePrefChange('run')">
+                  <option value="endurance">지구력 향상</option><option value="speed">속도 향상</option><option value="injury">부상방지 (보폭 줄이기)</option>
                 </select></div>
               <div class="form-group" style="margin-bottom:0"><label style="font-size:11px">거리 조건</label>
-                <select id="run-cad-disttier" onchange="renderRunCadenceCalc()">
-                  <option value="short">단거리(5K↓)</option><option value="mid">중거리(10K~하프)</option><option value="long">장거리(풀↑)</option>
+                <select id="run-cad-disttier" onchange="onCadencePrefChange('run')">
+                  <option value="short">단거리 (5K 이하)</option><option value="mid" selected>중거리 (10K~하프)</option><option value="long">장거리 (풀코스 이상)</option>
                 </select></div>
             </div>
+            <div class="form-group" style="margin-bottom:8px"><label style="font-size:11px">기준 페이스 (선택 — 비워두면 위 목표페이스 → 내 기록 순으로 자동)</label><input type="text" id="run-cad-pace" placeholder="예: 6:30" oninput="renderRunCadenceCalc()"></div>
             <div id="run-cadence-result" style="font-size:11.5px;color:#94a3b8"></div>
           </div>
+        </div>
+        <div class="form-group" style="margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="run-cadence-sensor-toggle" checked style="width:17px;height:17px"> 실측 케이던스 측정 (휴대폰 센서, 참고용 추정치)</label>
+          <div id="cadence-sensor-hint" style="font-size:11px;color:#64748b;margin-top:4px;margin-left:25px"></div>
         </div>
         <div class="grid-2col" style="gap:10px">
           <div class="form-group" style="margin-bottom:0"><label>음성 코칭</label>
@@ -444,6 +449,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <div class="stat-mini"><div class="v" id="live-pace" style="font-size:19px">—</div><div class="l">현재 페이스</div></div>
             <div class="stat-mini"><div class="v" id="live-avgpace" style="font-size:19px">—</div><div class="l">평균 페이스</div></div>
           </div>
+          <div class="stat-mini" style="margin-top:10px"><div class="v" id="live-cadence" style="font-size:19px">—</div><div class="l">케이던스 (spm, 실측 추정)</div></div>
         </div>
         <div class="card" id="live-step-card" style="display:none;border-left:4px solid var(--accent)">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -905,18 +911,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light)">
           <div style="font-size:12.5px;font-weight:700;color:#e2e8f0;margin-bottom:4px"><i class="bi bi-calculator"></i> 추천 케이던스 계산기</div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:10px">키·체중·나이·성별·수준은 프로필 값이 화면에 없어도 자동으로 반영됩니다.</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:10px">러닝 탭의 "추천 케이던스로 설정하기"와 같은 계산입니다. 키·러너 수준은 프로필 값이 자동 반영됩니다.</div>
           <div class="grid-2col" style="gap:10px;margin-bottom:8px">
             <div class="form-group" style="margin-bottom:0"><label>운동 목표</label>
-              <select id="cad-goal" onchange="renderCadenceCalc()">
-                <option value="endurance">지구력 향상</option><option value="speed">속도 향상</option><option value="injury">부상방지(가벼운 조깅)</option>
+              <select id="cad-goal" onchange="onCadencePrefChange('set')">
+                <option value="endurance">지구력 향상</option><option value="speed">속도 향상</option><option value="injury">부상방지 (보폭 줄이기)</option>
               </select></div>
             <div class="form-group" style="margin-bottom:0"><label>거리 조건</label>
-              <select id="cad-disttier" onchange="renderCadenceCalc()">
+              <select id="cad-disttier" onchange="onCadencePrefChange('set')">
                 <option value="short">단거리 (5K 이하)</option><option value="mid" selected>중거리 (10K~하프)</option><option value="long">장거리 (풀코스 이상)</option>
               </select></div>
           </div>
-          <div class="form-group"><label>기준 페이스 (선택 — 비워두면 내 기록 기준 자동)</label><input type="text" id="cad-pace" placeholder="예: 5:30" oninput="renderCadenceCalc()"></div>
+          <div class="form-group"><label>기준 페이스 (선택 — 비워두면 내 기록 기준 자동)</label><input type="text" id="cad-pace" placeholder="예: 6:30" oninput="renderCadenceCalc()"></div>
           <div id="cadence-calc-result"></div>
         </div>
       </div></div>
@@ -1444,7 +1450,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">러닝 탭의 추천 케이던스</strong> — 러닝 시작 화면에서 메트로놈을 켜면, 기존과 똑같이 케이던스·소리만 나오는 기본 화면이 먼저 보입니다. "추천 케이던스로 설정하기"를 펼치면 운동목표·거리조건을 고를 수 있고, 이미 입력해둔 페이스주(또는 등록된 기록)를 자동으로 가져와 추천값을 계산합니다. 활동 종류나 모드를 바꾸면 펼쳐진 상태에서는 자동으로 다시 계산됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">자체진단</strong> — 설정 → 자체진단에서 핵심 기능의 배선(HTML 버튼이 실제 존재하는 함수를 가리키는지, 과거 있었던 버그 패턴이 재발하지 않았는지, 핵심 계산이 예외 없이 도는지)을 자동으로 점검합니다. 앱을 열 때마다 조용히 한 번 실행되어 문제가 있으면 개발자 콘솔에 기록되고, 이 화면에서 직접 실행해 눈으로 결과를 볼 수도 있습니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">추천 케이던스 계산기</strong> — 설정의 메트로놈 기본값에서, 목표(속도향상·지구력향상·부상방지)와 거리 조건(단·중·장거리)을 고르면 케이던스(분당 스텝수)를 추천합니다. 키·수준은 프로필 값이 화면에 없어도 자동으로 반영됩니다. VDOT처럼 검증된 회귀식이 있는 건 아니라서, 널리 알려진 페이스별 케이던스 범위와 코칭 원칙(오버스트라이드 방지를 위한 170~180spm 권장 등)을 투명하게 조합한 추정치입니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">추천 케이던스 계산기</strong> — 설정의 메트로놈 기본값과 러닝 탭의 "추천 케이던스로 설정하기" 두 곳에 있으며, 같은 입력(운동목표·거리조건·기준페이스)과 같은 계산을 씁니다. 기준 페이스를 비우면 러닝 탭은 목표페이스 → 내 기록, 설정은 내 기록 순으로 자동으로 채웁니다. 페이스별 일반적인 케이던스 범위를 기준으로 키·러너 수준(프로필)·거리·목표를 보정하고, 계산 과정을 화면에 그대로 보여줍니다. 부상방지 목표는 연구(Heiderscheit 외 2011)에 따라 평소 대비 +5%로 계산합니다. VDOT처럼 검증된 회귀식이 있는 건 아니라 추정치이며 개인차가 큽니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">훈련부하 포커스</strong> — 통계 탭에서 무산소·고강도유산소·저강도유산소로 나눠 최근 4주 누적 TRIMP를 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"를 참고했습니다. "적정범위"는 개인화된 학습 모델이 없어, 최근 12주 평균을 4주 단위로 환산한 값의 80~120%로 근사합니다(ACWR과 같은 원리).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 알림</strong> — 대시보드의 "오늘의 운동 알림"뿐 아니라, 캘린더 다이어리에서 어떤 날짜의 계획이든(휴식 포함) 시각을 정하고 알림을 켤 수 있습니다. 설정한 시간 전(기본 1시간)에 운동 종류를 알려줍니다. 서버가 없는 구조라 <strong>브라우저(앱)가 열려있는 동안에만</strong> 정확히 동작하며, 몇 시간씩 완전히 닫아두면 못 울릴 수 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">캘린더의 Run/START 버튼</strong> — 계획이 달리기 계열이면 "Run", 그 외 활동(걷기 등, 그리고 "휴식 (원하면 자전거·수영...)"처럼 휴식에 곁들인 제안 활동)이면 "START"로 표시되어 러닝 탭의 표기와 통일됩니다. "대회 당일"처럼 실제로는 러닝인 계획은 계속 "Run"으로 정확히 구분됩니다.</div>
@@ -2433,7 +2439,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.25.0",APP_BUILD="2026-09-26";
+const APP_VERSION="2.27.1",APP_BUILD="2026-09-26";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다. */
@@ -2441,6 +2447,30 @@ const FEATURES={strava:false};
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.27.1",d:"2026-09-26",title:"버그픽스 — v2.27.0에서 운동 시작 시 음성 안내가 나오지 않던 문제",items:[
+    "원인: 케이던스 센서 권한 요청을 startRunSession() 맨 앞에서 await로 기다리게 만들어, 그 뒤에 이어지는 GPS 준비·카운트다운·시작 음성 안내까지 전부 지연/무산됐음",
+    "수정: 센서 권한 요청은 결과를 기다리지 않고 흘려보내고(Promise.then으로 나중에 RUN.cadenceOn만 갱신), 운동 시작 흐름은 예전처럼 즉시 동기 진행 — 음성 안내 정상화",
+    "케이던스 기능 자체는 그대로 동작(권한이 실제 활성화(activateRun)까지는 몇 초 여유가 있어 늦지 않게 반영됨)"
+  ]},
+  {v:"2.27.0",d:"2026-09-26",title:"실측 케이던스(휴대폰 센서) 측정 — 러닝 중 실시간 표시 + 추천 케이던스와 비교 코칭",items:[
+    "운동 시작 화면에 '실측 케이던스 측정' 옵션 추가 — 켜면 휴대폰 가속도계로 걸음을 세어 실시간 spm을 표시(GPS와 무관하게 동작, 트레드밀에서도 사용 가능)",
+    "iOS는 START 버튼을 누를 때 센서 권한을 요청(브라우저 정책상 반드시 사용자 클릭 안에서 요청해야 허용됨), 안드로이드 등은 대부분 별도 요청 없이 동작",
+    "종료 후 실측 평균 케이던스를 기록에 저장하고, 이미 있는 추천 케이던스 계산과 비교해 코칭 문구를 메모에 자동으로 남김(예: 목표보다 낮음 → 보폭을 줄이고 스텝을 빠르게)",
+    "달력의 러닝 기록 요약 줄에도 실측 케이던스를 함께 표시",
+    "정확도 한계: 손에 쥐고 뛰면 팔 흔들림이 섞여 오차가 커짐(팔밴드·주머니 고정 권장) — 참고용 추정치이며 건강·안전 고지에 명시",
+    "자체진단에 합성 가속도 신호로 피크검출 로직을 검증하는 항목(⑮) 추가"
+  ]},
+  {v:"2.26.1",d:"2026-09-26",title:"PWA 설치 진단 — theme-color 불일치 수정",items:[
+    "브라우저 상단바 색(theme-color meta)이 #000000으로, manifest.json의 #0a0e17과 달랐던 것을 통일 — 설치 진단 중 발견한 사소한 불일치이며, 설치 버튼 미표시의 확정 원인은 아님(원인은 기기에서 직접 확인 필요)"
+  ]},
+  {v:"2.26.0",d:"2026-09-26",title:"추천 케이던스 — 러닝 탭과 설정을 같은 입력·같은 계산으로 통일, 부상방지 계산 재검토",items:[
+    "러닝 탭 '추천 케이던스로 설정하기'에도 기준 페이스 입력칸 추가 — 설정 계산기와 똑같이 운동목표·거리조건·기준페이스 3가지로 계산",
+    "두 화면이 같은 결과 카드를 쓰고, 계산 과정(페이스 기준·키·수준·거리·목표 보정)을 숫자로 보여줌 — 같은 조건이면 두 화면 값이 항상 같음",
+    "운동목표·거리조건 선택은 한 곳에 저장되어 어느 화면에서 바꿔도 다른 화면에 그대로 반영",
+    "부상방지 목표 재검토 — 예전엔 페이스와 무관하게 172spm 이상을 강제(7:30/km 조깅에도 172, 기준 대비 약 +11%)해 과했음. 연구(Heiderscheit 외 2011)대로 '평소 대비 +5%'로 변경",
+    "설정 계산기의 '키·체중·나이·성별·수준 반영' 안내가 사실과 달랐던 문구 수정 — 실제 반영 항목은 키와 러너 수준",
+    "프로필 미입력 상태에서는 기본 수준으로 계산했다는 안내 표시",
+    "자체진단 ⑭ 추가(두 화면 동일 계산, 부상방지 +5%) — 총 14개"]},
   {v:"2.25.0",d:"2026-09-26",title:"출시용 첫 실행 상태 정리 — 개인 데이터 제거, 예시 대회 1개",items:[
     "새로 설치한 사용자가 처음 보는 상태에서 개발용 개인 데이터를 모두 제거 — 프로필(나이·성별·러너유형·심박), 8월 운동 기록·일기, 개인기록(PR), 대회 2건",
     "그 결과 캘린더·통계·기록예측·러너 수준 분류 탭도 빈 상태에서 시작(기록을 입력하면 채워짐)",
@@ -2806,9 +2836,28 @@ function runSelfTests(){
   check("⑬ 미입력 프로필(출시 첫 실행 상태)에서도 심박존·TRIMP가 숫자로 계산됨",()=>{const bp=blankProfile(),z=computeZones(bp),t=trimp(40,140,bp);
     const ok=bp.unset===true&&[1,2,3,4,5].every(i=>Number.isFinite(z[i].min)&&Number.isFinite(z[i].max))&&Number.isFinite(t);
     return{pass:ok,detail:ok?"":"NaN 발생"};});
+  check("⑭ 케이던스 두 화면 동일 계산 + 부상방지 목표가 절대값 강제 없이 +5% 상대 증가",()=>{
+    const o={paceSec:450,goal:"endurance",distTier:"mid",heightCm:170,runnerType:"fun"},e=recommendCadenceDetail(o).raw,inj=recommendCadenceDetail({...o,goal:"injury"}).raw;
+    const same=recommendCadence(o)===recommendCadenceDetail(o).spm;const rel=Math.abs(inj/e-1.05)<0.001;
+    return{pass:same&&rel&&typeof cadenceResultHTML==="function",detail:!rel?`부상방지 비율 ${(inj/e).toFixed(3)}`:""};});
   check("⑫ 오류 수집기 설치 + 약관·개인정보 링크 4종 존재",()=>{const need=["privacy.html","terms.html","disclaimer.html","licenses.html"];
     const miss=need.filter(f=>!document.querySelector(`a[href="./${f}"]`));
     return{pass:typeof ErrorReporter==="object"&&typeof ErrorReporter.report==="function"&&!miss.length,detail:miss.length?"링크 누락: "+miss.join(", "):""};});
+  check("⑮ 실측 케이던스 — 가속도계 피크검출이 합성 신호에서 spm을 그럴듯한 범위로 추정",()=>{
+    if(typeof onCadenceMotion!=="function"||typeof cadenceCoachText!=="function"||typeof startCadenceSensor!=="function"||typeof stopCadenceSensor!=="function")
+      return{pass:false,detail:"관련 함수 없음"};
+    const savedRun=RUN,savedState=cadenceState,realNow=Date.now;let fakeT=1000000;
+    try{
+      RUN={active:true,paused:false};
+      cadenceState={base:null,env:1.2,armed:true,lastStepT:0,recentSteps:[],totalSteps:0,spm:null};
+      Date.now=()=>fakeT;
+      const targetSpm=170,cycleMs=60000/targetSpm,amp=2.5,base=9.8,dtMs=20,totalMs=7000; // 170spm 걸음을 흉내낸 합성 가속도 신호(사인파)를 7초 분량 넣어봄
+      for(let t=0;t<=totalMs;t+=dtMs){fakeT=1000000+t;
+        onCadenceMotion({accelerationIncludingGravity:{x:0,y:0,z:base+amp*Math.sin(2*Math.PI*t/cycleMs)}});}
+      const ok=cadenceState.spm!=null&&Math.abs(cadenceState.spm-targetSpm)<=40; // 알고리즘 특성상 정확히 일치는 아니라도 대략적 범위 안에 들어와야 함
+      const coachOk=/spm/.test(cadenceCoachText(170,300));
+      return{pass:ok&&coachOk,detail:ok?(coachOk?"":"코칭 문구 형식 이상"):`추정 spm=${cadenceState.spm}`};
+    }finally{Date.now=realNow;RUN=savedRun;cadenceState=savedState;}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -2820,7 +2869,7 @@ function renderSelfTestUI(){const box=document.getElementById("selftest-result")
         ${r.pass?"✓":"✗"} ${r.name}${r.detail?`<div style="color:#fca5a5;margin-left:14px">${escHtml(r.detail)}</div>`:""}</div>`).join("");},50);}
 function setErrorReport(on){DB.errorReportOff=!on;save();showToast(on?"오류 기록 전송을 켰습니다.":"오류 기록 전송을 껐습니다.");}
 function renderErrorReportToggle(){const el=document.getElementById("error-report-toggle");if(el)el.checked=!DB.errorReportOff;}
-function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
+function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.cadencePrefs)DB.cadencePrefs={goal:"endurance",distTier:"mid"};if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
   if(!DB.races||!DB.races.length){const r=DB.race||{name:"내 목표 대회",date:addDays(TODAY,112),target:"SUB3"};
     DB.races=[{id:"r_"+uid(),name:r.name,date:r.date,dist:r.dist||"FULL",targetSec:r.targetSec||TARGET_SEC[r.target]||10800,weeks:r.weeks||16,primary:true}];}
   DB.races.forEach(r=>{if(!r.dist)r.dist="FULL";if(!r.targetSec)r.targetSec=TARGET_SEC[r.target]||10800;if(!r.id)r.id="r_"+uid();});
@@ -5003,6 +5052,7 @@ function renderSelectedDay(key){
         <span><span style="color:#64748b">시간</span> <strong style="color:#fff">${fmtDur(l.duration*60)}</strong></span>
         <span><span style="color:#64748b">평균</span> <strong style="color:#6ee7b7">${fmtPace(avg)}/km</strong></span>
         ${l.bestPaceSec!=null?`<span><span style="color:#64748b">최고</span> <strong style="color:#fcd34d">${fmtPace(l.bestPaceSec)}/km</strong> <span style="color:#475569;font-size:10px">${BEST_PACE_WINDOW_M}m</span></span>`:""}
+        ${l.avgCadenceSpm?`<span><span style="color:#64748b">케이던스</span> <strong style="color:#38bdf8">${l.avgCadenceSpm}spm</strong> <span style="color:#475569;font-size:10px">실측 추정</span></span>`:""}
       </div>`;}
     if(l.laps&&l.laps.length)html+=`<div style="margin:-4px 0 8px;padding:10px;background:var(--bg-surface);border:1px solid var(--border-light);border-radius:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="const t=document.getElementById('laptbl-${l.id}');t.style.display=t.style.display==='none'?'block':'none';">
@@ -5151,7 +5201,7 @@ function saveManualWorkoutLog(){
   if(pendingRoute&&pendingRoute.length>=2){log.hasRoute=true;log.routePts=pendingRoute.length;saveRouteData(log.id,pendingRoute);}
   pendingRoute=null;
   if(pendingLaps&&pendingLaps.laps.length){log.laps=pendingLaps.laps;log.lapsTrackMode=pendingLaps.trackMode;}pendingLaps=null;
-  if(pendingSummary){log.avgPaceSec=pendingSummary.avgPaceSec;log.bestPaceSec=pendingSummary.bestPaceSec;}pendingSummary=null;
+  if(pendingSummary){log.avgPaceSec=pendingSummary.avgPaceSec;log.bestPaceSec=pendingSummary.bestPaceSec;if(pendingSummary.avgCadenceSpm)log.avgCadenceSpm=pendingSummary.avgCadenceSpm;}pendingSummary=null;
   log.title=(log.notes||"").trim()||autoTitle(log);
   if(edit){const[k,id]=edit.split("|");DB.calendar[k].logs=DB.calendar[k].logs.filter(l=>l.id!==id);}
   if(!DB.calendar[date])DB.calendar[date]={plans:[],logs:[]};
@@ -6692,26 +6742,23 @@ function toggleRunCadenceAdvanced(){const box=document.getElementById("run-caden
   const open=box.style.display==="none";box.style.display=open?"block":"none";
   caret.style.transform=open?"rotate(180deg)":"rotate(0deg)";
   if(open)renderRunCadenceCalc();}
-function runTabInferredPaceSec(){ // 자유달리기에 직접 넣은 목표페이스 > PR 기준 순으로 사용(설정의 계산기와 동일한 폴백)
+function runTabContextPace(){ // 러닝 탭 자유달리기에 넣은 목표페이스(또는 거리+시간으로 역산한 페이스). 없으면 null
   const paceInput=(document.getElementById("run-free-pace")||{}).value;
   if(paceInput&&paceInput.trim())return parseTime(paceInput.trim());
   const distInput=parseFloat((document.getElementById("run-free-dist")||{}).value),timeInput=parseFloat((document.getElementById("run-free-time")||{}).value);
-  if(distInput>0&&timeInput>0)return Math.round(timeInput*60/distInput); // 거리+시간이면 그 조합의 페이스
-  return currentProfilePaceSec();}
+  if(distInput>0&&timeInput>0)return Math.round(timeInput*60/distInput);
+  return null;}
 function runTabInferredDistTier(){const km=parseFloat((document.getElementById("run-free-dist")||{}).value);
   if(km>0)return km<=5?"short":km<=21.1?"mid":"long";
   return null;} // 자유달리기에 거리를 안 넣었으면 자동 추정 불가 — 선택값 그대로 둠
 function renderRunCadenceCalc(){const box=document.getElementById("run-cadence-result");if(!box)return;
+  applyCadencePrefsToUI("run");
   const inferredTier=runTabInferredDistTier();
-  if(inferredTier)document.getElementById("run-cad-disttier").value=inferredTier; // 거리를 넣어뒀으면 자동으로 맞춰줌(직접 바꾸는 것도 계속 가능)
-  const goal=document.getElementById("run-cad-goal").value,distTier=document.getElementById("run-cad-disttier").value;
-  const paceSec=runTabInferredPaceSec(),p=DB.profile||{};
-  if(!paceSec){box.innerHTML=`<div style="color:#64748b">등록된 기록이나 목표페이스가 없어 추정할 수 없습니다. 위 "페이스주"에 직접 입력해보세요.</div>`;return;}
-  const rec=recommendCadence({paceSec,goal,distTier,heightCm:p.height,runnerType:p.runnerType||"club"});
-  box.innerHTML=`<div style="text-align:center;margin-bottom:8px">
-      <span style="font-size:10.5px;color:#64748b">추천 (${fmtPace(paceSec)}/km 기준)</span><br>
-      <span style="font-size:24px;font-weight:800;color:#38bdf8">${rec}</span><span style="font-size:12px;color:#64748b"> spm</span></div>
-    <button type="button" class="btn btn-sm" style="width:100%" onclick="applyRunCadence(${rec})"><i class="bi bi-check2"></i> 이 값으로 설정</button>`;}
+  if(inferredTier)document.getElementById("run-cad-disttier").value=inferredTier; // 자유달리기에 거리를 넣어뒀으면 자동으로 맞춤(표시만, 저장된 선택은 그대로)
+  const typed=((document.getElementById("run-cad-pace")||{}).value||"").trim();
+  const ctx=runTabContextPace();
+  const pace=typed?{sec:parseTime(typed),src:"직접 입력"}:ctx?{sec:ctx,src:"러닝 탭 목표페이스"}:resolveRecordPace();
+  box.innerHTML=cadenceResultHTML("run",pace,`<button type="button" class="btn btn-sm" style="width:100%" onclick="applyRunCadence(__BPM__)"><i class="bi bi-check2"></i> 이 값으로 설정</button>`);}
 function applyRunCadence(bpm){document.getElementById("run-metro-bpm").value=bpm;showToast(`목표 케이던스를 ${bpm}spm으로 설정했습니다.`);}
 function refreshRunCadenceIfOpen(){const box=document.getElementById("run-cadence-advanced"); // 펼쳐진 상태일 때만 다시 계산(활동종류·모드가 바뀌어도 자동 최신화)
   if(box&&box.style.display==="block")renderRunCadenceCalc();}
@@ -6733,30 +6780,56 @@ function baseCadenceFromPace(paceSec){
   for(let i=0;i<A.length-1;i++){const[p1,c1]=A[i],[p2,c2]=A[i+1];
     if(paceSec<=p1&&paceSec>=p2)return c1+(c2-c1)*(p1-paceSec)/(p1-p2);}
   return 170;}
-function recommendCadence(opts){ // opts:{paceSec, goal, distTier, heightCm, runnerType}
-  let c=baseCadenceFromPace(opts.paceSec);
-  if(opts.heightCm){const delta=opts.heightCm-168;c-=delta*0.12;} // 키가 크면 자연스러운 보폭이 커져 케이던스는 살짝 낮아지는 경향(경미한 보정)
-  const levelBoost={novice:5,beginner:4,fun:3,club:1,advanced:0,subelite:0,elite:0};
-  c+=levelBoost[opts.runnerType]!=null?levelBoost[opts.runnerType]:2; // 숙련도가 낮을수록 "짧고 빠르게" 코칭 원칙 반영
-  if(opts.distTier==="short")c+=2;else if(opts.distTier==="long")c-=2; // 단거리는 회전을 조금 더, 장거리는 무리하지 않게
-  if(opts.goal==="speed")c+=4;
-  else if(opts.goal==="injury")c=Math.max(c,172); // 부상방지 목표는 오버스트라이드 방지를 위해 172spm 하한 적용(유명한 코칭 경험칙)
-  return Math.round(Math.min(200,Math.max(140,c)));}
+/* v2.26.0 재검토: 두 화면(러닝 탭·설정)이 이 함수 하나만 쓰고, 계산 과정(항목별 보정)을 그대로 화면에 보여준다.
+   변경점: "부상방지" 목표를 예전의 '무조건 172spm 이상'에서 '페이스 기준값의 +5%'로 바꿨다.
+   근거 — 보폭을 줄이기 위해 케이던스를 자신의 평소 값보다 5~10% 높이면 무릎·고관절 부하가 줄었다는 연구
+   (Heiderscheit 외, Med Sci Sports Exerc 2011)가 가장 많이 인용되며, 이는 '절대값 172'가 아니라 '평소 대비 상대 증가'다.
+   예전 방식은 7:30/km로 가볍게 조깅하는 사람에게도 172spm(기준 대비 약 +11%)을 요구해 과했다. 보수적으로 +5%를 쓴다. */
+const CADENCE_LEVEL_BOOST={novice:5,beginner:4,fun:3,club:1,advanced:0,subelite:0,elite:0};
+const CADENCE_GOAL_LABEL={endurance:"지구력 향상",speed:"속도 향상",injury:"부상방지"};
+const CADENCE_DIST_LABEL={short:"단거리",mid:"중거리",long:"장거리"};
+function recommendCadenceDetail(opts){ // opts:{paceSec, goal, distTier, heightCm, runnerType} → {spm, parts:[[이름, 값(±spm)]], raw}
+  const parts=[];const base=baseCadenceFromPace(opts.paceSec);let c=base;parts.push(["페이스 기준",base]);
+  if(opts.heightCm){const d=-(opts.heightCm-168)*0.12;c+=d;parts.push([`키 ${opts.heightCm}cm`,d]);} // 키가 크면 자연 보폭이 커져 케이던스가 약간 낮은 경향(경미한 보정)
+  const rt=opts.runnerType,lb=CADENCE_LEVEL_BOOST[rt]!=null?CADENCE_LEVEL_BOOST[rt]:2;c+=lb;
+  parts.push([`수준 ${(RUNNER_TYPES.find(t=>t.id===rt)||{label:"기본"}).label.replace(/ \(.*\)/,"")}`,lb]); // 숙련도가 낮을수록 "짧고 빠르게" 코칭 원칙
+  const dd=opts.distTier==="short"?2:opts.distTier==="long"?-2:0;c+=dd;parts.push([CADENCE_DIST_LABEL[opts.distTier]||"거리",dd]);
+  let gd=0;if(opts.goal==="speed")gd=4;else if(opts.goal==="injury")gd=c*0.05;c+=gd;parts.push([CADENCE_GOAL_LABEL[opts.goal]||"목표",gd]);
+  const spm=Math.round(Math.min(200,Math.max(140,c)));
+  return{spm,parts,raw:c};}
+function recommendCadence(opts){return recommendCadenceDetail(opts).spm;} // 기존 호출부·자체진단 호환
 function currentProfilePaceSec(){const rec=currentBasisRecord();if(!rec)return null;
   const mp=currentMPace();return mp||null;} // 초/km, 등록된 기록이 없으면 null
-function renderCadenceCalc(){const box=document.getElementById("cadence-calc-result");if(!box)return;
-  const goal=document.getElementById("cad-goal").value,distTier=document.getElementById("cad-disttier").value;
-  const paceInput=(document.getElementById("cad-pace")||{}).value.trim();
-  let paceSec=paceInput?parseTime(paceInput):currentProfilePaceSec();
+function resolveRecordPace(){const sec=currentProfilePaceSec();return sec?{sec,src:"내 기록 기준"}:null;}
+/* 두 화면 공통: 목표·거리 선택은 DB.cadencePrefs 하나에 저장해 어느 화면에서 바꿔도 같은 값으로 보인다 */
+function applyCadencePrefsToUI(which){const pr=DB.cadencePrefs||{};const pre=which==="run"?"run-cad-":"cad-";
+  const g=document.getElementById(pre+"goal"),d=document.getElementById(pre+"disttier");
+  if(g&&pr.goal)g.value=pr.goal;if(d&&pr.distTier)d.value=pr.distTier;}
+function onCadencePrefChange(which){const pre=which==="run"?"run-cad-":"cad-";
+  DB.cadencePrefs={goal:document.getElementById(pre+"goal").value,distTier:document.getElementById(pre+"disttier").value};save();
+  if(which==="run")renderRunCadenceCalc();else renderCadenceCalc();}
+function cadenceResultHTML(which,pace,applyBtn){ // 결과 카드 — 두 화면이 같은 모양·같은 설명을 쓴다
+  const pre=which==="run"?"run-cad-":"cad-";
+  if(!pace||!pace.sec||!isFinite(pace.sec))return`<div style="font-size:11.5px;color:#64748b;line-height:1.6">기준 페이스를 알 수 없습니다. 위 "기준 페이스"에 평소 달리는 페이스를 입력하세요(예: 6:30). 기록(PR)을 등록하면 자동으로 채워집니다.</div>`;
+  if(pace.sec<150||pace.sec>900)return`<div style="font-size:11.5px;color:#f59e0b">페이스를 확인하세요 — 2:30~15:00/km 범위로 입력해 주세요.</div>`;
   const p=DB.profile||{};
-  if(!paceSec){box.innerHTML=`<div style="font-size:11.5px;color:#64748b">등록된 PR이나 목표 대회 기록이 없어 페이스를 추정할 수 없습니다. 위에 직접 페이스를 입력해주세요(예: 5:30).</div>`;return;}
-  const rec=recommendCadence({paceSec,goal,distTier,heightCm:p.height,runnerType:p.runnerType||"club"});
-  box.innerHTML=`<div style="background:#0d1420;border:1px solid #1e293b;border-radius:10px;padding:14px;text-align:center;margin-bottom:8px">
-      <div style="font-size:11px;color:#64748b;margin-bottom:4px">추천 케이던스 (${paceInput?"직접 입력":"내 기록 기준"} ${fmtPace(paceSec)}/km)</div>
-      <div style="font-size:32px;font-weight:800;color:#38bdf8">${rec}<span style="font-size:14px;color:#64748b"> spm</span></div>
-    </div>
-    <button class="btn btn-sm" style="width:100%" onclick="applyCadenceRecommendation(${rec})"><i class="bi bi-check2-circle"></i> 이 값을 메트로놈 기본값으로 적용</button>
-    <div style="font-size:10.5px;color:#64748b;margin-top:6px;line-height:1.6">키·수준(${(RUNNER_TYPES.find(t=>t.id===(p.runnerType||"club"))||{}).label||"동호인"})은 프로필 값이 자동 반영됩니다. 검증된 회귀식이 아니라 공개된 코칭 원칙 기반 추정치이니, 실제 뛰어보고 몸에 맞게 조정하세요.</div>`;}
+  const det=recommendCadenceDetail({paceSec:pace.sec,goal:document.getElementById(pre+"goal").value,distTier:document.getElementById(pre+"disttier").value,
+    heightCm:p.height,runnerType:p.runnerType||"club"});
+  const fmt=v=>{const r=Math.round(v*10)/10;return(r>0?"+":"")+(Number.isInteger(r)?r:r.toFixed(1));};
+  const steps=det.parts.map((x,i)=>i===0?`${x[0]} <strong>${Math.round(x[1]*10)/10}</strong>`:`${x[0]} ${fmt(x[1])}`).join(" · ");
+  const unsetNote=p.unset?`<div style="color:#f59e0b;margin-top:4px">프로필이 비어 있어 수준은 기본값(펀러너)으로 계산했습니다. 설정에서 나이·성별·러너 유형과 키를 입력하면 더 정확해집니다.</div>`:
+    !p.height?`<div style="color:#64748b;margin-top:4px">키를 입력하면(설정 → 프로필) 키 보정이 추가됩니다.</div>`:"";
+  return`<div style="background:#0d1420;border:1px solid #1e293b;border-radius:10px;padding:12px;text-align:center;margin-bottom:8px">
+      <div style="font-size:11px;color:#64748b;margin-bottom:2px">추천 케이던스 (${pace.src} ${fmtPace(pace.sec)}/km)</div>
+      <div style="font-size:30px;font-weight:800;color:#38bdf8;line-height:1.2">${det.spm}<span style="font-size:13px;color:#64748b"> spm</span></div></div>
+    ${applyBtn.replace("__BPM__",det.spm)}
+    <div style="font-size:10.5px;color:#64748b;margin-top:6px;line-height:1.6">계산: ${steps} → <strong style="color:#cbd5e1">${det.spm}</strong><br>
+      공개된 코칭 원칙 기반 추정치입니다(검증된 개인 회귀식이 아님). 평소보다 크게 올리지 말고 5% 안팎씩 적응하세요.${unsetNote}</div>`;}
+function renderCadenceCalc(){const box=document.getElementById("cadence-calc-result");if(!box)return;
+  applyCadencePrefsToUI("set");
+  const typed=((document.getElementById("cad-pace")||{}).value||"").trim();
+  const pace=typed?{sec:parseTime(typed),src:"직접 입력"}:resolveRecordPace();
+  box.innerHTML=cadenceResultHTML("set",pace,`<button class="btn btn-sm" style="width:100%" onclick="applyCadenceRecommendation(__BPM__)"><i class="bi bi-check2-circle"></i> 이 값을 메트로놈 기본값으로 적용</button>`);}
 function applyCadenceRecommendation(bpm){
   document.getElementById("set-metro-bpm").value=bpm;
   DB.metronomeDefault={bpm,sound:(document.getElementById("set-metro-sound")||{}).value||"click"};save();
@@ -6852,6 +6925,10 @@ function renderWorkoutPreview(){const box=document.getElementById("run-workout-p
 function prepareRunTab(){
   const actSel=document.getElementById("run-acttype");
   if(actSel&&!actSel.options.length)populateActTypeSelect();else onActTypeChange(); // 최초 1회만 옵션을 채움 — 매번 다시 채우면 선택해둔 활동이 초기화되어버림
+  const cadToggle=document.getElementById("run-cadence-sensor-toggle"),cadHint=document.getElementById("cadence-sensor-hint");
+  if(cadToggle&&cadHint){
+    if(!CADENCE_SENSOR_SUPPORTED){cadToggle.checked=false;cadToggle.disabled=true;cadHint.textContent="이 브라우저는 센서 측정을 지원하지 않습니다.";}
+    else{cadHint.textContent="휴대폰을 팔밴드나 주머니에 고정하면 정확도가 높아집니다(손에 쥐고 흔들면 오차가 커집니다).";}}
   const st=document.getElementById("gps-status"),warn=document.getElementById("gps-precheck");
   if(!navigator.geolocation){st.textContent="GPS 미지원";st.className="zone-badge z5";
     if(warn){warn.style.display="block";warn.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#ef4444"></i> 이 브라우저는 위치 기능을 지원하지 않습니다.`;}return;}
@@ -6891,7 +6968,61 @@ function stopPrewarmGps(){if(prewarmWatchId!=null){navigator.geolocation.clearWa
 async function requestWakeLock(){try{if("wakeLock"in navigator)wakeLock=await navigator.wakeLock.request("screen");}catch(e){}}
 function releaseWakeLock(){try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}}
 const GPS_GOOD_ACC=20,GPS_TIMEOUT_MS=20000;
+/* ===== 실측 케이던스 (휴대폰 가속도계 기반, 참고용 추정치) =====
+   원리: 걸음마다 발이 닿는 순간 몸에 수직 방향 가속도 충격이 생긴다. 가속도계 벡터 크기(magnitude)에서
+   느린 이동평균(자세·중력 성분)을 빼면 걸음마다 오르내리는 파형만 남고, 그 파형이 "최근 신호 크기에 맞춰
+   계속 조정되는" 문턱값을 넘을 때마다 한 걸음으로 센다 — 문턱값이 고정값이 아니라 적응형이라 폰을 손에
+   쥐든 팔밴드에 차든 어느 정도 따라간다. 전용 러닝워치의 가속도계 케이던스(풋팟 아님)와 같은 방식이며
+   GPS 없이도 동작해 트레드밀에서도 쓸 수 있다. 정밀 기기 수준의 정확도는 아니며 참고용 추정치다.
+   iOS 13+는 이 센서 권한을 반드시 사용자 클릭(버튼) 안에서 요청해야 허용되므로, START 버튼 클릭 안에서 요청한다. */
+const CADENCE_SENSOR_SUPPORTED=typeof DeviceMotionEvent!=="undefined";
+const CADENCE_MIN_STEP_MS=230; // 최대 약 260spm까지만 걸음으로 인정(그 이상 간격은 노이즈로 간주)
+const CADENCE_WINDOW_MS=8000; // 화면에 보여줄 순간 케이던스는 최근 8초 창의 걸음수로 계산
+function cadenceSensorPermissionNeeded(){return CADENCE_SENSOR_SUPPORTED&&typeof DeviceMotionEvent.requestPermission==="function";}
+async function requestCadenceSensorPermission(){
+  if(!CADENCE_SENSOR_SUPPORTED)return false;
+  if(!cadenceSensorPermissionNeeded())return true; // 권한 요청이 없는 브라우저(대부분의 안드로이드 크롬 등)는 바로 사용 가능
+  try{return(await DeviceMotionEvent.requestPermission())==="granted";}catch(e){return false;}}
+let cadenceState=null;
+function startCadenceSensor(){
+  if(!CADENCE_SENSOR_SUPPORTED)return;
+  cadenceState={base:null,env:1.2,armed:true,lastStepT:0,recentSteps:[],totalSteps:0,spm:null};
+  window.addEventListener("devicemotion",onCadenceMotion);}
+function stopCadenceSensor(){window.removeEventListener("devicemotion",onCadenceMotion);}
+function onCadenceMotion(e){
+  if(!RUN||!RUN.active||RUN.paused||!cadenceState)return;
+  const a=e.accelerationIncludingGravity||e.acceleration;if(!a||a.x==null)return;
+  const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+  const cs=cadenceState;
+  cs.base=(cs.base==null)?mag:cs.base+0.05*(mag-cs.base); // 느린 이동평균 — 자세·중력(DC 성분) 추적
+  const dev=mag-cs.base; // 걸음마다 오르내리는 성분
+  cs.env=cs.env+0.02*(Math.abs(dev)-cs.env);cs.env=Math.max(cs.env,0.6); // 적응형 문턱값(정지 중 오검출 방지용 최소치 0.6)
+  const now=Date.now(),thresh=cs.env*0.7;
+  if(cs.armed&&dev>thresh){
+    if(now-cs.lastStepT>=CADENCE_MIN_STEP_MS){
+      cs.lastStepT=now;cs.armed=false;cs.totalSteps++;
+      cs.recentSteps.push(now);cs.recentSteps=cs.recentSteps.filter(t=>now-t<=CADENCE_WINDOW_MS);
+      if(cs.recentSteps.length>=3){const span=(cs.recentSteps[cs.recentSteps.length-1]-cs.recentSteps[0])/1000;
+        if(span>0)cs.spm=Math.round((cs.recentSteps.length-1)/span*60);}}
+  }else if(dev<thresh*0.3){cs.armed=true;} // 문턱 아래로 충분히 내려와야 다음 걸음을 다시 인정(더블 카운트 방지)
+}
+function cadenceCoachText(avgSpm,avgPaceSec){ // 실측 평균 케이던스 vs 추천 케이던스 비교 코칭 한 줄
+  const p=DB.profile||{},prefs=DB.cadencePrefs||{goal:"endurance",distTier:"mid"};
+  const paceSec=avgPaceSec||((resolveRecordPace()||{}).sec);
+  if(!paceSec)return`실측 평균 케이던스 ${avgSpm}spm`;
+  const rec=recommendCadenceDetail({paceSec,goal:prefs.goal,distTier:prefs.distTier,heightCm:p.height,runnerType:p.runnerType||"club"});
+  const diff=avgSpm-rec.spm;
+  if(diff<=-8)return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)보다 낮습니다. 보폭을 줄이고 스텝을 더 빠르게 가져가 보세요.`;
+  if(diff>=8)return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)보다 높습니다.`;
+  return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)과 비슷한 수준입니다.`;}
 function startRunSession(){
+  const cadenceWanted=CADENCE_SENSOR_SUPPORTED&&document.getElementById("run-cadence-sensor-toggle").checked;
+  if(cadenceWanted){ // iOS는 이 권한 호출이 클릭 안에서 "시작"되기만 하면 되고 응답을 기다릴 필요는 없다 —
+    // await로 여기서 멈추면 그 뒤의 GPS 준비·카운트다운·음성 안내가 전부 지연/무산되므로(음성 안내 미출력 원인), 결과를 기다리지 않고 흘려보낸다.
+    requestCadenceSensorPermission().then(granted=>{
+      if(RUN)RUN.cadenceOn=granted;
+      if(!granted)showToast("케이던스 센서 권한이 없어 실측 케이던스 없이 진행합니다.");
+    });}
   const actType=selectedActType||ACT_BY_ID.run;
   const isRun=actType.bucket==="run";
   if(actType.gps&&!navigator.geolocation){showToast("이 브라우저는 GPS를 지원하지 않습니다.");return;}
@@ -6917,7 +7048,7 @@ function startRunSession(){
     voice:document.getElementById("run-voice").value,ann:parseFloat(document.getElementById("run-announce").value),
     startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,
     trackMode:trackOn,trackLane,trackLapDist,trackStartPoint:null,trackAway:false,trackLapsDone:0,distAtLapStart:0,
-    metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null};
+    metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null,cadenceOn:false};
   document.getElementById("run-setup-card").style.display="none";
   document.getElementById("run-live-panel").style.display="block";
   const eb=document.getElementById("gps-error-banner");if(eb)eb.style.display="none";
@@ -6963,7 +7094,7 @@ function cancelRunStart(){
   clearTimeout(acquirePollId);runAcquireState=null;
   document.getElementById("countdownOverlay").classList.remove("active");
   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
-  releaseWakeLock();RUN=null;
+  releaseWakeLock();stopCadenceSensor();RUN=null;
   document.getElementById("run-setup-card").style.display="block";
   document.getElementById("run-live-panel").style.display="none";
   startPrewarmGps();} // 설정 화면으로 복귀 — 다음 시작을 위해 예열 재개
@@ -6998,6 +7129,7 @@ function activateRun(){if(!RUN)return;
   RUN.active=true;RUN.startTs=Date.now();RUN.elapsed=0;RUN.dist=0;RUN.pts=[];RUN.laps=[];RUN.prev2=null;
   RUN.lastLapD=0;RUN.lastAnnD=0;RUN.lastCoach=0;RUN.stepI=0;RUN.stepStartT=0;RUN.stepStartD=0;RUN.recent=[];RUN.allSegs=[];RUN.overSpeedCount=0;
   RUN.pausedMs=0;RUN.pauseStartTs=null;RUN.tickCount=0; // elapsed을 실제 시각 기반으로 계산하기 위한 누적 일시정지 시간
+  if(RUN.cadenceOn)startCadenceSensor();
   if(RUN.trackMode){RUN.trackStartPoint=null;RUN.trackAway=false;RUN.trackLapsDone=0;RUN.distAtLapStart=0;}
   startSilentKeepAlive();alog("run-start"); // 화면이 잠겨도 앱이 살아있도록(무음 재생 + MediaSession 등록)
   if(RUN.metroWant&&RUN.metroWant.on)startMetronome(RUN.metroWant.bpm,RUN.metroWant.sound);
@@ -7141,6 +7273,8 @@ function tickRun(){if(!RUN||RUN.paused)return;
   document.getElementById("live-time").textContent=fmtDur(RUN.elapsed);
   document.getElementById("live-pace").textContent=cp?fmtPace(cp):"—";
   document.getElementById("live-avgpace").textContent=ap?fmtPace(ap):"—";
+  const cadEl=document.getElementById("live-cadence");
+  if(cadEl)cadEl.textContent=RUN.cadenceOn?(cadenceState&&cadenceState.spm?cadenceState.spm:"측정 중"):"—";
   // 자동 랩 (1km) — 트랙 모드에서는 지오펜스 기반 바퀴 랩이 대신하므로 비활성화
   if(!RUN.trackMode&&km-RUN.lastLapD>=1){RUN.lastLapD=Math.floor(km);const lapN=RUN.laps.length+1;
     const prevT=RUN.laps.reduce((s,l)=>s+l.t,0),lapT=RUN.elapsed-prevT;
@@ -7307,6 +7441,10 @@ function finishRunSession(){if(!RUN)return;
   stopMetronome();stopSilentKeepAlive();
   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
   clearInterval(runTimer);runTimer=null;releaseWakeLock();
+  let avgCadenceSpm=null,cadenceCoachTxt="";
+  if(RUN.cadenceOn&&cadenceState&&RUN.elapsed>=15&&cadenceState.totalSteps>=5){
+    avgCadenceSpm=Math.round(cadenceState.totalSteps/(RUN.elapsed/60));}
+  stopCadenceSensor();
   const km=+(finalDist/1000).toFixed(2),min=+(RUN.elapsed/60).toFixed(1);
   pendingRoute=(RUN.pts&&RUN.pts.length>=2)?downsampleRoute(RUN.pts,500):null;
   pendingLaps=(RUN.laps&&RUN.laps.length)?{laps:RUN.laps.slice(),trackMode:RUN.trackMode}:null;
@@ -7325,10 +7463,12 @@ function finishRunSession(){if(!RUN)return;
   const lapSummary=pendingLaps?lapsSummaryText(pendingLaps.laps,pendingLaps.trackMode):"";
   const avgPaceSec=km>0.05?RUN.elapsed/km:null;
   const bestPaceSec=bestSegmentPace(RUN.allSegs);
-  pendingSummary={km,min,avgPaceSec,bestPaceSec,elapsed:RUN.elapsed};
+  if(avgCadenceSpm)cadenceCoachTxt=cadenceCoachText(avgCadenceSpm,avgPaceSec);
+  pendingSummary={km,min,avgPaceSec,bestPaceSec,elapsed:RUN.elapsed,avgCadenceSpm};
   const resultLine=`실측 ${km}km · ${fmtDur(RUN.elapsed)}${avgPaceSec?` · 평균 ${fmtPace(avgPaceSec)}/km`:""}${bestPaceSec?` · 최고 ${fmtPace(bestPaceSec)}/km(${BEST_PACE_WINDOW_M}m 기준)`:""}`;
   const overLine=RUN.overSpeedCount>0?`\n⚠️ 측정 불가 속도(43km/h 초과) ${RUN.overSpeedCount}회 제외됨 — 실제 거리와 차이가 있을 수 있습니다`:"";
-  document.getElementById("m-log-notes").value=RUN.title+(RUN.trackMode?` · ${RUN.trackLapsDone}바퀴(${RUN.trackLane}레인)`:"")+`\n${resultLine}`+overLine+(lapSummary?`\n랩: ${lapSummary}`:"");
+  const cadLine=cadenceCoachTxt?`\n케이던스: ${cadenceCoachTxt} (휴대폰 센서 추정치)`:"";
+  document.getElementById("m-log-notes").value=RUN.title+(RUN.trackMode?` · ${RUN.trackLapsDone}바퀴(${RUN.trackLane}레인)`:"")+`\n${resultLine}`+overLine+cadLine+(lapSummary?`\n랩: ${lapSummary}`:"");
   if(RUN.overSpeedCount>=5)showToast(`측정 불가 속도 ${RUN.overSpeedCount}회가 제외되었습니다. 기록을 확인하세요.`);
   document.getElementById("m-log-planref").value=(RUN.planIdx==null?"":RUN.planIdx);
   document.getElementById("m-log-rating").value="";
