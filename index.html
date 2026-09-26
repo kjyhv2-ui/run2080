@@ -2439,7 +2439,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.27.1",APP_BUILD="2026-09-26";
+const APP_VERSION="2.28.0",APP_BUILD="2026-09-26";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다. */
@@ -2447,6 +2447,13 @@ const FEATURES={strava:false};
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.28.0",d:"2026-09-26",title:"캘린더 '오늘의 달리기 일지'에 기록 시각(오전/오후 + 시:분) 추가",items:[
+    "일지/컨디션 입력 화면에 시각 입력란(input type=time) 추가 — 오늘 날짜는 현재 시각이 기본값으로 채워짐, 기기의 시간 표시 설정(12/24시간제)에 따라 오전/오후 표기 여부가 자동으로 나뉨",
+    "저장 시 DB.calendar[날짜].vitals.time으로 저장(HH:MM), 주간 일지 미리보기·엑셀 내보내기(일기 시트, '기록시각' 열)·인쇄용 리포트(일지 섹션)에 모두 반영",
+    "백업(exportBackup/importBackup)은 DB 전체를 그대로 저장/복원하는 구조라 코드 수정 없이도 새 필드가 함께 백업·복원됨을 확인",
+    "일일 운동기록(reportLogsHTML)과 일지(reportDiaryHTML)는 원래부터 날짜 기준으로 각각 독립 생성되는 별도 섹션임을 재확인 — 리포트 미리보기에서 실제로 둘 다 정상 출력되는 것을 테스트로 검증",
+    "회귀 검사 추가: 자체진단 ⑯ 일지 기록시각 저장→리포트→엑셀 반영 확인"
+  ]},
   {v:"2.27.1",d:"2026-09-26",title:"버그픽스 — v2.27.0에서 운동 시작 시 음성 안내가 나오지 않던 문제",items:[
     "원인: 케이던스 센서 권한 요청을 startRunSession() 맨 앞에서 await로 기다리게 만들어, 그 뒤에 이어지는 GPS 준비·카운트다운·시작 음성 안내까지 전부 지연/무산됐음",
     "수정: 센서 권한 요청은 결과를 기다리지 않고 흘려보내고(Promise.then으로 나중에 RUN.cadenceOn만 갱신), 운동 시작 흐름은 예전처럼 즉시 동기 진행 — 음성 안내 정상화",
@@ -2858,6 +2865,24 @@ function runSelfTests(){
       const coachOk=/spm/.test(cadenceCoachText(170,300));
       return{pass:ok&&coachOk,detail:ok?(coachOk?"":"코칭 문구 형식 이상"):`추정 spm=${cadenceState.spm}`};
     }finally{Date.now=realNow;RUN=savedRun;cadenceState=savedState;}});
+  check("⑯ 일지 기록시각 — 저장·리포트·엑셀에 vitals.time이 정확히 반영",()=>{
+    const key="9999-01-01",savedCal=DB.calendar[key];
+    const dupIds=["diary-text","vt-pulse","vt-temp","vt-period","vt-feeling-hidden","vt-form","vt-time"];
+    const removed=dupIds.map(id=>{const el=document.getElementById(id);if(el&&el.parentNode){const ph=document.createComment(id);el.parentNode.insertBefore(ph,el);el.parentNode.removeChild(el);return{el,ph};}return null;});
+    const tmp=document.createElement("div");tmp.style.display="none";
+    tmp.innerHTML=`<textarea id="diary-text">테스트 일지</textarea><input id="vt-pulse" value="52"><input id="vt-temp" value="18"><select id="vt-period"><option value="오전" selected>오전</option></select><input type="hidden" id="vt-feeling-hidden" value=""><input id="vt-form" value=""><input id="vt-time" value="06:45">`;
+    document.body.appendChild(tmp);
+    try{
+      delete DB.calendar[key];
+      saveDiary(key,true);
+      const v=(DB.calendar[key]||{}).vitals||{};
+      const savedOk=v.time==="06:45"&&v.pulse===52&&v.period==="오전";
+      const html=typeof reportDiaryHTML==="function"?reportDiaryHTML(key,key):"";
+      const reportOk=/06:45/.test(html)&&/테스트 일지/.test(html);
+      return{pass:savedOk&&reportOk,detail:savedOk?(reportOk?"":"리포트에 시각 미반영"):`저장값 이상 time=${v.time} pulse=${v.pulse} period=${v.period}`};
+    }finally{tmp.remove();
+      removed.forEach(r=>{if(r){r.ph.parentNode.insertBefore(r.el,r.ph);r.ph.remove();}});
+      if(savedCal===undefined)delete DB.calendar[key];else DB.calendar[key]=savedCal;}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -5002,7 +5027,7 @@ function renderWeeklyJournal(){const list=document.getElementById("weekly-journa
           <strong style="font-size:12.5px;color:#e2e8f0">${d.slice(5)} (${days[i]})</strong>
           <span style="font-size:11.5px;color:#38bdf8">${distTxt} ${durTxt}</span></div>
         ${planLines}
-        ${(v.pulse||v.temp||v.feeling)?`<div style="font-size:10.5px;color:#94a3b8;margin-top:2px">${v.pulse?"맥박 "+v.pulse+" · ":""}${v.temp?"기온 "+v.temp+"° · ":""}${v.feeling?"컨디션 "+v.feeling+"/7":""}</div>`:""}
+        ${(v.pulse||v.temp||v.feeling||v.time)?`<div style="font-size:10.5px;color:#94a3b8;margin-top:2px">${v.time?v.time+" · ":""}${v.pulse?"맥박 "+v.pulse+" · ":""}${v.temp?"기온 "+v.temp+"° · ":""}${v.feeling?"컨디션 "+v.feeling+"/7":""}</div>`:""}
         ${diaryPreview?`<div style="font-size:11px;color:#cbd5e1;margin-top:3px">${escapeHtml(diaryPreview)}${diaryTxt.length>40?"…":""}</div>`:""}
       </div>`;}).join(""):"";
     return`<div style="border:1px solid var(--border-light);border-radius:8px;margin-bottom:8px;overflow:hidden">
@@ -5083,6 +5108,8 @@ function renderSelectedDay(key){
           <select id="vt-period" style="flex:1"><option value="오전" ${vitals.period==="오전"?"selected":""}>오전</option><option value="오후" ${vitals.period==="오후"?"selected":""}>오후</option></select>
         </div></div>
     </div>
+    <div class="form-group" style="margin-bottom:10px"><label>기록 시각 (선택 — 오전/오후 포함, 시:분)</label>
+      <input type="time" id="vt-time" value="${vitals.time||(key===TODAY?new Date().toTimeString().slice(0,5):"")}"></div>
     <div class="form-group" style="margin-bottom:10px"><label>오늘 컨디션 (1~7)</label>
       <div style="display:flex;gap:4px" id="vt-feeling-row">${[1,2,3,4,5,6,7].map(n=>`<button type="button" class="btn btn-sm ${vitals.feeling===n?"":"btn-secondary"}" style="flex:1;padding:6px 0" id="vt-feel-${n}" onclick="setVitalFeeling(${n})">${n}</button>`).join("")}</div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-top:3px"><span>최악</span><span>최고</span></div>
@@ -5110,9 +5137,9 @@ function saveDiary(key,silent){const el=document.getElementById("diary-text");if
   if(!DB.calendar[key])DB.calendar[key]={plans:[],logs:[]};DB.calendar[key].diary=el.value;
   const pulse=parseInt((document.getElementById("vt-pulse")||{}).value),temp=parseInt((document.getElementById("vt-temp")||{}).value),
     period=(document.getElementById("vt-period")||{}).value||"",feeling=parseInt((document.getElementById("vt-feeling-hidden")||{}).value),
-    form=((document.getElementById("vt-form")||{}).value||"").trim();
+    form=((document.getElementById("vt-form")||{}).value||"").trim(),time=((document.getElementById("vt-time")||{}).value||"").trim();
   const vitals={};if(!isNaN(pulse))vitals.pulse=pulse;if(!isNaN(temp))vitals.temp=temp;if(period)vitals.period=period;
-  if(!isNaN(feeling))vitals.feeling=feeling;if(form)vitals.form=form;
+  if(!isNaN(feeling))vitals.feeling=feeling;if(form)vitals.form=form;if(time)vitals.time=time;
   if(Object.keys(vitals).length)DB.calendar[key].vitals=vitals;else delete DB.calendar[key].vitals;
   const ok=save();
   if(!ok&&Store.ok){showToast("저장 공간이 가득 찼습니다. 설정에서 백업 후 오래된 데이터를 정리하세요.");return;}
@@ -7888,9 +7915,9 @@ function reportLogsHTML(start,end){const rows=collectLogRows().filter(r=>r.날�
     ${rows.map(r=>`<tr><td>${r.날짜}</td><td>${r.유형}</td><td>${r["거리(km)"]||""}</td><td>${r["시간(분)"]||""}</td><td>${r.평균HR||""}</td><td>${r.존||""}</td><td>${r.TRIMP||""}</td><td>${r["페이스(/km)"]||""}</td></tr>`).join("")}
     </table>`;}
 function reportDiaryHTML(start,end){const rows=[];
-  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).sort().forEach(d=>{const t=((DB.calendar[d]||{}).diary||"").trim();if(t)rows.push({d,t});});
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).sort().forEach(d=>{const dc=DB.calendar[d]||{},t=(dc.diary||"").trim(),v=dc.vitals||{};if(t||v.time)rows.push({d,t,time:v.time||""});});
   if(!rows.length)return"";
-  return`<h2>일지</h2>`+rows.map(r=>`<div style="margin-bottom:10px"><strong>${r.d}</strong><div style="font-size:12px;color:#334155;white-space:pre-wrap">${escHtml(r.t)}</div></div>`).join("");}
+  return`<h2>일지</h2>`+rows.map(r=>`<div style="margin-bottom:10px"><strong>${r.d}${r.time?` <span style="color:#64748b;font-weight:400">${r.time}</span>`:""}</strong><div style="font-size:12px;color:#334155;white-space:pre-wrap">${escHtml(r.t)}</div></div>`).join("");}
 function openReportPreview(){
   const period=document.getElementById("report-period").value;
   const{start,end}=reportPeriodRange(period);
@@ -7919,7 +7946,7 @@ function exportExcel(){
   const planRows=[];Object.keys(DB.calendar).sort().forEach(date=>dayPlans(date).forEach((p,i)=>{const srcId=((DB.calendar[date]||{}).planSrc||[])[i];
     planRows.push({날짜:date,계획:p,근거대회:planSourceLabel(srcId)||""});}));S("계획",planRows);
   const diaryRows=[];Object.keys(DB.calendar).sort().forEach(date=>{const dc=DB.calendar[date],d=((dc.diary)||"").trim(),v=dc.vitals||{};
-    if(d||Object.keys(v).length)diaryRows.push({날짜:date,아침맥박:v.pulse||"",기온:v.temp||"","오전오후":v.period||"","컨디션(1~7)":v.feeling||"","자세훈련":v.form||"",일지:d});});
+    if(d||Object.keys(v).length)diaryRows.push({날짜:date,기록시각:v.time||"",아침맥박:v.pulse||"",기온:v.temp||"","오전오후":v.period||"","컨디션(1~7)":v.feeling||"","자세훈련":v.form||"",일지:d});});
   S("일기",diaryRows);
   S("주간요약",weeklySummaryRows());
   const woRows=[];(DB.workouts||[]).forEach(w=>w.steps.forEach((s,i)=>woRows.push({워크아웃:w.name,분류:w.cat,순서:i+1,구분:STEP_META[s.kind].label,상세:stepText(s)})));S("워크아웃",woRows);
