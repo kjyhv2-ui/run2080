@@ -263,6 +263,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <!-- SLIDE 0: 대시보드 -->
     <div class="tab-slide" id="slide-0">
       <div id="tab-toc-0"></div>
+      <div id="trial-banner" data-feature="premiumGating" style="display:none;margin-bottom:10px;padding:9px 12px;background:#1a1206;border:1px solid #92400e;border-radius:8px;font-size:12px;color:#fde68a"></div>
       <div class="race-hero" onclick="goToSlide(2)" style="cursor:pointer">
         <div class="race-info">
           <h1 id="hero-race-title"></h1>
@@ -678,9 +679,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div class="card-header"><div class="card-title"><i class="bi bi-pie-chart-fill"></i> 3단계 편극 강도 분포</div><span class="zone-badge z2" id="ana-purity-badge">—</span></div>
           <div style="height:220px;position:relative"><canvas id="anaZoneChart"></canvas></div>
         </div>
-        <div class="card" id="sec-5-2">
+        <div class="card" id="sec-5-2" style="position:relative">
           <div class="card-header"><div class="card-title"><i class="bi bi-activity"></i> 일별 TRIMP 부하 추세</div></div>
           <div style="height:220px;position:relative"><canvas id="anaLoadChart"></canvas></div>
+          <div id="lock-overlay-trimp" data-feature="premiumGating" style="display:none"></div>
         </div>
       </div>
       <div class="card">
@@ -688,7 +690,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="font-size:11px;color:#64748b;margin-bottom:10px">무산소·고강도유산소·저강도유산소로 나눠, 최근 12주 평균 대비 지금 얼마나 뛰고 있는지 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"와 같은 방식입니다.</div>
         <div id="loadFocusChart"></div>
       </div>
-      <div class="card">
+      <div class="card" id="sec-5-3" style="position:relative">
         <div class="card-header"><div class="card-title"><i class="bi bi-graph-up"></i> 레이스 예상 성과 추세</div>
           <select id="race-trend-window" style="width:auto" onchange="onRaceTrendWindowChange()">
             <option value="0">현재</option><option value="7">7일(1주)</option><option value="14">2주</option><option value="28">4주</option><option value="90" selected>3개월</option>
@@ -707,6 +709,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
         <div style="height:250px;position:relative"><canvas id="raceTrendChart"></canvas></div>
         <div id="race-trend-note" style="font-size:11px;color:#64748b;margin-top:8px"></div>
+        <div id="lock-overlay-race" data-feature="premiumGating" style="display:none"></div>
       </div>
     </div>
 
@@ -2439,14 +2442,61 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.29.0",APP_BUILD="2026-09-26";
+const APP_VERSION="2.31.0",APP_BUILD="2026-09-27";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
-   GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다. */
-const FEATURES={strava:false};
+   GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
+   premiumGating: 4주 무료체험→이후 고급분석(TRIMP 추세·레이스 예상 추세) 잠금+리워드 광고 구조. 코드는 완성돼 있지만
+     Google AdSense 계정 심사·승인 전까지는 반드시 false로 둔다(실제 광고 없이 "광고 보기" 버튼만 뜨면 사용자 기만이 됨).
+     켤 때는 unlockPremiumViaAd()의 TODO 부분에 Google Ad Placement API(리워드 광고) 연동 코드를 먼저 넣을 것. */
+const FEATURES={strava:false,premiumGating:false};
+const TRIAL_DAYS=28,AD_UNLOCK_HOURS=24;
+function trialDaysLeft(){ // 최초 설치일(DB.trialStart) 기준 무료체험 잔여일(음수면 만료)
+  if(!DB.trialStart)return TRIAL_DAYS;
+  return TRIAL_DAYS-diffDays(TODAY,DB.trialStart);} // diffDays(TODAY,trialStart) = 설치 후 경과일수
+function isPremiumUnlocked(){
+  if(!FEATURES.premiumGating)return true; // 기능이 꺼져 있으면(현재 기본) 항상 전체 이용 가능
+  if(trialDaysLeft()>0)return true;
+  if(DB.adUnlockUntil&&Date.now()<DB.adUnlockUntil)return true;
+  return false;}
+function unlockPremiumViaAd(){ // TODO: FEATURES.premiumGating을 켜기 전에, 아래를 Google Ad Placement API(리워드 광고) 실제 호출로 교체할 것.
+  // 예: googletag.cmd.push(()=>{ googletag.pubads().requestRewardedAd(...) }) 형태로 광고 시청 완료 콜백에서만 unlockPremiumViaAd 로직 실행
+  DB.adUnlockUntil=Date.now()+AD_UNLOCK_HOURS*3600*1000;save();
+  renderPremiumGate();showToast(`${AD_UNLOCK_HOURS}시간 동안 고급 분석이 열렸습니다.`);}
+function renderTrialBanner(){
+  const el=document.getElementById("trial-banner");if(!el||!FEATURES.premiumGating)return;
+  const left=trialDaysLeft();
+  if(left>0&&left<=7){el.style.display="";el.innerHTML=`<i class="bi bi-hourglass-split"></i> 무료체험 <strong>D-${left}</strong> — 체험 종료 후에도 기본 기능(러닝 시작·기록·캘린더)은 계속 무료입니다. 고급 분석(TRIMP·레이스 추세)만 광고 시청 또는 유료 전환으로 계속 볼 수 있어요.`;}
+  else el.style.display="none";}
+function premiumLockOverlayHTML(){
+  return`<div style="position:absolute;inset:0;background:rgba(10,14,23,.92);backdrop-filter:blur(2px);border-radius:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center;z-index:2">
+    <i class="bi bi-lock-fill" style="font-size:22px;color:#fbbf24"></i>
+    <div style="font-size:12.5px;color:#e2e8f0">무료체험이 끝나 고급 분석이 잠겼습니다.</div>
+    <button class="btn btn-sm btn-warning" onclick="unlockPremiumViaAd()"><i class="bi bi-play-circle"></i> 광고 보고 오늘 하루 보기</button>
+  </div>`;}
+function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추세) 카드에 잠금 오버레이 표시/해제
+  if(!FEATURES.premiumGating)return;
+  const unlocked=isPremiumUnlocked();
+  ["lock-overlay-trimp","lock-overlay-race"].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.display=unlocked?"none":"";el.innerHTML=unlocked?"":premiumLockOverlayHTML();});
+  renderTrialBanner();}
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.31.0",d:"2026-09-27",title:"무료체험(4주)→광고 시청 리워드 잠금 해제 구조 추가 — 기본값 꺼짐(FEATURES.premiumGating=false)",items:[
+    "설치일(DB.trialStart) 기준 28일 무료체험, 이후 고급 분석(TRIMP 부하 추세·레이스 예상 성과 추세) 카드만 잠금 — 러닝 시작·GPS·캘린더·일지·기록 저장 등 핵심 기능은 항상 무료",
+    "잠금 화면에서 '광고 보고 오늘 하루 보기'를 누르면 24시간 동안 잠금 해제(리워드 광고 방식)",
+    "체험 종료 D-7부터 대시보드에 남은 기간 안내 배너 표시",
+    "⚠️ 이 기능 전체는 FEATURES.premiumGating=false로 코드에서 비활성화된 상태 — Google AdSense 심사·승인 전에 켜면 실제 광고 없이 '광고 보기' 버튼만 뜨는 기만적 UX가 되므로, unlockPremiumViaAd()에 실제 Google Ad Placement API(리워드 광고) 연동을 먼저 넣은 뒤에만 켤 것",
+    "회귀 검사 추가: 자체진단 ⑱ 잔여일 계산·기능 on/off별 잠금 여부·광고 시청 24시간 해제"
+  ]},
+  {v:"2.30.0",d:"2026-09-27",title:"오늘의 달리기 일지에 수면시간 추가 + 맥박·수면 참고 코칭",items:[
+    "취침 시각/기상 시각 입력란 추가 — 자정을 넘기는 경우도 포함해 총 수면시간을 자동 계산(예: 23:30~06:30 → 7.0시간)",
+    "아침 맥박·수면시간 구간별 참고 코칭 문구를 데이터 테이블(PULSE_COACHING, SLEEP_COACHING)로 구성해 입력할 때마다 실시간으로 표시 — 의료 진단이 아닌 일반 운동과학 참고용임을 문구에 명시",
+    "저장 시 DB.calendar[날짜].vitals.sleepStart/sleepEnd/sleepHours로 저장, 주간 일지 미리보기·엑셀 내보내기(취침시각·기상시각·총수면시간 열)·인쇄용 리포트(일지 섹션 맥박·수면 요약)에 모두 반영",
+    "회귀 검사 추가: 자체진단 ⑰ 수면시간 자정넘김 계산·코칭 문구 생성·저장 반영 확인"
+  ]},
   {v:"2.29.0",d:"2026-09-26",title:"카카오맵 기본 JS 키 내장 — 사용자가 키를 따로 입력하지 않아도 카카오맵으로 경로 표시",items:[
     "코드에 앱 공용 카카오맵 JavaScript 키를 기본값으로 내장(KAKAO_DEFAULT_JS_KEY) — 등록 도메인(run2080.vercel.app)에서만 동작하도록 카카오 콘솔에서 제한되므로 공개돼도 안전한 키",
     "설정 탭에서 사용자가 직접 키를 입력하면 그 키가 우선 적용(개인 쿼터로 전환 가능), 비워두면 기본 키 사용",
@@ -2873,7 +2923,7 @@ function runSelfTests(){
     }finally{Date.now=realNow;RUN=savedRun;cadenceState=savedState;}});
   check("⑯ 일지 기록시각 — 저장·리포트·엑셀에 vitals.time이 정확히 반영",()=>{
     const key="9999-01-01",savedCal=DB.calendar[key];
-    const dupIds=["diary-text","vt-pulse","vt-temp","vt-period","vt-feeling-hidden","vt-form","vt-time"];
+    const dupIds=["diary-text","vt-pulse","vt-temp","vt-period","vt-feeling-hidden","vt-form","vt-time","vt-sleep-start","vt-sleep-end"];
     const removed=dupIds.map(id=>{const el=document.getElementById(id);if(el&&el.parentNode){const ph=document.createComment(id);el.parentNode.insertBefore(ph,el);el.parentNode.removeChild(el);return{el,ph};}return null;});
     const tmp=document.createElement("div");tmp.style.display="none";
     tmp.innerHTML=`<textarea id="diary-text">테스트 일지</textarea><input id="vt-pulse" value="52"><input id="vt-temp" value="18"><select id="vt-period"><option value="오전" selected>오전</option></select><input type="hidden" id="vt-feeling-hidden" value=""><input id="vt-form" value=""><input id="vt-time" value="06:45">`;
@@ -2889,6 +2939,44 @@ function runSelfTests(){
     }finally{tmp.remove();
       removed.forEach(r=>{if(r){r.ph.parentNode.insertBefore(r.el,r.ph);r.ph.remove();}});
       if(savedCal===undefined)delete DB.calendar[key];else DB.calendar[key]=savedCal;}});
+  check("⑰ 수면시간 계산·참고 코칭 — 자정 넘김 계산과 저장, 맥박/수면 코칭 문구 생성",()=>{
+    const calcOk=computeSleepHours("23:30","06:30")===7&&computeSleepHours("01:00","01:00")===24&&computeSleepHours("","06:00")===null;
+    const coachTxt=vitalsCoachText(55,7);
+    const coachOk=/맥박 55bpm/.test(coachTxt)&&/수면 7시간/.test(coachTxt);
+    const key="9999-01-02",savedCal=DB.calendar[key];
+    const dupIds=["diary-text","vt-pulse","vt-temp","vt-period","vt-feeling-hidden","vt-form","vt-time","vt-sleep-start","vt-sleep-end"];
+    const removed=dupIds.map(id=>{const el=document.getElementById(id);if(el&&el.parentNode){const ph=document.createComment(id);el.parentNode.insertBefore(ph,el);el.parentNode.removeChild(el);return{el,ph};}return null;});
+    const tmp=document.createElement("div");tmp.style.display="none";
+    tmp.innerHTML=`<textarea id="diary-text"></textarea><input id="vt-pulse" value="55"><input id="vt-temp" value=""><select id="vt-period"></select><input type="hidden" id="vt-feeling-hidden" value=""><input id="vt-form" value=""><input id="vt-time" value=""><input id="vt-sleep-start" value="23:30"><input id="vt-sleep-end" value="06:30">`;
+    document.body.appendChild(tmp);
+    let saveOk=false;
+    try{
+      delete DB.calendar[key];
+      saveDiary(key,true);
+      const v=(DB.calendar[key]||{}).vitals||{};
+      saveOk=v.sleepStart==="23:30"&&v.sleepEnd==="06:30"&&v.sleepHours===7;
+    }finally{tmp.remove();
+      removed.forEach(r=>{if(r){r.ph.parentNode.insertBefore(r.el,r.ph);r.ph.remove();}});
+      if(savedCal===undefined)delete DB.calendar[key];else DB.calendar[key]=savedCal;}
+    return{pass:calcOk&&coachOk&&saveOk,detail:calcOk?(coachOk?(saveOk?"":"저장값 이상"):"코칭 문구 이상: "+coachTxt):"수면시간 계산 이상"};});
+  check("⑱ 무료체험·프리미엄 잠금 — 잔여일 계산, 기능 꺼짐/켜짐에 따른 잠금 여부, 광고 시청 24시간 해제",()=>{
+    const savedTrialStart=DB.trialStart,savedAdUnlock=DB.adUnlockUntil,savedFeature=FEATURES.premiumGating;
+    try{
+      DB.trialStart=addDays(TODAY,-10); // 10일 전 설치 → 잔여 18일
+      const leftOk=trialDaysLeft()===TRIAL_DAYS-10;
+      FEATURES.premiumGating=false;
+      const offAlwaysUnlocked=isPremiumUnlocked()===true; // 기능 꺼져있으면(현재 기본) 항상 열림
+      FEATURES.premiumGating=true;
+      const duringTrialUnlocked=isPremiumUnlocked()===true;
+      DB.trialStart=addDays(TODAY,-40);delete DB.adUnlockUntil; // 체험 만료(40일 전 설치) + 광고 미시청
+      const expiredLocked=isPremiumUnlocked()===false;
+      unlockPremiumViaAd();
+      const afterAdUnlocked=isPremiumUnlocked()===true&&DB.adUnlockUntil>Date.now()&&DB.adUnlockUntil<=Date.now()+AD_UNLOCK_HOURS*3600*1000+1000;
+      return{pass:leftOk&&offAlwaysUnlocked&&duringTrialUnlocked&&expiredLocked&&afterAdUnlocked,
+        detail:leftOk?(offAlwaysUnlocked?(duringTrialUnlocked?(expiredLocked?(afterAdUnlocked?"":"광고 시청 후 해제 이상"):"체험 만료 후 잠금 안 됨"):"체험 중 잠김"):"기능 꺼짐인데도 잠김"):"잔여일 계산 이상"};
+    }finally{if(savedTrialStart===undefined)delete DB.trialStart;else DB.trialStart=savedTrialStart;
+      if(savedAdUnlock===undefined)delete DB.adUnlockUntil;else DB.adUnlockUntil=savedAdUnlock;
+      FEATURES.premiumGating=savedFeature;save();}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -2900,7 +2988,7 @@ function renderSelfTestUI(){const box=document.getElementById("selftest-result")
         ${r.pass?"✓":"✗"} ${r.name}${r.detail?`<div style="color:#fca5a5;margin-left:14px">${escHtml(r.detail)}</div>`:""}</div>`).join("");},50);}
 function setErrorReport(on){DB.errorReportOff=!on;save();showToast(on?"오류 기록 전송을 켰습니다.":"오류 기록 전송을 껐습니다.");}
 function renderErrorReportToggle(){const el=document.getElementById("error-report-toggle");if(el)el.checked=!DB.errorReportOff;}
-function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.cadencePrefs)DB.cadencePrefs={goal:"endurance",distTier:"mid"};if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
+function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.trialStart)DB.trialStart=TODAY;if(!DB.cadencePrefs)DB.cadencePrefs={goal:"endurance",distTier:"mid"};if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
   if(!DB.races||!DB.races.length){const r=DB.race||{name:"내 목표 대회",date:addDays(TODAY,112),target:"SUB3"};
     DB.races=[{id:"r_"+uid(),name:r.name,date:r.date,dist:r.dist||"FULL",targetSec:r.targetSec||TARGET_SEC[r.target]||10800,weeks:r.weeks||16,primary:true}];}
   DB.races.forEach(r=>{if(!r.dist)r.dist="FULL";if(!r.targetSec)r.targetSec=TARGET_SEC[r.target]||10800;if(!r.id)r.id="r_"+uid();});
@@ -4479,7 +4567,7 @@ function renderWeekHeatmap(){const box=document.getElementById("week-heatmap");i
     <span>높이 = 거리</span>
   </div>`;}
 function renderDashboard(){
-  renderLifetimeCard();renderOnThisDay();renderYearCompare();renderTodayNotifyCard();
+  renderLifetimeCard();renderOnThisDay();renderYearCompare();renderTodayNotifyCard();renderTrialBanner();
   const r=primaryRace(),cur=currentBlockIndex(),blocks=periodBlocksFor(r);
   document.getElementById("hero-race-title").innerHTML=`<i class="bi bi-trophy-fill" style="color:#fcd34d"></i> ${r.name}`;
   document.getElementById("hero-race-details").innerHTML=`<i class="bi bi-calendar-event"></i> ${r.date} · 목표: <strong>${raceGoalLabel(r)}</strong> · 현재: <span class="zone-badge z4">${cur<0?"준비기":cur>3?"완료":blocks[cur].stage.split(" ")[1]||"진행"}</span>`;
@@ -5033,7 +5121,7 @@ function renderWeeklyJournal(){const list=document.getElementById("weekly-journa
           <strong style="font-size:12.5px;color:#e2e8f0">${d.slice(5)} (${days[i]})</strong>
           <span style="font-size:11.5px;color:#38bdf8">${distTxt} ${durTxt}</span></div>
         ${planLines}
-        ${(v.pulse||v.temp||v.feeling||v.time)?`<div style="font-size:10.5px;color:#94a3b8;margin-top:2px">${v.time?v.time+" · ":""}${v.pulse?"맥박 "+v.pulse+" · ":""}${v.temp?"기온 "+v.temp+"° · ":""}${v.feeling?"컨디션 "+v.feeling+"/7":""}</div>`:""}
+        ${(v.pulse||v.temp||v.feeling||v.time||v.sleepHours)?`<div style="font-size:10.5px;color:#94a3b8;margin-top:2px">${v.time?v.time+" · ":""}${v.pulse?"맥박 "+v.pulse+" · ":""}${v.sleepHours?"수면 "+v.sleepHours+"h · ":""}${v.temp?"기온 "+v.temp+"° · ":""}${v.feeling?"컨디션 "+v.feeling+"/7":""}</div>`:""}
         ${diaryPreview?`<div style="font-size:11px;color:#cbd5e1;margin-top:3px">${escapeHtml(diaryPreview)}${diaryTxt.length>40?"…":""}</div>`:""}
       </div>`;}).join(""):"";
     return`<div style="border:1px solid var(--border-light);border-radius:8px;margin-bottom:8px;overflow:hidden">
@@ -5107,13 +5195,19 @@ function renderSelectedDay(key){
       <strong style="font-size:13.5px;color:#fff"><i class="bi bi-journal-text" style="color:#a78bfa"></i> 오늘의 달리기 일지</strong>
       <button class="btn btn-sm btn-success" onclick="saveDiary('${key}')"><i class="bi bi-save"></i> 일지 저장</button></div>
     <div class="grid-2col" style="gap:8px">
-      <div class="form-group" style="margin-bottom:8px"><label>아침 맥박 (bpm)</label><input type="number" id="vt-pulse" value="${vitals.pulse||""}" placeholder="예: 49"></div>
+      <div class="form-group" style="margin-bottom:8px"><label>아침 맥박 (bpm)</label><input type="number" id="vt-pulse" value="${vitals.pulse||""}" placeholder="예: 49" oninput="updateVitalsCoach()"></div>
       <div class="form-group" style="margin-bottom:8px"><label>기온</label>
         <div style="display:flex;gap:6px">
           <input type="number" id="vt-temp" value="${vitals.temp||""}" placeholder="°C" style="flex:1">
           <select id="vt-period" style="flex:1"><option value="오전" ${vitals.period==="오전"?"selected":""}>오전</option><option value="오후" ${vitals.period==="오후"?"selected":""}>오후</option></select>
         </div></div>
     </div>
+    <div class="grid-2col" style="gap:8px">
+      <div class="form-group" style="margin-bottom:4px"><label>취침 시각</label><input type="time" id="vt-sleep-start" value="${vitals.sleepStart||""}" onchange="updateSleepSummary()"></div>
+      <div class="form-group" style="margin-bottom:4px"><label>기상 시각</label><input type="time" id="vt-sleep-end" value="${vitals.sleepEnd||""}" onchange="updateSleepSummary()"></div>
+    </div>
+    <div id="vt-sleep-summary" style="font-size:11px;color:#94a3b8;margin:0 0 10px"></div>
+    <div id="vt-coach-box" style="font-size:11.5px;color:#cbd5e1;background:var(--bg-surface);border:1px solid var(--border-light);border-radius:8px;padding:8px 10px;margin-bottom:10px"></div>
     <div class="form-group" style="margin-bottom:10px"><label>기록 시각 (선택 — 오전/오후 포함, 시:분)</label>
       <input type="time" id="vt-time" value="${vitals.time||(key===TODAY?new Date().toTimeString().slice(0,5):"")}"></div>
     <div class="form-group" style="margin-bottom:10px"><label>오늘 컨디션 (1~7)</label>
@@ -5126,6 +5220,7 @@ function renderSelectedDay(key){
     <div style="font-size:11px;color:#64748b;margin-top:4px"><i class="bi bi-info-circle"></i> 입력란을 벗어나면 자동 저장되고, 저장된 날은 캘린더에 <i class="bi bi-journal-text" style="color:#a78bfa"></i> 표시가 붙습니다.</div>
   </div>`;
   c.innerHTML=html;
+  updateSleepSummary(); // 취침·기상 시각으로 총 수면시간 계산 + 맥박/수면 참고 코칭 표시(저장된 값 기준 최초 렌더)
   // 경로 미리보기는 IndexedDB 조회가 끝난 뒤 비동기로 채움
   dayLogs(key).forEach(l=>{if(!logHasRoute(l))return;
     const slot=document.getElementById("rsvg-"+l.id);if(!slot)return;
@@ -5135,6 +5230,46 @@ function renderSelectedDay(key){
 }
 function setVitalFeeling(n){const hidden=document.getElementById("vt-feeling-hidden");if(hidden)hidden.value=n;
   for(let i=1;i<=7;i++){const b=document.getElementById("vt-feel-"+i);if(b)b.className="btn btn-sm "+(i===n?"":"btn-secondary");}}
+// 아침 안정시 맥박·수면시간에 대한 일반 참고 코칭(의료 진단이 아닌 일반 운동과학 가이드 — 경계값은 max, 낮은 구간부터 순서대로 확인)
+const PULSE_COACHING=[
+  {max:49,t:"매우 낮음 — 꾸준한 유산소 훈련이 반영된 범위일 수 있으나, 평소보다 갑자기 낮아졌다면 과훈련·피로 신호일 수 있어요"},
+  {max:60,t:"좋음 — 안정적인 회복 상태로 보이는 범위"},
+  {max:70,t:"보통"},
+  {max:80,t:"약간 높음 — 전날 피로·수면 부족·스트레스·탈수 영향을 확인해보세요"},
+  {max:9999,t:"높음 — 평소보다 많이 높다면 강도를 낮추거나 휴식일로 조정하는 것을 권장"}
+];
+const SLEEP_COACHING=[
+  {max:5,t:"부족 — 회복·부상 위험이 커질 수 있어요, 오늘은 강도를 낮추는 게 좋습니다"},
+  {max:6.5,t:"약간 부족 — 컨디션을 보며 가볍게"},
+  {max:9,t:"적정 — 훈련 강도를 평소대로 진행해도 좋은 범위"},
+  {max:99,t:"많음 — 컨디션에 따라 조정하세요"}
+];
+function pickCoachTip(table,val){for(const r of table)if(val<=r.max)return r.t;return table[table.length-1].t;}
+function computeSleepHours(start,end){ // 취침·기상 시각으로 총 수면시간 계산(자정을 넘기는 경우, 예: 23:30~06:30 도 처리)
+  if(!start||!end)return null;
+  const sm=start.split(":").map(Number),em=end.split(":").map(Number);
+  if(sm.length<2||em.length<2||isNaN(sm[0])||isNaN(em[0]))return null;
+  let mins=(em[0]*60+em[1])-(sm[0]*60+sm[1]);
+  if(mins<=0)mins+=24*60;
+  return Math.round(mins/6)/10;} // 0.1시간 단위
+function vitalsCoachText(pulse,sleepHours){
+  const parts=[];
+  if(pulse!=null&&!isNaN(pulse))parts.push(`맥박 ${pulse}bpm — ${pickCoachTip(PULSE_COACHING,pulse)}`);
+  if(sleepHours!=null)parts.push(`수면 ${sleepHours}시간 — ${pickCoachTip(SLEEP_COACHING,sleepHours)}`);
+  return parts.join("<br>");}
+function updateSleepSummary(){
+  const s=(document.getElementById("vt-sleep-start")||{}).value||"",e=(document.getElementById("vt-sleep-end")||{}).value||"";
+  const hrs=computeSleepHours(s,e);
+  const sumEl=document.getElementById("vt-sleep-summary");
+  if(sumEl)sumEl.textContent=hrs!=null?`총 수면시간: 약 ${hrs}시간`:"";
+  updateVitalsCoach();}
+function updateVitalsCoach(){
+  const box=document.getElementById("vt-coach-box");if(!box)return;
+  const pulseRaw=(document.getElementById("vt-pulse")||{}).value,pulse=parseInt(pulseRaw);
+  const s=(document.getElementById("vt-sleep-start")||{}).value||"",e=(document.getElementById("vt-sleep-end")||{}).value||"";
+  const hrs=computeSleepHours(s,e);
+  const txt=vitalsCoachText(isNaN(pulse)?null:pulse,hrs);
+  box.innerHTML=txt?`<i class="bi bi-lightbulb" style="color:#fbbf24"></i> ${txt}`:`<span style="color:#64748b"><i class="bi bi-lightbulb"></i> 맥박·수면시간을 입력하면 참고 코칭이 표시됩니다(일반 참고용, 의료 진단 아님).</span>`;}
 function deleteLog(key,id){if(!confirm("이 운동 기록을 삭제할까요?"))return;
   deleteRouteData(id); // IndexedDB에 남는 경로도 함께 정리(고아 데이터 방지)
   DB.calendar[key].logs=DB.calendar[key].logs.filter(l=>l.id!==id);save();renderCalendar();refreshAll();showToast("기록을 삭제했습니다.");}
@@ -5143,9 +5278,12 @@ function saveDiary(key,silent){const el=document.getElementById("diary-text");if
   if(!DB.calendar[key])DB.calendar[key]={plans:[],logs:[]};DB.calendar[key].diary=el.value;
   const pulse=parseInt((document.getElementById("vt-pulse")||{}).value),temp=parseInt((document.getElementById("vt-temp")||{}).value),
     period=(document.getElementById("vt-period")||{}).value||"",feeling=parseInt((document.getElementById("vt-feeling-hidden")||{}).value),
-    form=((document.getElementById("vt-form")||{}).value||"").trim(),time=((document.getElementById("vt-time")||{}).value||"").trim();
+    form=((document.getElementById("vt-form")||{}).value||"").trim(),time=((document.getElementById("vt-time")||{}).value||"").trim(),
+    sleepStart=((document.getElementById("vt-sleep-start")||{}).value||"").trim(),sleepEnd=((document.getElementById("vt-sleep-end")||{}).value||"").trim();
+  const sleepHours=computeSleepHours(sleepStart,sleepEnd);
   const vitals={};if(!isNaN(pulse))vitals.pulse=pulse;if(!isNaN(temp))vitals.temp=temp;if(period)vitals.period=period;
   if(!isNaN(feeling))vitals.feeling=feeling;if(form)vitals.form=form;if(time)vitals.time=time;
+  if(sleepStart)vitals.sleepStart=sleepStart;if(sleepEnd)vitals.sleepEnd=sleepEnd;if(sleepHours!=null)vitals.sleepHours=sleepHours;
   if(Object.keys(vitals).length)DB.calendar[key].vitals=vitals;else delete DB.calendar[key].vitals;
   const ok=save();
   if(!ok&&Store.ok){showToast("저장 공간이 가득 찼습니다. 설정에서 백업 후 오래된 데이터를 정리하세요.");return;}
@@ -7922,9 +8060,12 @@ function reportLogsHTML(start,end){const rows=collectLogRows().filter(r=>r.날�
     ${rows.map(r=>`<tr><td>${r.날짜}</td><td>${r.유형}</td><td>${r["거리(km)"]||""}</td><td>${r["시간(분)"]||""}</td><td>${r.평균HR||""}</td><td>${r.존||""}</td><td>${r.TRIMP||""}</td><td>${r["페이스(/km)"]||""}</td></tr>`).join("")}
     </table>`;}
 function reportDiaryHTML(start,end){const rows=[];
-  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).sort().forEach(d=>{const dc=DB.calendar[d]||{},t=(dc.diary||"").trim(),v=dc.vitals||{};if(t||v.time)rows.push({d,t,time:v.time||""});});
+  Object.keys(DB.calendar).filter(d=>d>=start&&d<=end).sort().forEach(d=>{const dc=DB.calendar[d]||{},t=(dc.diary||"").trim(),v=dc.vitals||{};
+    if(t||v.time||v.pulse||v.sleepHours)rows.push({d,t,time:v.time||"",pulse:v.pulse||"",sleepHours:v.sleepHours||""});});
   if(!rows.length)return"";
-  return`<h2>일지</h2>`+rows.map(r=>`<div style="margin-bottom:10px"><strong>${r.d}${r.time?` <span style="color:#64748b;font-weight:400">${r.time}</span>`:""}</strong><div style="font-size:12px;color:#334155;white-space:pre-wrap">${escHtml(r.t)}</div></div>`).join("");}
+  return`<h2>일지</h2>`+rows.map(r=>{
+    const meta=[r.pulse?`맥박 ${r.pulse}bpm`:"",r.sleepHours?`수면 ${r.sleepHours}시간`:""].filter(Boolean).join(" · ");
+    return`<div style="margin-bottom:10px"><strong>${r.d}${r.time?` <span style="color:#64748b;font-weight:400">${r.time}</span>`:""}</strong>${meta?`<div style="font-size:11px;color:#64748b">${meta}</div>`:""}<div style="font-size:12px;color:#334155;white-space:pre-wrap">${escHtml(r.t)}</div></div>`;}).join("");}
 function openReportPreview(){
   const period=document.getElementById("report-period").value;
   const{start,end}=reportPeriodRange(period);
@@ -7953,7 +8094,7 @@ function exportExcel(){
   const planRows=[];Object.keys(DB.calendar).sort().forEach(date=>dayPlans(date).forEach((p,i)=>{const srcId=((DB.calendar[date]||{}).planSrc||[])[i];
     planRows.push({날짜:date,계획:p,근거대회:planSourceLabel(srcId)||""});}));S("계획",planRows);
   const diaryRows=[];Object.keys(DB.calendar).sort().forEach(date=>{const dc=DB.calendar[date],d=((dc.diary)||"").trim(),v=dc.vitals||{};
-    if(d||Object.keys(v).length)diaryRows.push({날짜:date,기록시각:v.time||"",아침맥박:v.pulse||"",기온:v.temp||"","오전오후":v.period||"","컨디션(1~7)":v.feeling||"","자세훈련":v.form||"",일지:d});});
+    if(d||Object.keys(v).length)diaryRows.push({날짜:date,기록시각:v.time||"",아침맥박:v.pulse||"",취침시각:v.sleepStart||"",기상시각:v.sleepEnd||"",총수면시간:v.sleepHours||"",기온:v.temp||"","오전오후":v.period||"","컨디션(1~7)":v.feeling||"","자세훈련":v.form||"",일지:d});});
   S("일기",diaryRows);
   S("주간요약",weeklySummaryRows());
   const woRows=[];(DB.workouts||[]).forEach(w=>w.steps.forEach((s,i)=>woRows.push({워크아웃:w.name,분류:w.cat,순서:i+1,구분:STEP_META[s.kind].label,상세:stepText(s)})));S("워크아웃",woRows);
@@ -8350,7 +8491,7 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
     const kkInput=document.getElementById("kakao-js-key");if(kkInput)kkInput.value=DB.kakaoJsKey||"";
     renderKakaoMapStatus();
     renderStravaStatus();}
-  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();},80);}
+  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();renderPremiumGate();},80);}
   else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){renderErrorReportToggle();populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();populateShoeSelect();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
@@ -8434,7 +8575,7 @@ function showToast(msg){const t=document.getElementById("toast");if(!t)return;
   clearTimeout(toastTimer);toastTimer=setTimeout(hideToast,dur);}
 
 /* ===== 부팅 ===== */
-function refreshAll(){if(currentSlideIndex===0)renderDashboard();if(currentSlideIndex===5){renderComplianceReport();renderAnalyticsCharts();}if(currentSlideIndex===6)renderPRBoard();}
+function refreshAll(){if(currentSlideIndex===0)renderDashboard();if(currentSlideIndex===5){renderComplianceReport();renderAnalyticsCharts();renderPremiumGate();}if(currentSlideIndex===6)renderPRBoard();}
 function bootUI(){const p=DB.profile;renderVersionInfo();
   setTimeout(()=>requestPersistentStorage(true),1200); // 조용히 한 번 요청 — 실패해도 앱 사용엔 지장 없음
   const un=!!p.unset; // 미입력 프로필이면 입력칸을 비워 두고(자리표시 문구만) 사용자가 직접 채우게 함
