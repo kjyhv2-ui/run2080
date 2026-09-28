@@ -433,9 +433,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div id="run-simple-block" style="display:none;background:#080e1a;border-radius:8px;padding:12px;margin-bottom:4px">
           <div id="run-simple-desc" style="font-size:12.5px;color:#cbd5e1;line-height:1.6"></div>
         </div>
-        <div class="form-group" style="margin-bottom:8px"><label>신발 (선택 — 고르면 사용거리·사용시간이 자동 누적)</label><select id="run-shoe-select"><option value="">선택 안 함</option></select></div>
-        <div class="form-group" id="run-gear-block" style="display:none;margin-bottom:8px"><label>기타 장비 (선택 — 여러 개 가능, 사용시간 자동 누적)</label>
-          <div id="run-gear-checks" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+        <div class="form-group" style="margin-bottom:8px"><label>신발 (선택 — 고르면 사용거리가 자동 누적)</label><select id="run-shoe-select"><option value="">선택 안 함</option></select></div>
         <button class="btn btn-success" style="width:100%;margin-top:14px;padding:14px;font-size:15px" onclick="startRunSession()"><i class="bi bi-play-fill"></i> START</button>
         <div style="font-size:11.5px;color:var(--text-secondary);margin-top:10px"><i class="bi bi-info-circle"></i> 시작하면 위치 권한을 요청합니다. 야외에서 하늘이 보이는 곳에서 신호가 잡힐 때까지 잠시 기다려 주세요. 측정 중에는 화면 꺼짐이 방지됩니다.</div>
         <div id="run-simple-note" style="display:none;font-size:11.5px;color:var(--text-secondary);margin-top:10px"><i class="bi bi-info-circle"></i> 시간을 측정합니다. 종료 후 거리·메모를 직접 입력할 수 있습니다.</div>
@@ -741,7 +739,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <div style="display:flex;gap:6px"><input type="text" id="pred-mm" placeholder="예: 6:30" oninput="renderPredictor()"><button class="btn btn-sm btn-warning" onclick="saveMagicMile()" title="PR로 저장"><i class="bi bi-save"></i></button></div>
           </div>
         </div>
-        <div id="pred-custom-row" style="display:none" class="grid-2col"><div class="form-group"><label>직접 입력 · 거리</label><select id="pred-cust-dist"></select></div><div class="form-group"><label>기록</label><input type="text" id="pred-cust-time" placeholder="예: 42:30" oninput="renderPredictor()"></div></div>
+        <div id="pred-custom-row" style="display:none" class="grid-2col"><div class="form-group"><label>직접 입력 · 거리 (PR 기록이 없을 때 여기서 거리를 고르고 기록을 넣으세요)</label><select id="pred-cust-dist"></select></div><div class="form-group"><label>기록</label><input type="text" id="pred-cust-time" placeholder="예: 42:30" oninput="renderPredictor()"></div></div>
         <div style="overflow-x:auto"><table id="pred-table" style="width:100%;border-collapse:collapse;font-size:13px"></table></div>
         <div style="font-size:11.5px;color:var(--text-secondary);margin-top:8px"><i class="bi bi-info-circle"></i> Riegel = T×(D₂/D₁)^1.06 (1,500m↑ 유효). 갤러웨이 = 매직마일 × 거리계수(5K +33초·10K ×1.15·10마일 ×1.175·하프 ×1.2·풀 ×1.3). '합의'는 두 모델 평균입니다.</div>
       </div>
@@ -890,7 +888,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       </div></div>
       <div class="card" id="sec-10-13">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-13')"><div class="card-title"><i class="bi bi-shoe" style="color:#a855f7"></i> 신발 마일리지</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-13" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-13">
-        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">러닝화는 유형(폼 소재·용도)에 따라 교체까지 버티는 거리가 다릅니다. 신발을 등록해두면 운동 시작 전이나 기록 저장 시 연결한 만큼 거리·사용시간이 자동으로 누적되어, 교체 시점을 미리 알려드립니다.</div>
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">러닝화는 유형(폼 소재·용도)에 따라 교체까지 버티는 거리가 다릅니다. 신발을 등록해두면 운동 시작 전이나 기록 저장 시 연결한 만큼 거리가 자동으로 누적되고, 구매일부터의 경과일수도 함께 보여드려 교체 시점을 미리 알려드립니다.</div>
         <div id="shoe-list"></div>
         <div style="margin-top:8px"><label style="font-size:10.5px;color:#64748b">신발 유형(착용 시점) — 고르면 권장 교체 마일리지가 자동으로 채워집니다</label>
           <select id="shoe-new-category" style="width:100%" onchange="onShoeCategoryChange()">
@@ -907,10 +905,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <input type="text" id="shoe-new-name" placeholder="신발 이름 (예: 페가수스 41)" style="flex:2;min-width:120px">
           <input type="number" id="shoe-new-retirekm" placeholder="700km" style="flex:1;min-width:70px">
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-          <div style="flex:1;min-width:120px"><label style="font-size:10.5px;color:#64748b">구매일(선택, 기본 오늘)</label><input type="date" id="shoe-new-purchase" style="width:100%"></div>
-          <div style="flex:1;min-width:120px"><label style="font-size:10.5px;color:#64748b">기존 사용시간(선택, 시간)</label><input type="number" id="shoe-new-initialhr" placeholder="0" style="width:100%"></div>
-        </div>
+        <div style="margin-top:6px"><label style="font-size:10.5px;color:#64748b">구매일(선택, 기본 오늘) — 이 날부터 경과일수가 계산됩니다</label><input type="date" id="shoe-new-purchase" style="width:100%"></div>
         <button class="btn btn-sm" style="width:100%;margin-top:6px" onclick="addShoe()"><i class="bi bi-plus-lg"></i> 신발 추가</button>
         <div style="margin-top:10px;border-top:1px solid var(--line,#1e293b);padding-top:8px">
           <div style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11.5px;color:#a855f7;font-weight:600" onclick="toggleShoeTips()">
@@ -921,16 +916,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       </div></div>
       <div class="card" id="sec-10-18">
         <div class="card-header" style="cursor:pointer" onclick="toggleSettingSection(event,'sec-10-18')"><div class="card-title"><i class="bi bi-smartwatch" style="color:#a855f7"></i> 기타 장비 관리 (시계 등)</div><i class="bi bi-chevron-down sec-caret" id="caret-sec-10-18" style="color:#64748b;font-size:14px;transition:transform .25s;margin-left:auto"></i></div><div class="sec-body" id="body-sec-10-18">
-        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">GPS 시계 같은 장비를 등록해두면, 운동 시작 전이나 기록 저장 시 체크해둔 만큼 사용시간이 자동으로 누적되고 구매 후 경과일도 함께 보여줍니다.</div>
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">GPS 시계 같은 장비를 등록해두면 구매일과 그날부터의 경과일수를 보여줍니다.</div>
         <div id="gear-list"></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
           <input type="text" id="gear-new-name" placeholder="장비 이름 (예: 포러너 265)" style="flex:2;min-width:120px">
           <select id="gear-new-type" style="flex:1;min-width:90px"><option value="watch">시계</option><option value="etc">기타</option></select>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-          <div style="flex:1;min-width:120px"><label style="font-size:10.5px;color:#64748b">구매일(선택, 기본 오늘)</label><input type="date" id="gear-new-purchase" style="width:100%"></div>
-          <div style="flex:1;min-width:120px"><label style="font-size:10.5px;color:#64748b">기존 사용시간(선택, 시간)</label><input type="number" id="gear-new-initialhr" placeholder="0" style="width:100%"></div>
-        </div>
+        <div style="margin-top:6px"><label style="font-size:10.5px;color:#64748b">구매일(선택, 기본 오늘) — 이 날부터 경과일수가 계산됩니다</label><input type="date" id="gear-new-purchase" style="width:100%"></div>
         <button class="btn btn-sm" style="width:100%;margin-top:6px" onclick="addGear()"><i class="bi bi-plus-lg"></i> 장비 추가</button>
       </div></div>
       <div class="card" id="sec-10-3">
@@ -1076,8 +1068,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     </div>
     <div style="background:#080e1a;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12.5px" id="zone-preview">—</div>
     <div class="form-group"><label>신발 (선택)</label><select id="m-log-shoe"><option value="">신발 선택 안 함</option></select></div>
-    <div class="form-group" id="m-log-gear-block" style="display:none"><label>기타 장비 (선택 — 여러 개 가능)</label>
-      <div id="m-log-gear-checks" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
     <div class="form-group"><label>메모 / RPE(1~10)</label><input type="text" id="m-log-notes" value=""></div>
     <div class="form-group"><label>자기 평가 (오늘 훈련, 스스로 채점)</label>
       <select id="m-log-rating">
@@ -2482,7 +2472,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.33.0",APP_BUILD="2026-09-28";
+const APP_VERSION="2.35.0",APP_BUILD="2026-09-28";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2524,6 +2514,20 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.35.0",d:"2026-09-28",title:"기록 예측 '직접 입력' 표시 버그 수정 + 통상 거리 확대, 기타장비 사용횟수 집계 제거",items:[
+    "버그 수정: PR 기록이 하나도 없어 'Riegel 예측 소스'가 자동으로 '직접 입력…'이 되는 경우, 값은 custom인데 입력행(거리·기록)이 화면에 안 보이던 문제 해결 — renderPredictor()가 매번 소스값에 맞춰 입력행 표시를 동기화하도록 수정",
+    "'직접 입력' 거리 선택지를 기존 7개(1마일·5K·10K·10마일·하프·30K·풀)에서 PR 탭과 동일한 통상 예측 거리 기준(1,000m·1마일·2,000m·3,000m·5,000m·10,000m·하프·풀)으로 확대 — PR이 없어도 1K·2K·3K 같은 km 단위 테스트 기록으로 바로 예측 가능",
+    "매직마일(갤러웨이 공식용)은 정의상 1마일 전력질주 기준이라 그대로 유지 — km 단위 기록은 위 '직접 입력' 행(Riegel 기반)을 사용하도록 라벨에 안내 문구 추가",
+    "기타 장비(시계 등): 운동 시작 전/후 선택해 사용횟수를 세던 기능을 제거 — 러닝 시작화면·기록 저장모달의 장비 체크박스 UI 삭제, 등록부는 이름·종류·구매일·경과일수만 남김(신발 선택은 km 마일리지 추적을 위해 그대로 유지)",
+    "회귀 검사 갱신: 자체진단 ⑲를 신발 km/기타장비 경과일수 기준으로 단순화, ㉑ 신규 추가(PR 없을 때 직접입력 행 자동 표시 + 통상거리 옵션 확인)"
+  ]},
+  {v:"2.34.0",d:"2026-09-28",title:"신발·기타장비 등록 방식 단순화 — 시간(분) 누적 대신 구매일 기준 경과일수로 표시",items:[
+    "신발: 등록 폼에서 '기존 사용시간(시간)' 입력란 제거 — km 누적거리(기존대로 자동 누적) + 구매일 + 경과일수만으로 관리, 사용시간(분) 계산·표시 제거",
+    "기타 장비(시계 등): 등록 폼에서 '기존 사용시간(시간)' 입력란 제거, 사용시간 누적 대신 구매일 + 경과일수 + 운동 시작 전/후 선택한 사용횟수(gearUseCount)로 표시",
+    "러닝 시작 화면·기록 저장 모달의 장비 다중 선택은 그대로 유지 — 이제 시간이 아니라 '몇 번 사용했는지'를 세는 데 쓰임",
+    "엑셀 내보내기·인쇄용 리포트에서 신발·기타장비 표의 '누적사용시간' 열을 '구매일·경과일수'(신발은 유형도 유지)로 교체, 기타장비 표에는 사용횟수 열 추가",
+    "회귀 검사 갱신: 자체진단 ⑲를 신발 km/횟수 + 기타장비 경과일수/사용횟수 기준으로 재작성"
+  ]},
   {v:"2.33.0",d:"2026-09-28",title:"신발 유형별 권장 교체 마일리지 + 교체·로테이션 참고팁 패널",items:[
     "신발 등록 시 유형(데일리 트레이너/맥스 쿠션화/템포·인터벌화/레이싱 카본화(슈퍼슈즈)/트레이닝용 카본화/기타) 선택 — 고르면 권장 교체 마일리지(예: 데일리 600~800km, 카본 레이싱화 최상 ~250km·한계 350~500km)가 힌트·기본값으로 자동 반영",
     "신발 목록에 유형 표시 + 카본 레이싱화가 최상 컨디션 구간(250km)을 넘으면 '대회용 컨디션 저하 · 훈련화 전환 권장' 상태로 별도 표시(교체 임계점 100% 도달과는 별개 경고)",
@@ -3034,32 +3038,20 @@ function runSelfTests(){
     }finally{if(savedTrialStart===undefined)delete DB.trialStart;else DB.trialStart=savedTrialStart;
       if(savedAdUnlock===undefined)delete DB.adUnlockUntil;else DB.adUnlockUntil=savedAdUnlock;
       FEATURES.premiumGating=savedFeature;save();}});
-  check("⑲ 장비(신발/기타) 사용시간 누적 — 구매일 경과표시, 기존사용시간+기록누적, 선택목록 다중체크",()=>{
+  check("⑲ 장비(신발/기타) 구매일 경과표시 — 신발은 km 마일리지, 기타장비는 등록·경과일수만(운동기록 연결 없음)",()=>{
     const key="9999-01-03",savedCal=DB.calendar[key],savedShoes=DB.shoes,savedGear=DB.gear;
-    const dupIds=["m-log-gear-checks","run-gear-checks"];
-    const removed=dupIds.map(id=>{const el=document.getElementById(id);if(el&&el.parentNode){const ph=document.createComment(id);el.parentNode.insertBefore(ph,el);el.parentNode.removeChild(el);return{el,ph};}return null;});
-    const tmp=document.createElement("div");tmp.style.display="none";
-    tmp.innerHTML=`<div id="m-log-gear-checks"></div>`;
-    document.body.appendChild(tmp);
     try{
       const shoeId="ts_"+uid(),gearId="tg_"+uid();
-      DB.shoes=[{id:shoeId,name:"테스트화",startDate:addDays(TODAY,-5),retireKm:700,initialMin:120,retired:false,note:""}];
-      DB.gear=[{id:gearId,name:"테스트워치",type:"watch",startDate:addDays(TODAY,-65),initialMin:60,retired:false}];
+      DB.shoes=[{id:shoeId,name:"테스트화",startDate:addDays(TODAY,-5),retireKm:700,retired:false,note:""}];
+      DB.gear=[{id:gearId,name:"테스트워치",type:"watch",startDate:addDays(TODAY,-65),retired:false}];
       delete DB.calendar[key];
-      DB.calendar[key]={plans:[],logs:[{id:uid(),type:"run",sport:"run",dist:5,duration:30,avghr:0,maxhr:0,notes:"",shoeId,gearIds:[gearId]}]};
-      const shoeMinOk=shoeUsedMin(shoeId)===150; // 기존 120분 + 기록 30분
-      const gearMinOk=gearUsedMin(gearId)===90; // 기존 60분 + 기록 30분
+      DB.calendar[key]={plans:[],logs:[{id:uid(),type:"run",sport:"run",dist:5,duration:30,avghr:0,maxhr:0,notes:"",shoeId}]};
+      const shoeKmOk=shoeMileageKm(shoeId)===5&&shoeRunCount(shoeId)===1;
       const elapsedShort=elapsedSincePurchase(addDays(TODAY,-5))==="5일";
       const elapsedLong=elapsedSincePurchase(addDays(TODAY,-65))==="2개월 5일";
-      populateGearChecks();
-      const box=document.getElementById("m-log-gear-checks");
-      const checkEl=box?box.querySelector(`input[value="${gearId}"]`):null;
-      if(checkEl)checkEl.checked=true;
-      const checkedOk=checkedGearIds("m-log-gear-checks").includes(gearId);
-      return{pass:shoeMinOk&&gearMinOk&&elapsedShort&&elapsedLong&&checkedOk,
-        detail:shoeMinOk?(gearMinOk?(elapsedShort?(elapsedLong?(checkedOk?"":"체크박스 선택값 이상"):"장기 경과일 표시 이상"):"단기 경과일 표시 이상"):"기타장비 사용시간 계산 이상"):"신발 사용시간 계산 이상"};
-    }finally{tmp.remove();
-      removed.forEach(r=>{if(r){r.ph.parentNode.insertBefore(r.el,r.ph);r.ph.remove();}});
+      return{pass:shoeKmOk&&elapsedShort&&elapsedLong,
+        detail:shoeKmOk?(elapsedShort?(elapsedLong?"":"장기 경과일 표시 이상"):"단기 경과일 표시 이상"):"신발 km/횟수 계산 이상"};
+    }finally{
       if(savedCal===undefined)delete DB.calendar[key];else DB.calendar[key]=savedCal;
       DB.shoes=savedShoes;DB.gear=savedGear;populateShoeSelect();}});
   check("⑳ 신발 유형별 권장 교체 마일리지 — 카테고리 선택 시 힌트·플레이스홀더 반영, 참고팁 패널 토글",()=>{
@@ -3083,6 +3075,20 @@ function runSelfTests(){
         detail:catCountOk?(midOk?(hintOk?(placeholderOk?(panelOpenOk?(panelCloseOk?"":"팁 패널 닫힘 이상"):"팁 패널 열림 이상"):"플레이스홀더 반영 이상"):"카테고리 힌트 반영 이상"):"카테고리 중간값 계산 이상"):"카테고리 정의 이상"};
     }finally{tmp.remove();
       removed.forEach(r=>{if(r){r.ph.parentNode.insertBefore(r.el,r.ph);r.ph.remove();}});}});
+  check("㉑ 기록 예측 — PR이 없어도 '직접 입력' 행이 자동으로 보이고, 통상 예측거리(1K~풀)를 고를 수 있음",()=>{
+    const savedRecords=DB.records;
+    try{
+      DB.records={};
+      renderPredictor();
+      const srcSel=document.getElementById("pred-src");
+      const srcIsCustom=srcSel&&srcSel.value==="custom";
+      const customRowVisible=document.getElementById("pred-custom-row").style.display==="grid";
+      const cd=document.getElementById("pred-cust-dist");
+      const opts=cd?[...cd.options].map(o=>o.value):[];
+      const hasCommonDists=["1000","1609","5000","10000","21097","42195"].every(v=>opts.includes(v));
+      return{pass:srcIsCustom&&customRowVisible&&hasCommonDists,
+        detail:srcIsCustom?(customRowVisible?(hasCommonDists?"":"통상 거리 옵션 누락: "+opts.join(",")):"직접입력 행이 자동으로 안 보임"):"소스 선택값이 custom이 아님"};
+    }finally{DB.records=savedRecords;renderPredictor();}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -5458,7 +5464,6 @@ function editLog(key,id){const l=(DB.calendar[key].logs||[]).find(x=>x.id===id);
   document.getElementById("m-log-avghr").value=l.avghr;document.getElementById("m-log-maxhr").value=l.maxhr;document.getElementById("m-log-notes").value=l.notes||"";
   document.getElementById("m-log-planref").value=(l.planRef==null?"":l.planRef);document.getElementById("m-log-rating").value=(l.rating==null?"":l.rating);
   populateShoeSelect();document.getElementById("m-log-shoe").value=l.shoeId||"";
-  document.querySelectorAll("#m-log-gear-checks input").forEach(el=>{el.checked=(l.gearIds||[]).includes(el.value);});
   previewZone();document.getElementById("manualLogModal").classList.add("active");}
 function autoTitle(log){const act=ACT_BY_ID[log.sport]||(log.type==="cross"?ACT_BY_ID.etc:ACT_BY_ID.run);
   if(act.bucket==="cross")return(log.notes||"").trim()||act.label;
@@ -5475,7 +5480,6 @@ function saveManualWorkoutLog(){
   const pr=document.getElementById("m-log-planref").value,rt=document.getElementById("m-log-rating").value;
   if(pr!=="")log.planRef=parseInt(pr);if(rt!=="")log.rating=parseInt(rt);
   const shoeId=(document.getElementById("m-log-shoe")||{}).value;if(shoeId)log.shoeId=shoeId;
-  const gearIds=checkedGearIds("m-log-gear-checks");if(gearIds.length)log.gearIds=gearIds;
   // GPS 경로는 용량이 커서 localStorage가 아닌 IndexedDB에 저장하고, 로그에는 있다는 표시만 남김
   if(pendingRoute&&pendingRoute.length>=2){log.hasRoute=true;log.routePts=pendingRoute.length;saveRouteData(log.id,pendingRoute);}
   pendingRoute=null;
@@ -5880,9 +5884,11 @@ function renderPredictor(){
       srcSel.innerHTML=keys.map(k=>{const lab=(PR_DISTANCES.find(d=>d.m===k)||{}).label||k+"m";return`<option value="${k}">${lab} · ${fmtTime(DB.records[k].sec)}</option>`;}).join("")+`<option value="custom">직접 입력…</option>`;
       const opts=keys.map(String).concat("custom");
       srcSel.value=opts.includes(prev)?prev:(keys.length?String(keys[keys.length-1]):"custom");
-      srcSel.dataset.sig=sig;
-      const cd=document.getElementById("pred-cust-dist");if(cd&&!cd.dataset.built){cd.innerHTML=PRED_ROWS.filter(r=>r.m>=1000).map(r=>`<option value="${Math.round(r.m)}">${r.label}</option>`).join("");cd.dataset.built="1";}
-    }}
+      srcSel.dataset.sig=sig;}
+    const cd=document.getElementById("pred-cust-dist");if(cd&&!cd.dataset.built){ // PR 기록이 없어 "직접 입력"이 기본 선택되는 경우에도 통상 예측에 쓰이는 거리(1K·1마일·2K·3K·5K·10K·하프·풀)를 바로 고를 수 있게 함
+      cd.innerHTML=PR_DISTANCES.filter(r=>r.m>=1000).map(r=>`<option value="${Math.round(r.m)}">${r.label}</option>`).join("");cd.dataset.built="1";}
+    document.getElementById("pred-custom-row").style.display=srcSel.value==="custom"?"grid":"none"; // 렌더할 때마다 현재 선택값에 맞춰 직접입력 행을 동기화(값이 코드로 "custom"이 되는 경우 change 이벤트가 안 뜨는 것을 보완)
+  }
   document.getElementById("unit-km").style.opacity=predUnit==="km"?"1":"0.5";
   document.getElementById("unit-mile").style.opacity=predUnit==="mile"?"1":"0.5";
   const mmEl=document.getElementById("pred-mm");if(mmEl&&!mmEl.value&&DB.records[1609])mmEl.value=fmtTime(DB.records[1609].sec);
@@ -7323,13 +7329,13 @@ function startRunSession(){
     metroOn=document.getElementById("run-metro-toggle").checked;
     metroBpm=metroOn?(parseInt(document.getElementById("run-metro-bpm").value)||170):null;
     metroSound=metroOn?document.getElementById("run-metro-sound").value:null;}
-  const runShoeId=(document.getElementById("run-shoe-select")||{}).value||"",runGearIds=checkedGearIds("run-gear-checks");
+  const runShoeId=(document.getElementById("run-shoe-select")||{}).value||"";
   RUN={mode,title,steps,planIdx,refDist,refTimeSec,stepI:0,stepStartT:0,stepStartD:0,
     actType:actType.id,actGps:actType.gps,actUnit:actType.unit,
     voice:document.getElementById("run-voice").value,ann:parseFloat(document.getElementById("run-announce").value),
     startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,
     trackMode:trackOn,trackLane,trackLapDist,trackStartPoint:null,trackAway:false,trackLapsDone:0,distAtLapStart:0,
-    metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null,cadenceOn:false,shoeId:runShoeId,gearIds:runGearIds};
+    metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null,cadenceOn:false,shoeId:runShoeId};
   document.getElementById("run-setup-card").style.display="none";
   document.getElementById("run-live-panel").style.display="block";
   const eb=document.getElementById("gps-error-banner");if(eb)eb.style.display="none";
@@ -7755,9 +7761,8 @@ function finishRunSession(){if(!RUN)return;
   document.getElementById("m-log-rating").value="";
   document.getElementById("run-setup-card").style.display="block";
   document.getElementById("run-live-panel").style.display="none";
-  const usedShoeId=RUN.shoeId||"",usedGearIds=RUN.gearIds||[]; // 운동 시작 전 선택해둔 신발·기타 장비를 저장 모달에 그대로 이어감
+  const usedShoeId=RUN.shoeId||""; // 운동 시작 전 선택해둔 신발을 저장 모달에 그대로 이어감
   RUN=null;populateShoeSelect();document.getElementById("m-log-shoe").value=usedShoeId;
-  document.querySelectorAll("#m-log-gear-checks input").forEach(el=>{el.checked=usedGearIds.includes(el.value);});
   previewZone();document.getElementById("manualLogModal").classList.add("active");
   startPrewarmGps();} // 설정 화면으로 복귀 — 다음 러닝을 위해 예열 재개
 
@@ -8107,10 +8112,6 @@ function shoeMileageKm(shoeId){let km=0;
 function shoeRunCount(shoeId){let n=0;
   for(const d in DB.calendar)for(const l of dayLogs(d))if(l.shoeId===shoeId)n++;
   return n;}
-function shoeUsedMin(shoeId){ // 등록 시 입력해둔 기존 사용시간(initialMin) + 이후 기록된 운동 시간 누적
-  const s=(DB.shoes||[]).find(x=>x.id===shoeId);let min=s&&s.initialMin?s.initialMin:0;
-  for(const d in DB.calendar)for(const l of dayLogs(d))if(l.shoeId===shoeId)min+=(l.duration||0);
-  return Math.round(min);}
 function elapsedSincePurchase(dateStr){ // "구매(등록)일" 이후 경과일수를 "n일" 또는 "n개월 m일"로 표시
   if(!dateStr)return"";
   const days=diffDays(TODAY,dateStr);if(days<0)return"";
@@ -8123,10 +8124,9 @@ function addShoe(){const name=(document.getElementById("shoe-new-name")||{}).val
   const category=(document.getElementById("shoe-new-category")||{}).value||"other";
   const retireKm=parseFloat((document.getElementById("shoe-new-retirekm")||{}).value)||shoeCategoryMid(category);
   const purchase=(document.getElementById("shoe-new-purchase")||{}).value||TODAY;
-  const initialMin=Math.round((parseFloat((document.getElementById("shoe-new-initialhr")||{}).value)||0)*60);
-  DB.shoes.push({id:uid(),name,category,startDate:purchase,retireKm,initialMin,retired:false,note:""});
+  DB.shoes.push({id:uid(),name,category,startDate:purchase,retireKm,retired:false,note:""});
   save();document.getElementById("shoe-new-name").value="";document.getElementById("shoe-new-retirekm").value="";
-  document.getElementById("shoe-new-purchase").value="";document.getElementById("shoe-new-initialhr").value="";
+  document.getElementById("shoe-new-purchase").value="";
   renderShoeList();populateShoeSelect();showToast(`'${name}' 등록했습니다.`);}
 function deleteShoe(id){const s=(DB.shoes||[]).find(x=>x.id===id);if(!s)return;
   const km=shoeMileageKm(id);
@@ -8138,7 +8138,7 @@ function toggleShoeRetired(id){const s=(DB.shoes||[]).find(x=>x.id===id);if(!s)r
 function renderShoeList(){const box=document.getElementById("shoe-list");if(!box)return;
   const shoes=(DB.shoes||[]).slice().sort((a,b)=>(a.retired===b.retired?0:a.retired?1:-1));
   if(!shoes.length){box.innerHTML=`<div style="font-size:12px;color:#64748b;padding:6px 0">등록된 신발이 없습니다. 아래에서 추가해보세요.</div>`;return;}
-  box.innerHTML=shoes.map(s=>{const km=shoeMileageKm(s.id),n=shoeRunCount(s.id),pct=Math.min(100,km/s.retireKm*100),usedMin=shoeUsedMin(s.id),elapsed=elapsedSincePurchase(s.startDate);
+  box.innerHTML=shoes.map(s=>{const km=shoeMileageKm(s.id),n=shoeRunCount(s.id),pct=Math.min(100,km/s.retireKm*100),elapsed=elapsedSincePurchase(s.startDate);
     const cat=SHOE_CATEGORIES[s.category]||null;
     const peakOver=cat&&cat.peak&&km>=cat.peak; // 카본 레이싱화가 최상 컨디션 구간(예: 250km)을 넘었는지
     const color=s.retired?"#475569":pct>=100?"#ef4444":(peakOver||pct>=80)?"#f59e0b":"#10b981";
@@ -8150,63 +8150,46 @@ function renderShoeList(){const box=document.getElementById("shoe-list");if(!box
       <div style="height:7px;background:#0d1420;border-radius:4px;overflow:hidden;margin-bottom:5px">
         <div style="width:${Math.max(2,pct)}%;height:100%;background:${color};border-radius:4px"></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#94a3b8;flex-wrap:wrap;gap:4px">
-        <span>${cat?`${cat.label} · `:""}${km}km / ${s.retireKm}km · ${n}회 · 사용시간 ${fmtDur(usedMin*60)}${elapsed?` · 구매 ${elapsed} 경과`:""}</span>
+        <span>${cat?`${cat.label} · `:""}${km}km / ${s.retireKm}km · ${n}회${elapsed?` · 구매 ${elapsed} 경과`:""}</span>
         <span style="display:flex;gap:4px">
           <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:11px" onclick="toggleShoeRetired('${s.id}')">${s.retired?"재활성":"은퇴"}</button>
           <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:11px;color:#fca5a5" onclick="deleteShoe('${s.id}')"><i class="bi bi-trash"></i></button>
         </span></div></div>`;}).join("");}
-function populateShoeSelect(){ // 신발 선택(러닝 시작 화면 + 기록 저장 모달) + 기타 장비 체크박스를 함께 채움
+function populateShoeSelect(){ // 신발 선택(러닝 시작 화면 + 기록 저장 모달)
   const optHtml=`<option value="">신발 선택 안 함</option>`+activeShoes().map(s=>`<option value="${s.id}">${escHtml(s.name)} (${shoeMileageKm(s.id)}km)</option>`).join("");
   ["m-log-shoe","run-shoe-select"].forEach(id=>{
     const sel=document.getElementById(id);if(!sel)return;
     const cur=sel.value;sel.innerHTML=optHtml;
-    if([...sel.options].some(o=>o.value===cur))sel.value=cur;});
-  populateGearChecks();}
-/* ===== 기타 장비(시계 등) 사용시간 추적 — 신발과 같은 방식이지만 거리 대신 시간(분) 기준 ===== */
-function gearUsedMin(gearId){
-  const g=(DB.gear||[]).find(x=>x.id===gearId);let min=g&&g.initialMin?g.initialMin:0;
-  for(const d in DB.calendar)for(const l of dayLogs(d))if((l.gearIds||[]).includes(gearId))min+=(l.duration||0);
-  return Math.round(min);}
-function activeGear(){return(DB.gear||[]).filter(g=>!g.retired);}
+    if([...sel.options].some(o=>o.value===cur))sel.value=cur;});}
+/* ===== 기타 장비(시계 등) — 운동 기록과 연결하지 않고, 구매일부터의 경과일수만 보여주는 단순 등록부 ===== */
 const GEAR_TYPE_LABEL={watch:"시계",etc:"기타"};
 function addGear(){const name=(document.getElementById("gear-new-name")||{}).value.trim();
   if(!name){showToast("장비 이름을 입력하세요.");return;}
   const type=(document.getElementById("gear-new-type")||{}).value||"etc";
   const purchase=(document.getElementById("gear-new-purchase")||{}).value||TODAY;
-  const initialMin=Math.round((parseFloat((document.getElementById("gear-new-initialhr")||{}).value)||0)*60);
-  DB.gear.push({id:uid(),name,type,startDate:purchase,initialMin,retired:false});
-  save();document.getElementById("gear-new-name").value="";document.getElementById("gear-new-purchase").value="";document.getElementById("gear-new-initialhr").value="";
-  renderGearList();populateGearChecks();showToast(`'${name}' 등록했습니다.`);}
+  DB.gear.push({id:uid(),name,type,startDate:purchase,retired:false});
+  save();document.getElementById("gear-new-name").value="";document.getElementById("gear-new-purchase").value="";
+  renderGearList();showToast(`'${name}' 등록했습니다.`);}
 function deleteGear(id){const g=(DB.gear||[]).find(x=>x.id===id);if(!g)return;
-  const min=gearUsedMin(id);
-  if(!confirm(`'${g.name}'을(를) 삭제할까요?\n\n이 장비로 기록된 사용시간(${fmtDur(min*60)})의 운동 기록 자체는 지워지지 않고, 장비 연결만 해제됩니다.`))return;
-  DB.gear=DB.gear.filter(x=>x.id!==id);save();renderGearList();populateGearChecks();showToast("장비를 삭제했습니다.");}
+  if(!confirm(`'${g.name}'을(를) 삭제할까요?`))return;
+  DB.gear=DB.gear.filter(x=>x.id!==id);save();renderGearList();showToast("장비를 삭제했습니다.");}
 function toggleGearRetired(id){const g=(DB.gear||[]).find(x=>x.id===id);if(!g)return;
-  g.retired=!g.retired;save();renderGearList();populateGearChecks();
+  g.retired=!g.retired;save();renderGearList();
   showToast(g.retired?`'${g.name}'을(를) 사용 중지 처리했습니다.`:`'${g.name}'을(를) 다시 활성화했습니다.`);}
 function renderGearList(){const box=document.getElementById("gear-list");if(!box)return;
   const gear=(DB.gear||[]).slice().sort((a,b)=>(a.retired===b.retired?0:a.retired?1:-1));
   if(!gear.length){box.innerHTML=`<div style="font-size:12px;color:#64748b;padding:6px 0">등록된 장비가 없습니다. 아래에서 추가해보세요.</div>`;return;}
-  box.innerHTML=gear.map(g=>{const usedMin=gearUsedMin(g.id),elapsed=elapsedSincePurchase(g.startDate);
+  box.innerHTML=gear.map(g=>{const elapsed=elapsedSincePurchase(g.startDate);
     return`<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px;padding:11px 13px;margin-bottom:8px;${g.retired?"opacity:.6":""}">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
         <strong style="font-size:13.5px;color:#e2e8f0">${escHtml(g.name)}</strong>
         <span style="font-size:11px;color:#94a3b8">${GEAR_TYPE_LABEL[g.type]||"기타"}${g.retired?" · 중지됨":""}</span></div>
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#94a3b8;flex-wrap:wrap;gap:4px">
-        <span>사용시간 ${fmtDur(usedMin*60)}${elapsed?` · 구매 ${elapsed} 경과`:""}</span>
+        <span>${g.startDate?`구매일 ${g.startDate}`:""}${elapsed?` · ${elapsed} 경과`:""}</span>
         <span style="display:flex;gap:4px">
           <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:11px" onclick="toggleGearRetired('${g.id}')">${g.retired?"재활성":"중지"}</button>
           <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:11px;color:#fca5a5" onclick="deleteGear('${g.id}')"><i class="bi bi-trash"></i></button>
         </span></div></div>`;}).join("");}
-function populateGearChecks(){ // 러닝 시작 화면 + 기록 저장 모달, 양쪽에 같은 장비 체크박스 목록을 채움(선택 상태는 유지)
-  const gear=activeGear();
-  [["run-gear-checks","run-gear-block"],["m-log-gear-checks","m-log-gear-block"]].forEach(([boxId,blockId])=>{
-    const box=document.getElementById(boxId);if(!box)return;
-    const block=document.getElementById(blockId);if(block)block.style.display=gear.length?"":"none";
-    const prevChecked=[...box.querySelectorAll("input:checked")].map(el=>el.value);
-    box.innerHTML=gear.map(g=>`<label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#cbd5e1;background:#080e1a;border-radius:6px;padding:5px 8px;cursor:pointer"><input type="checkbox" value="${g.id}" style="width:14px;height:14px" ${prevChecked.includes(g.id)?"checked":""}> ${escHtml(g.name)}</label>`).join("");});}
-function checkedGearIds(boxId){const box=document.getElementById(boxId);if(!box)return[];
-  return[...box.querySelectorAll("input:checked")].map(el=>el.value);}
 /* ===== 출력용 리포트(PDF/인쇄) =====
    화면 캡처 라이브러리 대신 브라우저 자체 인쇄 기능을 쓴다 — 가볍고, 어떤 기기에서도
    "PDF로 저장"이 표준으로 들어있어 추가 코드 없이 안정적으로 동작한다. */
@@ -8262,12 +8245,12 @@ function reportPRHTML(){const rows=PR_DISTANCES.filter(d=>DB.records[d.m]);if(!r
     </table>`;}
 function reportShoesHTML(){const shoes=DB.shoes||[],gear=DB.gear||[];if(!shoes.length&&!gear.length)return"";
   let html="";
-  if(shoes.length)html+=`<h2>신발 마일리지</h2><table><tr><th>이름</th><th>유형</th><th>누적거리</th><th>사용시간</th><th>진행률</th><th>상태</th></tr>
+  if(shoes.length)html+=`<h2>신발 마일리지</h2><table><tr><th>이름</th><th>유형</th><th>누적거리</th><th>구매일</th><th>경과일수</th><th>진행률</th><th>상태</th></tr>
     ${shoes.map(s=>{const km=shoeMileageKm(s.id),pct=Math.round(km/s.retireKm*100);
-      return`<tr><td>${escHtml(s.name)}</td><td>${(SHOE_CATEGORIES[s.category]||{}).label||"기타"}</td><td>${km}km / ${s.retireKm}km</td><td>${fmtDur(shoeUsedMin(s.id)*60)}</td><td>${pct}%</td><td>${s.retired?"은퇴":pct>=100?"교체 권장":"사용중"}</td></tr>`;}).join("")}
+      return`<tr><td>${escHtml(s.name)}</td><td>${(SHOE_CATEGORIES[s.category]||{}).label||"기타"}</td><td>${km}km / ${s.retireKm}km</td><td>${s.startDate||""}</td><td>${elapsedSincePurchase(s.startDate)}</td><td>${pct}%</td><td>${s.retired?"은퇴":pct>=100?"교체 권장":"사용중"}</td></tr>`;}).join("")}
     </table>`;
-  if(gear.length)html+=`<h2>기타 장비</h2><table><tr><th>이름</th><th>종류</th><th>사용시간</th><th>상태</th></tr>
-    ${gear.map(g=>`<tr><td>${escHtml(g.name)}</td><td>${GEAR_TYPE_LABEL[g.type]||"기타"}</td><td>${fmtDur(gearUsedMin(g.id)*60)}</td><td>${g.retired?"중지":"사용중"}</td></tr>`).join("")}
+  if(gear.length)html+=`<h2>기타 장비</h2><table><tr><th>이름</th><th>종류</th><th>구매일</th><th>경과일수</th><th>상태</th></tr>
+    ${gear.map(g=>`<tr><td>${escHtml(g.name)}</td><td>${GEAR_TYPE_LABEL[g.type]||"기타"}</td><td>${g.startDate||""}</td><td>${elapsedSincePurchase(g.startDate)}</td><td>${g.retired?"중지":"사용중"}</td></tr>`).join("")}
     </table>`;
   return html;}
 function reportRacesHTML(start,end){const races=(DB.raceArchive||[]).filter(r=>r.date>=start&&r.date<=end).sort((a,b)=>b.date.localeCompare(a.date));
@@ -8322,8 +8305,8 @@ function exportExcel(){
     evalRows.push({날짜:date,계획:p,상태:st.txt,"완성률(%)":cp==null?"":cp,자기평가:linked&&linked.rating?RATINGS[linked.rating].t:""});}));S("이행평가",evalRows);
   const lapRows=[];Object.keys(DB.calendar).sort().forEach(date=>dayLogs(date).forEach(l=>{if(l.laps&&l.laps.length)l.laps.forEach(lap=>{
     lapRows.push({날짜:date,운동:l.title,[l.lapsTrackMode?"바퀴":"km"]:lap.n,랩타임:fmtDur(lap.t)});});}));S("랩기록",lapRows);
-  S("신발",(DB.shoes||[]).map(sh=>({이름:sh.name,유형:(SHOE_CATEGORIES[sh.category]||{}).label||"기타",누적거리:shoeMileageKm(sh.id),"누적사용시간(분)":shoeUsedMin(sh.id),운동횟수:shoeRunCount(sh.id),"교체기준(km)":sh.retireKm,"진행률(%)":Math.round(shoeMileageKm(sh.id)/sh.retireKm*100),상태:sh.retired?"은퇴":"사용중",구매일:sh.startDate})));
-  S("기타장비",(DB.gear||[]).map(g=>({이름:g.name,종류:GEAR_TYPE_LABEL[g.type]||"기타","누적사용시간(분)":gearUsedMin(g.id),상태:g.retired?"중지":"사용중",구매일:g.startDate})));
+  S("신발",(DB.shoes||[]).map(sh=>({이름:sh.name,유형:(SHOE_CATEGORIES[sh.category]||{}).label||"기타",누적거리:shoeMileageKm(sh.id),운동횟수:shoeRunCount(sh.id),"교체기준(km)":sh.retireKm,"진행률(%)":Math.round(shoeMileageKm(sh.id)/sh.retireKm*100),상태:sh.retired?"은퇴":"사용중",구매일:sh.startDate,경과일수:elapsedSincePurchase(sh.startDate)})));
+  S("기타장비",(DB.gear||[]).map(g=>({이름:g.name,종류:GEAR_TYPE_LABEL[g.type]||"기타",상태:g.retired?"중지":"사용중",구매일:g.startDate,경과일수:elapsedSincePurchase(g.startDate)})));
   XLSX.writeFile(wb,`run2080-export-${TODAY}.xlsx`);showToast("엑셀 파일(9개 시트)을 내보냈습니다.");}
 function exportCSV(){const rows=collectLogRows();const head=["날짜","시작","유형","제목","거리(km)","시간(분)","평균HR","최대HR","존","TRIMP","페이스(/km)","메모"];
   const esc=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`;
