@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.39.0",APP_BUILD="2026-09-29";
+const APP_VERSION="2.39.1",APP_BUILD="2026-09-29";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,11 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.39.1",d:"2026-09-29",title:"대회 카드 버튼 배치 정리",items:[
+    "대회 카드 버튼 순서를 요청대로 재배치: 1행 접수완료·입금완료 체크박스 + 수정·삭제(휴지통) 아이콘, 2행 주 목표·플랜 생성·오늘 훈련 시작(운동 시작), 3행 계획 삭제",
+    "수정·삭제 아이콘 버튼을 체크박스 줄로 옮겨 오른쪽 정렬 — 대회 자체를 다루는 조작(접수·입금·수정·삭제)과 훈련을 다루는 조작(주 목표·플랜 생성·운동 시작·계획 삭제)이 줄로 구분되도록 정리",
+    "버튼에 연결된 함수·동작은 전혀 바꾸지 않음(마크업 순서만 조정) — 자체진단 26개 그대로 통과 확인"
+  ]},
   {v:"2.39.0",d:"2026-09-29",title:"대회 주기화 설계 탭 — 저장된 모든 대회 카드에 '운동 시작' 연결 버튼 추가",items:[
     "대회 목록(주기화 탭)의 각 대회 카드에 오늘 날짜 기준 주기화 일정 유무를 미리 보여주는 안내 줄 추가 — 예정된 훈련이 있으면 그 내용을, 휴식일이면 휴식일임을, 아무 일정도 없으면 자유 달리기로 진행됨을 표시",
     "각 대회 카드에 '운동 시작' 버튼 신설 — 오늘 이 대회의 주기화 일정(휴식 제외)이 있으면 러닝 탭으로 이동해 그 계획을 그대로 불러와 시작할 수 있게 연결(기존 캘린더의 '이 계획으로 러닝 시작' 기능과 동일한 경로 재사용), 없으면 러닝 탭에서 자유 달리기 모드로 바로 시작하도록 전환",
@@ -3658,17 +3663,19 @@ function renderRaceList(){const c=document.getElementById("race-list");if(!c)ret
         ${(r.regStart||r.regEnd)?`<div style="font-size:11.5px;color:#94a3b8;margin-top:2px"><i class="bi bi-calendar-check"></i> 접수기간 ${r.regStart||"?"} ~ ${r.regEnd||"?"}</div>`:""}
         ${r.url?`<div style="margin-top:2px"><a href="${escapeHtml(r.url)}" target="_blank" style="font-size:11.5px;color:#38bdf8"><i class="bi bi-link-45deg"></i> 신청 페이지</a></div>`:""}
         ${todayLine}</div>
-      <div style="display:flex;gap:14px;margin-top:8px">
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px">
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:${r.applied?'#6ee7b7':'#94a3b8'}"><input type="checkbox" ${r.applied?"checked":""} onchange="toggleRaceApplied('${r.id}')" style="width:15px;height:15px"> 접수완료</label>
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:${r.paid?'#6ee7b7':'#94a3b8'}"><input type="checkbox" ${r.paid?"checked":""} onchange="toggleRacePaid('${r.id}')" style="width:15px;height:15px"> 입금완료</label>
+        <button class="btn btn-sm btn-secondary" style="margin-left:auto" onclick="openRaceModal('${r.id}')"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-secondary" onclick="deleteRace('${r.id}')"><i class="bi bi-trash"></i></button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px">
-        ${isPast?"":`<button class="btn btn-sm ${tHasWorkout?"btn-success":"btn-secondary"}" onclick="startTodayWorkoutForRace('${r.id}')"><i class="bi bi-play-fill"></i> ${tHasWorkout?"오늘 훈련 시작":"운동 시작"}</button>`}
         ${r.primary?'<span class="btn btn-sm btn-secondary" style="opacity:.55;cursor:default">주 목표 ⭐</span>':`<button class="btn btn-sm btn-secondary" onclick="setPrimaryRace('${r.id}')"><i class="bi bi-star"></i> 주 목표로</button>`}
         <button class="btn btn-sm btn-success" onclick="generatePlanForRace('${r.id}')"><i class="bi bi-magic"></i> 플랜 생성</button>
+        ${isPast?"":`<button class="btn btn-sm ${tHasWorkout?"btn-success":"btn-secondary"}" onclick="startTodayWorkoutForRace('${r.id}')"><i class="bi bi-play-fill"></i> ${tHasWorkout?"오늘 훈련 시작":"운동 시작"}</button>`}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
         ${countRacePlans(r.id)>0?`<button class="btn btn-sm btn-secondary" style="color:#fca5a5" onclick="deleteRacePlans('${r.id}')" title="이 대회로 만든 훈련 계획만 삭제(대회는 유지)"><i class="bi bi-calendar-x"></i> 계획 삭제(${countRacePlans(r.id)})</button>`:""}
-        <button class="btn btn-sm btn-secondary" onclick="openRaceModal('${r.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn btn-sm btn-secondary" onclick="deleteRace('${r.id}')"><i class="bi bi-trash"></i></button>
       </div></div>`;}).join("");}
 function isPlanRestDay(planStr){return planStr!=null&&/^휴식$/.test(String(planStr).trim());}
 function todayPlanIdxForRace(raceId){const day=DB.calendar[TODAY],planSrc=(day&&day.planSrc)||[];return planSrc.findIndex(id=>id===raceId);}
