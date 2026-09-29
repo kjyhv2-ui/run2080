@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.38.1",APP_BUILD="2026-09-29";
+const APP_VERSION="2.39.0",APP_BUILD="2026-09-29";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,12 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.39.0",d:"2026-09-29",title:"대회 주기화 설계 탭 — 저장된 모든 대회 카드에 '운동 시작' 연결 버튼 추가",items:[
+    "대회 목록(주기화 탭)의 각 대회 카드에 오늘 날짜 기준 주기화 일정 유무를 미리 보여주는 안내 줄 추가 — 예정된 훈련이 있으면 그 내용을, 휴식일이면 휴식일임을, 아무 일정도 없으면 자유 달리기로 진행됨을 표시",
+    "각 대회 카드에 '운동 시작' 버튼 신설 — 오늘 이 대회의 주기화 일정(휴식 제외)이 있으면 러닝 탭으로 이동해 그 계획을 그대로 불러와 시작할 수 있게 연결(기존 캘린더의 '이 계획으로 러닝 시작' 기능과 동일한 경로 재사용), 없으면 러닝 탭에서 자유 달리기 모드로 바로 시작하도록 전환",
+    "주 목표(⭐) 대회뿐 아니라 저장된 모든 대회에 동일하게 적용 — 여러 대회를 동시에 준비 중이어도 각 대회 카드에서 바로 오늘 운동을 시작할 수 있음(단, 하루는 한 대회의 주기화 구간만 소유하므로 그 날 실제로 배치된 계획이 있는 대회에서만 '오늘 훈련 시작'으로 연결되고, 나머지 대회는 자유 달리기로 안내)",
+    "회귀 검사 추가: 자체진단 ㉖ 오늘 일정 있는 경우(계획 연결)·휴식일인 경우(자유모드 전환)·이 대회로 배치된 일정이 전혀 없는 경우(자유모드 전환) 3가지 분기 확인"
+  ]},
   {v:"2.38.1",d:"2026-09-29",title:"버그 수정: 일부 기기에서 취침·기상 시각 등 시간 입력란을 탭해도 선택창이 안 뜨던 문제",items:[
     "증상: 안드로이드 일부 브라우저/웹뷰에서 type=시간·날짜 입력란(취침 시각·기상 시각 등)을 탭하면 칸이 포커스는 되지만(테두리만 파랗게) 네이티브 시간 선택창이나 키보드가 뜨지 않아 입력이 불가능했음",
     "조치: 앱 전체에 클릭 위임 리스너를 추가 — type=date·time·datetime-local 입력란을 탭하면 브라우저의 기본 동작에 더해 showPicker()를 명시적으로 호출해 선택창을 강제로 띄움(showPicker 미지원 구형 브라우저는 기존 동작 그대로, 예외는 조용히 무시)",
@@ -3233,6 +3239,28 @@ function runSelfTests(){
     let threw=false;
     try{el.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true}));}catch(e){threw=true;}
     return{pass:!threw,detail:threw?"클릭 시 예외 발생":""};});
+  check("㉖ 대회 카드 '운동 시작' — 오늘 주기화 일정 있으면 해당 계획으로, 없으면 자유 모드로 러닝 탭 연결",()=>{
+    const savedCal=DB.calendar[TODAY],savedRaces=DB.races,savedRunMode=(document.getElementById("run-mode")||{}).value,savedPending=pendingRunPlan;
+    try{
+      DB.races=[{id:"raceA",name:"A대회",date:addDays(TODAY,60),dist:"FULL",targetSec:14400,primary:true}];
+      // 오늘 이 대회의 주기화 일정(휴식 아님)이 있는 경우
+      DB.calendar[TODAY]={plans:["인터벌 8x800"],planSrc:["raceA"],logs:[]};
+      const idxOk=todayPlanIdxForRace("raceA")===0&&!isPlanRestDay(DB.calendar[TODAY].plans[0]);
+      startTodayWorkoutForRace("raceA");
+      const linkedToPlan=currentSlideIndex===1&&document.getElementById("run-mode").value==="plan"&&pendingRunPlan&&pendingRunPlan.text==="인터벌 8x800";
+      // 오늘이 이 대회의 휴식일인 경우
+      DB.calendar[TODAY]={plans:["휴식"],planSrc:["raceA"],logs:[]};
+      document.getElementById("run-mode").value="plan";
+      startTodayWorkoutForRace("raceA");
+      const restToFree=document.getElementById("run-mode").value==="free";
+      // 오늘 이 대회로 배치된 일정이 전혀 없는 경우
+      DB.calendar[TODAY]={plans:["이지런"],planSrc:["raceB"],logs:[]}; // 다른 대회 소유
+      document.getElementById("run-mode").value="plan";
+      startTodayWorkoutForRace("raceA");
+      const noPlanToFree=document.getElementById("run-mode").value==="free"&&todayPlanIdxForRace("raceA")===-1;
+      return{pass:idxOk&&linkedToPlan&&restToFree&&noPlanToFree,
+        detail:!idxOk?"오늘 일정 탐색 이상":!linkedToPlan?"계획 연결 이상":!restToFree?"휴식일 자유모드 전환 이상":!noPlanToFree?"일정 없음 자유모드 전환 이상":""};
+    }finally{if(savedCal===undefined)delete DB.calendar[TODAY];else DB.calendar[TODAY]=savedCal;DB.races=savedRaces;pendingRunPlan=savedPending;const sel=document.getElementById("run-mode");if(sel)sel.value=savedRunMode||"free";}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -3617,22 +3645,42 @@ function renderRaceList(){const c=document.getElementById("race-list");if(!c)ret
   const past=rs.filter(r=>r.date<TODAY).sort((x,y)=>y.date.localeCompare(x.date));
   const sorted=[...upcoming,...past];
   c.innerHTML=sorted.map(r=>{const dd=diffDays(r.date,TODAY);const isPast=dd<0;const rs2=regStatus(r);
+    const tIdx=isPast?-1:todayPlanIdxForRace(r.id);
+    const tPlan=tIdx>=0?((DB.calendar[TODAY].plans||[])[tIdx]):null;
+    const tIsRest=tPlan!=null&&isPlanRestDay(tPlan);
+    const tHasWorkout=tPlan!=null&&!tIsRest;
+    const todayLine=isPast?"":tHasWorkout?`<div style="font-size:11.5px;color:#6ee7b7;margin-top:2px"><i class="bi bi-play-circle"></i> 오늘 주기화 일정: ${escapeHtml(tPlan)}</div>`
+      :tIsRest?`<div style="font-size:11.5px;color:#94a3b8;margin-top:2px"><i class="bi bi-moon-stars"></i> 오늘은 이 대회의 휴식일입니다</div>`
+      :`<div style="font-size:11.5px;color:#64748b;margin-top:2px"><i class="bi bi-info-circle"></i> 오늘 이 대회로 배치된 훈련이 없습니다 — 운동 시작 시 자유 달리기로 진행</div>`;
     return `<div style="background:var(--bg-card);border:1px solid var(--border-light);border-left:4px solid ${r.primary?'#fcd34d':'#334155'};border-radius:10px;padding:12px;margin-bottom:8px${isPast?';opacity:.5':''}">
       <div><strong style="font-size:14.5px;color:#fff">${r.favorite?'⭐ ':''}${r.name}</strong> <span class="zone-badge z4" style="margin-left:2px">${DIST_LABEL[r.dist]}</span>${rs2?` <span class="zone-badge ${rs2.cls}">${rs2.label}</span>`:""}
         <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">${r.date} · ${isPast?'종료':'D-'+dd} · 목표 ${fmtDur(raceGoalSec(r))} · 플랜 ${raceWeeks(r)}주</div>
         ${(r.regStart||r.regEnd)?`<div style="font-size:11.5px;color:#94a3b8;margin-top:2px"><i class="bi bi-calendar-check"></i> 접수기간 ${r.regStart||"?"} ~ ${r.regEnd||"?"}</div>`:""}
-        ${r.url?`<div style="margin-top:2px"><a href="${escapeHtml(r.url)}" target="_blank" style="font-size:11.5px;color:#38bdf8"><i class="bi bi-link-45deg"></i> 신청 페이지</a></div>`:""}</div>
+        ${r.url?`<div style="margin-top:2px"><a href="${escapeHtml(r.url)}" target="_blank" style="font-size:11.5px;color:#38bdf8"><i class="bi bi-link-45deg"></i> 신청 페이지</a></div>`:""}
+        ${todayLine}</div>
       <div style="display:flex;gap:14px;margin-top:8px">
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:${r.applied?'#6ee7b7':'#94a3b8'}"><input type="checkbox" ${r.applied?"checked":""} onchange="toggleRaceApplied('${r.id}')" style="width:15px;height:15px"> 접수완료</label>
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:${r.paid?'#6ee7b7':'#94a3b8'}"><input type="checkbox" ${r.paid?"checked":""} onchange="toggleRacePaid('${r.id}')" style="width:15px;height:15px"> 입금완료</label>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px">
+        ${isPast?"":`<button class="btn btn-sm ${tHasWorkout?"btn-success":"btn-secondary"}" onclick="startTodayWorkoutForRace('${r.id}')"><i class="bi bi-play-fill"></i> ${tHasWorkout?"오늘 훈련 시작":"운동 시작"}</button>`}
         ${r.primary?'<span class="btn btn-sm btn-secondary" style="opacity:.55;cursor:default">주 목표 ⭐</span>':`<button class="btn btn-sm btn-secondary" onclick="setPrimaryRace('${r.id}')"><i class="bi bi-star"></i> 주 목표로</button>`}
         <button class="btn btn-sm btn-success" onclick="generatePlanForRace('${r.id}')"><i class="bi bi-magic"></i> 플랜 생성</button>
         ${countRacePlans(r.id)>0?`<button class="btn btn-sm btn-secondary" style="color:#fca5a5" onclick="deleteRacePlans('${r.id}')" title="이 대회로 만든 훈련 계획만 삭제(대회는 유지)"><i class="bi bi-calendar-x"></i> 계획 삭제(${countRacePlans(r.id)})</button>`:""}
         <button class="btn btn-sm btn-secondary" onclick="openRaceModal('${r.id}')"><i class="bi bi-pencil"></i></button>
         <button class="btn btn-sm btn-secondary" onclick="deleteRace('${r.id}')"><i class="bi bi-trash"></i></button>
       </div></div>`;}).join("");}
+function isPlanRestDay(planStr){return planStr!=null&&/^휴식$/.test(String(planStr).trim());}
+function todayPlanIdxForRace(raceId){const day=DB.calendar[TODAY],planSrc=(day&&day.planSrc)||[];return planSrc.findIndex(id=>id===raceId);}
+function startTodayWorkoutForRace(raceId){ // 대회 카드의 '운동 시작' — 오늘 이 대회의 주기화 일정이 있으면 그 계획으로, 없으면 자유 달리기로 러닝 탭 연결
+  const r=raceById(raceId);
+  const idx=todayPlanIdxForRace(raceId);
+  const plan=idx>=0?((DB.calendar[TODAY].plans||[])[idx]):null;
+  if(idx>=0&&plan!=null&&!isPlanRestDay(plan)){startRunFromPlan(TODAY,idx);return;}
+  goToSlide(1);
+  const sel=document.getElementById("run-mode");if(sel){sel.value="free";onRunModeChange();}
+  const restToday=idx>=0&&isPlanRestDay(plan);
+  showToast(restToday?`오늘은 ${r?r.name+"의 ":""}휴식일입니다 — 자유 달리기 모드로 이동했습니다.`:`오늘 ${r?r.name+"으로 ":""}배치된 훈련이 없어 자유 달리기 모드로 이동했습니다.`);}
 function racePreview(){const dist=document.getElementById("race-dist").value,sec=parseTime(document.getElementById("race-goal").value),date=document.getElementById("race-date").value;
   const el=document.getElementById("race-preview");if(sec==null){el.textContent="목표 기록 형식을 확인하세요 (예: 41:00).";return;}
   const dm=DIST_M[dist],pace=fmtPace(sec/(dm/1000)),wk=date?Math.max(3,Math.round(diffDays(date,TODAY)/7)):null;
