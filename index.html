@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.37.0",APP_BUILD="2026-09-29";
+const APP_VERSION="2.38.0",APP_BUILD="2026-09-29";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,13 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.38.0",d:"2026-09-29",title:"주차 계획 수립 시 PR 대비 난이도 코칭 추가",items:[
+    "주기화 탭에서 플랜 길이를 고를 때(주차 힌트 박스) 목표 기록이 현재 PR 대비 얼마나 도전적인지 실시간으로 미리 보여줌 — 대회 저장·주 목표 변경·플랜 길이 변경 시마다 갱신",
+    "'플랜 생성' 버튼을 눌렀을 때 뜨는 확인창에 난이도 코칭 문구 추가: 목표가 현재 PR 기준 현실적 개선 한계(주차×1.2초/km, 최대 45초/km)를 1.5배 이상 초과하면(extreme) '현재 기록 기준 완주 예상', '현실적인 목표' 수치를 함께 제시하며 목표를 낮추거나 준비 기간을 늘리도록 권함; 1~1.5배 사이(high)는 짧은 주의 문구만 추가",
+    "난이도 판정은 실제 훈련 페이스 계산에 쓰이는 realisticGoalMP 공식을 그대로 재사용해(raceDifficultyInfo) 코칭 문구와 실제 배치되는 훈련 페이스가 항상 같은 기준을 쓰도록 함 — 기존 사후 안내('목표가 현재 체력 대비 공격적' 노트)는 그대로 유지, 사전 확인 단계를 추가한 것",
+    "PR 기록이 없으면 난이도 판정을 하지 않고(unknown) 기존처럼 목표 기록 기반 기본값으로 진행 — 근거 없이 경고하지 않음",
+    "회귀 검사 추가: 자체진단 ㉔ 목표=PR 동일(ok)·서브3 목표 극단 사례(extreme, ratio·현실적 목표 역산값 확인)·의도적으로 설계한 ratio 1.25 사례(high)·PR 없을 때(unknown) 4가지 판정 확인"
+  ]},
   {v:"2.37.0",d:"2026-09-29",title:"휴대폰 착용 위치(손에 들고 / 허리 벨트) 선택 + 위치별 케이던스 감지·보정",items:[
     "러닝 시작화면의 '실측 케이던스 측정' 체크 시 착용 위치 선택란 추가 — '허리 벨트 등 몸통 중심 고정'(기본값, 권장) / '손에 들고 뜀' 중 선택",
     "위치별로 걸음 감지 튜닝값을 다르게 적용 — 허리 중앙은 신체 중심의 상하 충격이 그대로 전달돼 신호가 또렷하므로 문턱값·평활 계수를 더 민감하게, 손에 들 때는 팔 스윙 노이즈를 고려해 기존 기본값 그대로 유지(코드에 실험실 측정이 아닌 경험적 출발값임을 주석으로 명시)",
@@ -3194,6 +3201,25 @@ function runSelfTests(){
       return{pass:profOk&&fallbackOk&&handFactorOk&&beltFactorOk&&positionCalibOk&&legacyAsHandOk&&motionOk&&beltProfileOk,
         detail:!profOk?"프로필 구조 이상":!fallbackOk?"기본 프로필 폴백 이상":!handFactorOk?"hand 보정계수 이상":!beltFactorOk?"belt 보정계수 이상":!positionCalibOk?"위치별 적용값 이상":!legacyAsHandOk?"위치정보 없는 과거기록 hand 처리 이상":!motionOk?"onCadenceMotion 예외 발생":!beltProfileOk?"belt 프로필 연결 이상":""};
     }finally{DB.calendar=savedCal;DB.dynamicsPrefs=savedPrefs;RUN=savedRun;cadenceState=savedState;}});
+  check("㉔ 목표 난이도 코칭 — PR 대비 목표 페이스 격차(ok/high/extreme) 판정 및 현실적 목표 역산",()=>{
+    const savedRecords=DB.records;
+    try{
+      DB.records={42195:{sec:14400}}; // PR: 풀코스 4:00:00
+      const okR={dist:"FULL",targetSec:14400,date:TODAY}; // 목표=PR과 동일 → 난이도 없음
+      const okInfo=raceDifficultyInfo(okR,16);
+      const okOk=okInfo.level==="ok"&&Math.abs(okInfo.gapSec)<0.01;
+      const extR={dist:"FULL",targetSec:10800,date:TODAY}; // 목표=서브3(3:00:00), 16주
+      const extInfo=raceDifficultyInfo(extR,16);
+      const extOk=extInfo.level==="extreme"&&Math.abs(extInfo.ratio-4.4437)<0.01&&Math.abs(raceGoalSecFromMP(extR,extInfo.rgMP)-13589.856)<1;
+      const highR={dist:"FULL",targetSec:13387.32,date:TODAY}; // ratio≈1.25로 설계된 목표
+      const highInfo=raceDifficultyInfo(highR,16);
+      const highOk=highInfo.level==="high"&&Math.abs(highInfo.ratio-1.25)<0.01;
+      // PR이 없으면 판정 불가(unknown)로 안전하게 빠짐 — 없는 기록으로 확인 불가 단정하지 않음
+      DB.records={};
+      const noPrOk=raceDifficultyInfo(okR,16).level==="unknown";
+      return{pass:okOk&&extOk&&highOk&&noPrOk,
+        detail:!okOk?"ok 판정 이상":!extOk?"extreme 판정/역산 이상: ratio="+extInfo.ratio:!highOk?"high 판정 이상: ratio="+highInfo.ratio:!noPrOk?"PR 없음 처리 이상":""};
+    }finally{DB.records=savedRecords;}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -3289,6 +3315,13 @@ function currentMPace(){const rec=currentBasisRecord();if(!rec)return null;
   const d1=PRED_M[rec.distM]||rec.distM,t1=rec.sec;const full=d1===42195?t1:riegel(t1,d1,42195);return full/42.195;}
 function pacesFromMP(m){return{easy:m+70,lsd:m+85,recovery:m+100,tempo:m-25,interval:m-40,tt5k:m-30,mpace:m};} // tempo(Z4 젖산역치)는 M-Pace보다 뚜렷하게 빨라야 함(기존 -12초는 너무 좁아 Z3와 거의 붙어보임)
 function realisticGoalMP(cMP,gMP,weeks){if(cMP==null)return gMP;const maxGain=Math.min(weeks*1.2,45);return Math.max(gMP,cMP-maxGain);}
+function raceGoalSecFromMP(r,mp){const dm=raceDistM(r),full=mp*42.195;return dm===42195?full:riegel(full,42195,dm);} // 풀코스 환산 페이스를 실제 대회 거리 기록(초)으로 역산
+function raceDifficultyInfo(r,N){ // 목표가 현재 PR 대비 얼마나 도전적인지 — 실제 훈련 페이스 계산(realisticGoalMP)과 같은 공식을 재사용(수치 불일치 방지)
+  const cMP=currentMPace(),gMP=goalMPace(r);
+  if(cMP==null)return{cMP:null,gMP,rgMP:gMP,gapSec:0,maxGain:0,ratio:0,level:"unknown"};
+  const maxGain=Math.min(N*1.2,45),gapSec=cMP-gMP,rgMP=realisticGoalMP(cMP,gMP,N),ratio=maxGain>0?gapSec/maxGain:0;
+  const level=ratio>=1.5?"extreme":ratio>1?"high":"ok"; // extreme: N주를 다 채워도 현실적 개선 한계의 1.5배 이상 모자람
+  return{cMP,gMP,rgMP,gapSec,maxGain,ratio,level};}
 function blendedMP(week,a,cMP,gMP){let gw;
   if(week<=a.base)gw=0;else if(week<=a.base+a.build){const i=week-a.base;gw=0.3+0.5*(i/Math.max(1,a.build));}else gw=1;
   return cMP+(gMP-cMP)*Math.min(1,gw);}
@@ -3493,7 +3526,10 @@ function generateTrainingPlan(){
     for(let d=sMon0;d<=eSun0;d=addDays(d,1)){if(d<TODAY)continue;
       const owner=rightfulOwner(d);if(owner&&owner.id!==r.id&&d!==r.date)overlapDays.push({date:d,owner});}}
   const overlapNames=[...new Set(overlapDays.map(x=>x.owner.name))];
+  const diffInfo=raceDifficultyInfo(r,N); // 목표가 현재 PR 대비 너무 도전적이면 배치 전에 코칭 문구로 한 번 더 확인시킴
   let confirmMsg=`[${r.name}] ${DIST_LABEL[r.dist||"FULL"]} · 목표 ${fmtDur(raceGoalSec(r))}\n템플릿: ${getTemplate(tplId).name}\n오늘(${TODAY}) 기준으로 이후 일정만 ${N}주 역산 기준에 맞춰 새로 세웁니다.\n\n오늘 이전 날짜는 전혀 손대지 않습니다 — 완료했든 미실시였든 계획·근거·기록이 그대로 남아 이행 리포트 통계에 계속 반영됩니다.`;
+  if(diffInfo.level==="extreme")confirmMsg+=`\n\n🚨 코칭: 목표가 현재 PR 대비 매우 도전적입니다.\n현재 기록 기준 완주 예상은 ${fmtDur(raceGoalSecFromMP(r,diffInfo.cMP))}인데 목표는 ${fmtDur(raceGoalSec(r))}입니다.\n${N}주로는 이만큼 빨라지기 현실적으로 어려워, 앱은 훈련 페이스를 현실적인 수준(약 ${fmtDur(raceGoalSecFromMP(r,diffInfo.rgMP))})으로 자동 조정해 배치합니다.\n부상 위험을 줄이려면 목표 기록을 낮추거나 대회일을 늦춰 준비 기간을 늘리는 걸 권합니다.`;
+  else if(diffInfo.level==="high")confirmMsg+=`\n\n⚠️ 코칭: 목표가 현재 PR 대비 다소 공격적입니다. 훈련 페이스는 현실적인 수준으로 자동 조정되어 배치됩니다.`;
   if(overlapDays.length)confirmMsg+=`\n\n⚠️ ${overlapDays.length}일은 더 가까운 대회(${overlapNames.join(", ")})와 겹쳐 그쪽 일정이 우선 적용되고 이 플랜에서는 제외됩니다.`;
   confirmMsg+=`\n계속할까요?`;
   if(!confirm(confirmMsg)){r.weeks=oldWeeks;r.templateId=oldTpl;return;}
@@ -3610,8 +3646,8 @@ function saveRace(){const name=document.getElementById("race-name").value.trim()
     applied:document.getElementById("race-applied").checked,paid:document.getElementById("race-paid").checked,favorite:document.getElementById("race-favorite").checked};
   if(idx>=0)rs[idx]=race;else rs.push(race);
   if(!rs.some(x=>x.primary))race.primary=true;
-  DB.race=primaryRace();save();closeRaceModal();renderRaceList();renderDashboard();renderPeriodizationBlocks();renderPredictor&&renderPredictor();showToast(`'${name}' 대회를 저장했습니다.`);}
-function setPrimaryRace(id){(DB.races||[]).forEach(r=>r.primary=(r.id===id));DB.race=primaryRace();save();renderRaceList();renderDashboard();renderPeriodizationBlocks();showToast(`주 목표 대회: ${primaryRace().name}`);}
+  DB.race=primaryRace();save();closeRaceModal();renderRaceList();renderDashboard();renderPeriodizationBlocks();renderPredictor&&renderPredictor();renderWeeksHint();showToast(`'${name}' 대회를 저장했습니다.`);}
+function setPrimaryRace(id){(DB.races||[]).forEach(r=>r.primary=(r.id===id));DB.race=primaryRace();save();renderRaceList();renderDashboard();renderPeriodizationBlocks();renderWeeksHint();showToast(`주 목표 대회: ${primaryRace().name}`);}
 function deleteRace(id){const rs=DB.races||[];if(rs.length<=1){showToast("최소 1개 대회는 있어야 합니다.");return;}
   if(!confirm("이 대회를 삭제할까요? 이미 세운 훈련 계획과 실행 기록·평가, 출사표·결과·사진은 계속 남고, 이 대회 이름·날짜·목표기록도 근거로 보존됩니다."))return;
   const target=rs.find(r=>r.id===id),wasP=target&&target.primary;
@@ -3699,7 +3735,11 @@ function renderWeeksHint(){const box=document.getElementById("plan-weeks-hint");
     else convNote=`<div style="color:#64748b;margin-top:3px">플랜 길이를 입력하세요.</div>`;}
   if(curN&&curN<rec-2)warn=`<div style="color:#f59e0b;margin-top:3px"><i class="bi bi-exclamation-triangle"></i> ${curN}주는 지금 수준에 다소 짧습니다. 훈련량을 급하게 늘리면 부상 위험이 커집니다.</div>`;
   else if(curN&&curN>rec+8)warn=`<div style="color:#64748b;margin-top:3px">${curN}주는 여유가 큽니다. 기초 체력을 넉넉히 쌓기에 좋습니다.</div>`;
-  box.innerHTML=`<i class="bi bi-lightbulb"></i> ${DIST_LABEL[dist]} · 현재 <strong style="color:#38bdf8">${levelLabel}</strong> 수준 → <strong style="color:#6ee7b7">${rec}주</strong> 권장<br><span style="color:#475569">${g.note}</span>${convNote}${warn}`;}
+  let diffWarn="";
+  if(curN){const d=raceDifficultyInfo(r,curN);
+    if(d.level==="extreme")diffWarn=`<div style="color:#ef4444;margin-top:5px;padding:6px 8px;background:rgba(239,68,68,.1);border-radius:6px"><i class="bi bi-exclamation-octagon-fill"></i> <strong>목표가 PR 대비 매우 도전적입니다</strong> — 현재 기록 기준 완주 예상 ${fmtDur(raceGoalSecFromMP(r,d.cMP))}인데 목표는 ${fmtDur(raceGoalSec(r))}, ${curN}주로는 이만큼 빨라지기 현실적으로 어렵습니다. 현실적인 목표는 약 ${fmtDur(raceGoalSecFromMP(r,d.rgMP))} 부근입니다 — 목표 기록을 낮추거나 대회일을 늦춰 준비 기간을 늘리는 걸 권합니다.</div>`;
+    else if(d.level==="high")diffWarn=`<div style="color:#f59e0b;margin-top:5px"><i class="bi bi-exclamation-triangle"></i> 목표가 다소 공격적입니다. 플랜 생성 시 훈련 페이스를 현실적인 수준으로 자동 조정합니다.</div>`;}
+  box.innerHTML=`<i class="bi bi-lightbulb"></i> ${DIST_LABEL[dist]} · 현재 <strong style="color:#38bdf8">${levelLabel}</strong> 수준 → <strong style="color:#6ee7b7">${rec}주</strong> 권장<br><span style="color:#475569">${g.note}</span>${convNote}${warn}${diffWarn}`;}
 function updateTemplateDesc(){const sel=document.getElementById("plan-template");if(!sel)return;
   const t=getTemplate(sel.value),desc=document.getElementById("template-desc");if(!desc)return;
   desc.innerHTML=`${t.desc||"사용자가 만든 커스텀 템플릿입니다."}${!t.builtin?` <button class="btn btn-sm btn-secondary" style="padding:1px 8px;margin-left:6px" onclick="openCustomTemplateModal('${t.id}')"><i class="bi bi-pencil"></i> 수정</button>`:""}`;}
