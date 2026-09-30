@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.40.0",APP_BUILD="2026-09-29";
+const APP_VERSION="2.40.1",APP_BUILD="2026-09-30";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,13 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.40.1",d:"2026-09-30",title:"[긴급수정] '캘린더 다이어리' 바로가기가 탭 화면을 어긋나게 만들던 문제 수정",items:[
+    "원인: v2.40.0의 goToCalendarDiary()가 탭 전환(goToSlide, 가로 슬라이드 애니메이션 0.35초) 직후 80ms 만에 el.scrollIntoView()를 호출했음. scrollIntoView()는 기본값(inline:\"nearest\")으로 세로뿐 아니라 가로축도 스크롤시킬 수 있는데, 이 시점엔 캐러셀이 아직 가로로 이동 중(transform 애니메이션 진행 중)이어서 브라우저의 자동 가로 스크롤과 앱의 transform 기반 가로 이동이 서로 충돌 — 헤더·점 표시는 최신 탭을 가리키는데 실제 보이는 내용/위치는 어긋나고, 일부 영역이 렌더링되지 않아 검게 보이는 현상으로 나타남(실기기에서만 재현되고 이 환경의 헤드리스 자체진단에서는 상태값만 확인해 못 잡아냄 — 아래 '검증이 놓친 이유' 참고)",
+    "수정: scrollIntoView() 호출을 제거하고, 가로축은 절대 건드리지 않는 window.scrollTo({top:...})로 교체. 지연 시간도 80ms→420ms로 늘려 가로 슬라이드 전환(0.35초)이 완전히 끝난 뒤에만 세로 스크롤이 실행되도록 함",
+    "같은 위험 패턴을 쓰던 기존 함수 jumpToJournalDate()(캘린더 탭 내 주간 일지에서 날짜로 이동)도 동일하게 window.scrollTo 방식으로 교체 — 지금은 같은 탭 안에서만 호출돼 안전하지만, 앞으로 다른 탭에서 호출되더라도 같은 문제가 재발하지 않도록 예방",
+    "검증이 놓친 이유: 기존 자체진단 ㉗은 currentSlideIndex·selectedDate 같은 '상태값'과 DOM의 텍스트 내용만 확인했고, 실제 화면의 스크롤/가로 위치나 CSS transform 애니메이션 진행 상태는 검사하지 않았음 — 그래서 로컬 헤드리스 브라우저 검증(27/27 통과)은 문제를 잡지 못했고, 실기기에서 사용자가 직접 버튼을 눌러본 뒤에야 발견됨",
+    "회귀 검사 추가: 자체진단 ㉘ — 다른 탭에서 캘린더 다이어리로 이동한 직후 window.scrollX(가로 스크롤)가 그대로인지 확인해, 이런 유형의 가로/세로 스크롤 충돌이 다시 생기면 바로 잡아내도록 함"
+  ]},
   {v:"2.40.0",d:"2026-09-29",title:"대회 카드에 '캘린더 다이어리' 바로가기 추가 + 버튼 재배치",items:[
     "대회 카드 2행의 '오늘 훈련 시작' 자리를 '캘린더 다이어리' 바로가기로 교체 — 누르면 캘린더 탭으로 이동해 오늘 날짜 상세(계획·기록·일지) 섹션까지 자동 스크롤",
     "'오늘 훈련 시작(운동 시작)' 버튼은 계획 삭제 바로 아래 줄로 이동 — 최종 순서: 1행 접수완료·입금완료·수정·삭제, 2행 주 목표·플랜 생성·캘린더 다이어리, 3행 계획 삭제, 4행 운동 시작",
@@ -3282,6 +3289,19 @@ function runSelfTests(){
       const titleShowsToday=(document.getElementById("selected-day-title")||{}).innerHTML.includes(TODAY);
       return{pass:movedToCalendar&&titleShowsToday,detail:!movedToCalendar?"캘린더 탭 이동/날짜 선택 이상":!titleShowsToday?"상세 제목 미반영":""};
     }finally{goToSlide(savedSlide);selectedDate=savedSel;viewYear=savedVY;viewMonth=savedVM;}});
+  check("㉘ 캘린더 다이어리 바로가기 — 가로 스와이프 전환 중 세로 스크롤이 가로 위치를 건드리지 않음(v2.40.1 회귀 방지)",()=>{
+    const savedSlide=currentSlideIndex,savedSel=selectedDate,savedVY=viewYear,savedVM=viewMonth,savedScrollX=window.scrollX;
+    try{
+      if(typeof goToCalendarDiary!=="function")return{pass:false,detail:"함수 없음"};
+      goToSlide(1); // 러닝 탭에서 시작 — 캘린더(3번)까지 가로로 두 칸 이동해야 하는 상황을 흉내
+      goToCalendarDiary(TODAY);
+      // 가로 전환 애니메이션(.35s) 도중에는 scrollIntoView 계열 호출이 없어야 한다 — window.scrollX가 그대로여야 함
+      const noHorizontalDriftDuringTransition=window.scrollX===0;
+      const container=document.getElementById("swipe-container");
+      const usesTransform=container&&/translateX/.test(container.style.transform||"");
+      return{pass:noHorizontalDriftDuringTransition&&usesTransform,
+        detail:!noHorizontalDriftDuringTransition?"전환 중 가로 스크롤 발생":!usesTransform?"캐러셀 transform 이상":""};
+    }finally{goToSlide(savedSlide);selectedDate=savedSel;viewYear=savedVY;viewMonth=savedVM;window.scrollTo(savedScrollX,window.scrollY);}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -3700,7 +3720,14 @@ function goToCalendarDiary(date){ // 캘린더 탭으로 이동해 해당 날짜
   date=date||TODAY;
   const dt=parseYMD(date);viewYear=dt.getFullYear();viewMonth=dt.getMonth()+1;selectedDate=date;
   goToSlide(3);
-  setTimeout(()=>{const el=document.getElementById("selected-day-title");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},80);}
+  // v2.40.1: 탭 전환 가로 슬라이드(.35s transform)가 끝난 뒤에, 세로축만 스크롤한다.
+  // scrollIntoView()는 기본값(inline:"nearest")이 가로축도 건드릴 수 있어, 전환 애니메이션 도중
+  // 호출되면 가로 스와이프 위치와 충돌해 화면이 어긋나 보이는 문제가 있었다(세로 스크롤만 하는
+  // window.scrollTo로 교체해 원천 차단).
+  setTimeout(()=>{
+    const el=document.getElementById("selected-day-title");
+    if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-8,behavior:"smooth"});
+  },420);}
 function isPlanRestDay(planStr){return planStr!=null&&/^휴식$/.test(String(planStr).trim());}
 function todayPlanIdxForRace(raceId){const day=DB.calendar[TODAY],planSrc=(day&&day.planSrc)||[];return planSrc.findIndex(id=>id===raceId);}
 function startTodayWorkoutForRace(raceId){ // 대회 카드의 '운동 시작' — 오늘 이 대회의 주기화 일정이 있으면 그 계획으로, 없으면 자유 달리기로 러닝 탭 연결
@@ -5459,7 +5486,8 @@ function toggleJournalWeek(monday){if(expandedWeeks.has(monday))expandedWeeks.de
 function loadMoreJournalWeeks(){weeklyJournalShown+=12;renderWeeklyJournal();}
 function jumpToJournalDate(d){const dt=parseYMD(d);viewYear=dt.getFullYear();viewMonth=dt.getMonth()+1;
   selectedDate=d;renderCalendar();
-  const grid=document.getElementById("garmin-month-grid");if(grid)grid.scrollIntoView({behavior:"smooth",block:"start"});}
+  const grid=document.getElementById("garmin-month-grid");
+  if(grid)window.scrollTo({top:grid.getBoundingClientRect().top+window.scrollY-8,behavior:"smooth"});}
 function renderWeeklyJournal(){const list=document.getElementById("weekly-journal-list");if(!list)return;
   const weeks=collectJournalWeeks();
   if(!weeks.length){list.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">아직 기록된 일지가 없습니다.</div>`;
