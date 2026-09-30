@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.40.3",APP_BUILD="2026-09-30";
+const APP_VERSION="2.40.4",APP_BUILD="2026-09-30";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,10 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.40.4",d:"2026-09-30",title:"[긴급수정] v2.40.3에서 놓친 부분 — '지금 진단 실행' 시 가짜 토스트 메시지가 실제로 화면에 뜨던 문제 수정",items:[
+    "v2.40.3에서 자체진단이 탭을 강제 이동시키던 문제는 고쳤지만, 검사 ㉖이 호출하는 startTodayWorkoutForRace()가 화면 이동뿐 아니라 실제 showToast()도 띄운다는 점을 놓쳤음 — 그 결과 탭은 그대로인데 '오늘 A대회으로 배치된 훈련이 없어 자유 달리기 모드로 이동했습니다' 같은, 검사용으로 지어낸 가짜 안내 메시지가 화면에 실제로 표시되는 문제가 남아있었음(사용자가 보내주신 스크린샷에서 확인)",
+    "수정: runSelfTests() 실행 중에는 showToast()를 빈 함수로 잠깐 바꿔서(검사가 끝나면 원래대로 복원) 어떤 검사도 실제 토스트를 띄우지 못하게 막음 — v2.40.3에서 만든 '탭·스크롤 원상복구' 안전장치와 같은 방식으로, 앞으로 비슷한 실수가 있는 검사가 추가돼도 화면에 보이지 않도록 함"
+  ]},
   {v:"2.40.3",d:"2026-09-30",title:"[긴급수정] 환경설정 '지금 진단 실행'(및 앱 실행 시 자동 진단)이 화면을 운동 시작 탭으로 강제 이동시키던 문제 수정",items:[
     "원인 ①(핵심): 자체진단 ㉖('운동 시작' 버튼 연결 확인)이 실제 startTodayWorkoutForRace()를 3번 호출해 검증하는데, 이 함수가 내부적으로 goToSlide(1)(러닝 탭)을 실제로 실행시킴. 다른 검사(㉗·㉘·㉙)는 끝나면 원래 탭으로 되돌리는 코드가 있었지만 ㉖만 그 복귀 코드가 빠져 있었음 — 그래서 ㉖ 실행 후 화면은 항상 러닝(운동 시작) 탭에 남아있게 되고, 그 뒤에 도는 ㉗·㉘·㉙도 '원래 탭'을 이미 잘못된 값(러닝 탭)으로 기억해 결국 최종적으로 러닝 탭(그중에서도 마지막 분기인 '오늘 배치된 훈련 없음 → 자유 달리기 모드') 화면에 멈춰버림. 자체진단은 앱을 열 때마다 0.3초 뒤 조용히 자동 실행되므로(콘솔에만 기록되는 게 원래 의도), 앱을 열 때마다 매번 이 현상이 재현됨",
     "원인 ②: 자체진단 ㉕(날짜·시각 입력 위임 리스너 확인)이 실제 &lt;input type=time&gt;에 클릭 이벤트를 직접 발생시켰는데, v2.38.1에서 추가한 전역 위임 리스너(bindNativePickers)가 이 가짜 클릭에도 반응해 진짜 el.showPicker()를 호출 — 화면에 실제 네이티브 시각 선택창이 팝업으로 떠버렸음(사용자가 보내주신 영상에 찍힌 '오전/오후 06:30' 선택창이 이것)",
@@ -3041,6 +3045,12 @@ function runSelfTests(){
   const __swipeContainer=document.getElementById("swipe-container");
   const __savedTransition=__swipeContainer?__swipeContainer.style.transition:"";
   if(__swipeContainer)__swipeContainer.style.transition="none";
+  /* v2.40.4: ㉖이 호출하는 startTodayWorkoutForRace()는 화면 이동뿐 아니라 실제 showToast()도
+     띄운다 — 탭은 원래대로 되돌려도 "오늘 A대회으로 배치된 훈련이 없어..." 같은 검사용 가짜 토스트
+     메시지가 화면에 그대로 남아 사용자에게 보이는 문제가 있었다. 진단이 도는 동안만 showToast를
+     빈 함수로 잠깐 바꿔서, 검사 중 어떤 토스트도 실제로 뜨지 않게 막는다. */
+  const __savedShowToast=window.showToast;
+  if(typeof __savedShowToast==="function")window.showToast=function(){};
 
   check("① 모든 HTML 핸들러(onclick/onchange/oninput/onkeydown)가 실제 함수로 존재",()=>{
     const attrs=["onclick","onchange","oninput","onkeydown"],missing=new Set();
@@ -3349,6 +3359,7 @@ function runSelfTests(){
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
   if(__swipeContainer)__swipeContainer.style.transition=__savedTransition;
+  if(typeof __savedShowToast==="function")window.showToast=__savedShowToast; // 가짜 토스트 차단 해제(no-op이라 DOM은 애초에 건드려지지 않았음)
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
   box.innerHTML=`<div style="font-size:11.5px;color:#64748b">진단 실행 중...</div>`;
