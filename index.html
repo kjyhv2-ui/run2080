@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.40.1",APP_BUILD="2026-09-30";
+const APP_VERSION="2.40.2",APP_BUILD="2026-09-30";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,11 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.40.2",d:"2026-09-30",title:"[긴급수정] 인트로(온보딩) 완료 시 엉뚱한 탭(설정)으로 이동하던 문제 수정",items:[
+    "원인: finishOnboarding()·skipOnboarding()(인트로 화면에서 '나만의 2080 플랜 시작하기' 또는 '건너뛰기'를 눌렀을 때 실행되는 함수)가 goToSlide(10)을 호출하고 있었음 — 10번은 11개 탭 중 마지막인 '환경 및 심박존 설정' 탭. 부팅 시 이미 goToSlide(0)으로 1번 탭(목표 대시보드)에 가 있는 상태에서 인트로 화면(오버레이)만 그 위에 덮여 있던 것인데, 인트로를 마치면 오버레이만 닫히는 게 아니라 화면 맨 끝(설정 탭)까지 가로로 길게 스와이프 애니메이션이 걸리면서, 그 사이에 있는 여러 탭을 빠르게 지나가는 것처럼 보이다가 엉뚱한 탭에 멈추는 현상으로 나타났음",
+    "수정: goToSlide(10) → goToSlide(0)으로 변경 — 인트로를 마치면(완료/건너뛰기 모두) 원래 있던 1번 탭(목표 대시보드)이 그대로 보이도록 함(이미 그 탭이므로 화면이 튀는 애니메이션도 없어짐)",
+    "회귀 검사 추가: 자체진단 ㉙ — 다른 탭에 있다가 온보딩을 완료/건너뛰기 하면 항상 1번 탭(대시보드)으로 돌아오는지 확인"
+  ]},
   {v:"2.40.1",d:"2026-09-30",title:"[긴급수정] '캘린더 다이어리' 바로가기가 탭 화면을 어긋나게 만들던 문제 수정",items:[
     "원인: v2.40.0의 goToCalendarDiary()가 탭 전환(goToSlide, 가로 슬라이드 애니메이션 0.35초) 직후 80ms 만에 el.scrollIntoView()를 호출했음. scrollIntoView()는 기본값(inline:\"nearest\")으로 세로뿐 아니라 가로축도 스크롤시킬 수 있는데, 이 시점엔 캐러셀이 아직 가로로 이동 중(transform 애니메이션 진행 중)이어서 브라우저의 자동 가로 스크롤과 앱의 transform 기반 가로 이동이 서로 충돌 — 헤더·점 표시는 최신 탭을 가리키는데 실제 보이는 내용/위치는 어긋나고, 일부 영역이 렌더링되지 않아 검게 보이는 현상으로 나타남(실기기에서만 재현되고 이 환경의 헤드리스 자체진단에서는 상태값만 확인해 못 잡아냄 — 아래 '검증이 놓친 이유' 참고)",
     "수정: scrollIntoView() 호출을 제거하고, 가로축은 절대 건드리지 않는 window.scrollTo({top:...})로 교체. 지연 시간도 80ms→420ms로 늘려 가로 슬라이드 전환(0.35초)이 완전히 끝난 뒤에만 세로 스크롤이 실행되도록 함",
@@ -3302,6 +3307,19 @@ function runSelfTests(){
       return{pass:noHorizontalDriftDuringTransition&&usesTransform,
         detail:!noHorizontalDriftDuringTransition?"전환 중 가로 스크롤 발생":!usesTransform?"캐러셀 transform 이상":""};
     }finally{goToSlide(savedSlide);selectedDate=savedSel;viewYear=savedVY;viewMonth=savedVM;window.scrollTo(savedScrollX,window.scrollY);}});
+  check("㉙ 온보딩 완료/건너뛰기 → 1번 탭(목표 대시보드)으로 이동(v2.40.2 회귀 방지 — 과거엔 잘못 설정탭(11번)으로 이동)",()=>{
+    const savedSlide=currentSlideIndex,savedOnboarded=(()=>{try{return localStorage.getItem(ONBOARD_KEY);}catch(e){return null;}})();
+    try{
+      goToSlide(5); // 대시보드가 아닌 다른 탭에 있다가 온보딩을 마치는 상황을 흉내
+      finishOnboarding();
+      const finishGoesToDashboard=currentSlideIndex===0;
+      goToSlide(5);
+      skipOnboarding();
+      const skipGoesToDashboard=currentSlideIndex===0;
+      return{pass:finishGoesToDashboard&&skipGoesToDashboard,
+        detail:!finishGoesToDashboard?"완료 후 대시보드 이동 이상":!skipGoesToDashboard?"건너뛰기 후 대시보드 이동 이상":""};
+    }finally{goToSlide(savedSlide);_obShownThisSession=false;
+      try{if(savedOnboarded===null)localStorage.removeItem(ONBOARD_KEY);else localStorage.setItem(ONBOARD_KEY,savedOnboarded);}catch(e){}}});
 
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
@@ -9214,8 +9232,8 @@ function showOnboarding(){const ov=document.getElementById("onboardOverlay");if(
   applyOnboardContent();
   ov.classList.add("active");buildOnboardDots();goToOnboardSlide(0);wireOnboardDrag();}
 function previewOnboarding(){_obPreviewMode=true;showOnboarding();}
-function skipOnboarding(){const isReal=!_obPreviewMode;if(isReal)markOnboarded();_obPreviewMode=false;closeOnboarding();if(isReal)goToSlide(10);}
-function finishOnboarding(){const isReal=!_obPreviewMode;if(isReal)markOnboarded();_obPreviewMode=false;closeOnboarding();if(isReal)goToSlide(10);}
+function skipOnboarding(){const isReal=!_obPreviewMode;if(isReal)markOnboarded();_obPreviewMode=false;closeOnboarding();if(isReal)goToSlide(0);}
+function finishOnboarding(){const isReal=!_obPreviewMode;if(isReal)markOnboarded();_obPreviewMode=false;closeOnboarding();if(isReal)goToSlide(0);}
 function closeOnboarding(){const ov=document.getElementById("onboardOverlay");if(!ov)return;ov.classList.remove("active");}
 function obDragStart(x,e){if(e.target.closest("button"))return;obDragStartX=x;obDragging=true;obDecided=false;obHorizontal=false;}
 function obDragMove(x,e){if(!obDragging)return;const dx=x-obDragStartX;
