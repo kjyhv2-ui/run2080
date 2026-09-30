@@ -2506,7 +2506,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.40.2",APP_BUILD="2026-09-30";
+const APP_VERSION="2.40.3",APP_BUILD="2026-09-30";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2548,13 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.40.3",d:"2026-09-30",title:"[긴급수정] 환경설정 '지금 진단 실행'(및 앱 실행 시 자동 진단)이 화면을 운동 시작 탭으로 강제 이동시키던 문제 수정",items:[
+    "원인 ①(핵심): 자체진단 ㉖('운동 시작' 버튼 연결 확인)이 실제 startTodayWorkoutForRace()를 3번 호출해 검증하는데, 이 함수가 내부적으로 goToSlide(1)(러닝 탭)을 실제로 실행시킴. 다른 검사(㉗·㉘·㉙)는 끝나면 원래 탭으로 되돌리는 코드가 있었지만 ㉖만 그 복귀 코드가 빠져 있었음 — 그래서 ㉖ 실행 후 화면은 항상 러닝(운동 시작) 탭에 남아있게 되고, 그 뒤에 도는 ㉗·㉘·㉙도 '원래 탭'을 이미 잘못된 값(러닝 탭)으로 기억해 결국 최종적으로 러닝 탭(그중에서도 마지막 분기인 '오늘 배치된 훈련 없음 → 자유 달리기 모드') 화면에 멈춰버림. 자체진단은 앱을 열 때마다 0.3초 뒤 조용히 자동 실행되므로(콘솔에만 기록되는 게 원래 의도), 앱을 열 때마다 매번 이 현상이 재현됨",
+    "원인 ②: 자체진단 ㉕(날짜·시각 입력 위임 리스너 확인)이 실제 &lt;input type=time&gt;에 클릭 이벤트를 직접 발생시켰는데, v2.38.1에서 추가한 전역 위임 리스너(bindNativePickers)가 이 가짜 클릭에도 반응해 진짜 el.showPicker()를 호출 — 화면에 실제 네이티브 시각 선택창이 팝업으로 떠버렸음(사용자가 보내주신 영상에 찍힌 '오전/오후 06:30' 선택창이 이것)",
+    "수정: (1) ㉖의 finally에 원래 탭으로 되돌리는 goToSlide(savedSlide) 추가, (2) ㉕은 실제 showPicker를 잠깐 가로채 '호출됐는지'만 확인하고 원래 함수로 복원해 실제 팝업이 뜨지 않게 변경, (3) 근본 안전장치로 runSelfTests() 전체를 감싸서 — 어떤 검사가 실제 탭 이동 함수를 호출하더라도 — 진단 시작 시점의 탭·스크롤 위치를 기억해두었다가 모든 검사가 끝나면 전환 애니메이션 없이 조용히 그 자리로 되돌리도록 함(앞으로 비슷한 실수가 있는 검사가 추가되더라도 화면에 보이지 않도록 예방)",
+    "부가 조치: 캘린더 다이어리 바로가기(goToCalendarDiary)의 지연 스크롤도, 그 사이에 다른 탭으로 이동했다면(예: 자체진단 복귀) 실행하지 않도록 방어 코드 추가",
+    "회귀 검사 추가/수정: ㉖에 탭 복귀 확인 추가, ㉕는 실제 팝업 없이 위임 호출 여부만 확인하도록 변경"
+  ]},
   {v:"2.40.2",d:"2026-09-30",title:"[긴급수정] 인트로(온보딩) 완료 시 엉뚱한 탭(설정)으로 이동하던 문제 수정",items:[
     "원인: finishOnboarding()·skipOnboarding()(인트로 화면에서 '나만의 2080 플랜 시작하기' 또는 '건너뛰기'를 눌렀을 때 실행되는 함수)가 goToSlide(10)을 호출하고 있었음 — 10번은 11개 탭 중 마지막인 '환경 및 심박존 설정' 탭. 부팅 시 이미 goToSlide(0)으로 1번 탭(목표 대시보드)에 가 있는 상태에서 인트로 화면(오버레이)만 그 위에 덮여 있던 것인데, 인트로를 마치면 오버레이만 닫히는 게 아니라 화면 맨 끝(설정 탭)까지 가로로 길게 스와이프 애니메이션이 걸리면서, 그 사이에 있는 여러 탭을 빠르게 지나가는 것처럼 보이다가 엉뚱한 탭에 멈추는 현상으로 나타났음",
     "수정: goToSlide(10) → goToSlide(0)으로 변경 — 인트로를 마치면(완료/건너뛰기 모두) 원래 있던 1번 탭(목표 대시보드)이 그대로 보이도록 함(이미 그 탭이므로 화면이 튀는 애니메이션도 없어짐)",
@@ -3023,6 +3030,18 @@ function runSelfTests(){
   const check=(name,fn)=>{try{const r=fn();results.push({name,pass:!!r.pass,detail:r.detail||""});}
     catch(e){results.push({name,pass:false,detail:"예외 발생: "+e.message});}};
 
+  /* v2.40.3: 일부 검사(㉖~㉙)는 실제 탭 이동 함수(goToSlide)를 직접 호출해서 확인한다.
+     각 검사가 끝나면 원래 탭으로 되돌리긴 하지만, 그 과정에서 화면이 실제로 여러 탭을 오가며
+     0.35초짜리 전환 애니메이션이 보이는 문제가 있었다(자체진단은 앱 열 때마다 조용히
+     자동 실행되므로, 사용자 눈에는 "여러 번 화면이 움직이다 멈추는" 버그로 보임).
+     검사가 전부 끝날 때까지 전환 애니메이션을 잠깐 꺼 두고, 시작할 때 보고 있던 탭·스크롤
+     위치로 정확히 되돌려서 사용자 입장에서는 자체진단이 실행된 적 없는 것처럼 보이게 한다. */
+  const __selfTestSavedSlide=(typeof currentSlideIndex==="number")?currentSlideIndex:null;
+  const __selfTestSavedScrollX=window.scrollX,__selfTestSavedScrollY=window.scrollY;
+  const __swipeContainer=document.getElementById("swipe-container");
+  const __savedTransition=__swipeContainer?__swipeContainer.style.transition:"";
+  if(__swipeContainer)__swipeContainer.style.transition="none";
+
   check("① 모든 HTML 핸들러(onclick/onchange/oninput/onkeydown)가 실제 함수로 존재",()=>{
     const attrs=["onclick","onchange","oninput","onkeydown"],missing=new Set();
     const jsKeywords=new Set(["if","for","while","switch","function","return","typeof","new","catch","else","confirm","alert"]);
@@ -3259,11 +3278,15 @@ function runSelfTests(){
     if(typeof bindNativePickers!=="function")return{pass:false,detail:"함수 없음"};
     const el=document.getElementById("m-log-time")||document.querySelector('input[type="time"]');
     if(!el)return{pass:false,detail:"time input을 찾을 수 없음"};
-    let threw=false;
+    let threw=false,delegateCalled=false;
+    const origShowPicker=el.showPicker; // v2.40.3: 실제 showPicker를 그대로 두면 이 진단(조용히 자동 실행 포함)이 실행될 때마다
+    el.showPicker=function(){delegateCalled=true;}; // 화면에 진짜 네이티브 선택창 팝업이 떠버렸다 — 가로채서 호출 여부만 확인
     try{el.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true}));}catch(e){threw=true;}
-    return{pass:!threw,detail:threw?"클릭 시 예외 발생":""};});
+    finally{el.showPicker=origShowPicker;}
+    return{pass:!threw&&(typeof origShowPicker!=="function"||delegateCalled),
+      detail:threw?"클릭 시 예외 발생":(typeof origShowPicker==="function"&&!delegateCalled)?"위임 리스너가 showPicker를 호출하지 않음":""};});
   check("㉖ 대회 카드 '운동 시작' — 오늘 주기화 일정 있으면 해당 계획으로, 없으면 자유 모드로 러닝 탭 연결",()=>{
-    const savedCal=DB.calendar[TODAY],savedRaces=DB.races,savedRunMode=(document.getElementById("run-mode")||{}).value,savedPending=pendingRunPlan;
+    const savedSlide=currentSlideIndex,savedCal=DB.calendar[TODAY],savedRaces=DB.races,savedRunMode=(document.getElementById("run-mode")||{}).value,savedPending=pendingRunPlan;
     try{
       DB.races=[{id:"raceA",name:"A대회",date:addDays(TODAY,60),dist:"FULL",targetSec:14400,primary:true}];
       // 오늘 이 대회의 주기화 일정(휴식 아님)이 있는 경우
@@ -3283,7 +3306,9 @@ function runSelfTests(){
       const noPlanToFree=document.getElementById("run-mode").value==="free"&&todayPlanIdxForRace("raceA")===-1;
       return{pass:idxOk&&linkedToPlan&&restToFree&&noPlanToFree,
         detail:!idxOk?"오늘 일정 탐색 이상":!linkedToPlan?"계획 연결 이상":!restToFree?"휴식일 자유모드 전환 이상":!noPlanToFree?"일정 없음 자유모드 전환 이상":""};
-    }finally{if(savedCal===undefined)delete DB.calendar[TODAY];else DB.calendar[TODAY]=savedCal;DB.races=savedRaces;pendingRunPlan=savedPending;const sel=document.getElementById("run-mode");if(sel)sel.value=savedRunMode||"free";}});
+    }finally{if(savedCal===undefined)delete DB.calendar[TODAY];else DB.calendar[TODAY]=savedCal;DB.races=savedRaces;pendingRunPlan=savedPending;const sel=document.getElementById("run-mode");if(sel)sel.value=savedRunMode||"free";
+      goToSlide(savedSlide); // v2.40.3: 이 검사가 실제로 러닝 탭까지 이동시키는데 원래 보던 탭으로 되돌리지 않던 누락을 수정(자체진단 실행 시 화면이 운동 시작 탭에 멈춰버리던 원인)
+    }});
   check("㉗ 대회 카드 '캘린더 다이어리' 바로가기 — 캘린더 탭으로 이동해 해당 날짜 상세를 표시",()=>{
     const savedSlide=currentSlideIndex,savedSel=selectedDate,savedVY=viewYear,savedVM=viewMonth;
     try{
@@ -3321,6 +3346,9 @@ function runSelfTests(){
     }finally{goToSlide(savedSlide);_obShownThisSession=false;
       try{if(savedOnboarded===null)localStorage.removeItem(ONBOARD_KEY);else localStorage.setItem(ONBOARD_KEY,savedOnboarded);}catch(e){}}});
 
+  if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
+  window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
+  if(__swipeContainer)__swipeContainer.style.transition=__savedTransition;
   return results;}
 function renderSelfTestUI(){const box=document.getElementById("selftest-result");if(!box)return;
   box.innerHTML=`<div style="font-size:11.5px;color:#64748b">진단 실행 중...</div>`;
@@ -3743,6 +3771,9 @@ function goToCalendarDiary(date){ // 캘린더 탭으로 이동해 해당 날짜
   // 호출되면 가로 스와이프 위치와 충돌해 화면이 어긋나 보이는 문제가 있었다(세로 스크롤만 하는
   // window.scrollTo로 교체해 원천 차단).
   setTimeout(()=>{
+    // v2.40.3: 그사이 사용자가 다른 탭으로 이동했거나(예: 자체진단이 원래 탭으로 복귀) 다른 날짜를
+    // 선택한 상태라면 스크롤하지 않는다 — 엉뚱한 탭에서 화면이 갑자기 움직이는 것을 막기 위함.
+    if(currentSlideIndex!==3||selectedDate!==date)return;
     const el=document.getElementById("selected-day-title");
     if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-8,behavior:"smooth"});
   },420);}
