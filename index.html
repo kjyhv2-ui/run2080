@@ -697,6 +697,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="font-size:11px;color:#64748b;margin-bottom:10px">무산소·고강도유산소·저강도유산소로 나눠, 최근 12주 평균 대비 지금 얼마나 뛰고 있는지 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"와 같은 방식입니다.</div>
         <div id="loadFocusChart"></div>
       </div>
+      <div class="card" id="sec-5-progression">
+        <div class="card-header"><div class="card-title"><i class="bi bi-graph-up-arrow"></i> 점진적 훈련량 상향 코칭</div></div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:10px">최근 4주간 훈련이 급성:만성 부하비(ACWR) 안정 구간(0.8~1.3)을 꾸준히 유지했는지 확인해, 거리·페이스 목표를 올려도 좋은 시점인지 코칭합니다.</div>
+        <div id="progression-coaching-card"></div>
+      </div>
       <div class="card" id="sec-5-3" style="position:relative">
         <div class="card-header"><div class="card-title"><i class="bi bi-graph-up"></i> 레이스 예상 성과 추세</div>
           <select id="race-trend-window" style="width:auto" onchange="onRaceTrendWindowChange()">
@@ -1516,6 +1521,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">1년 전 오늘</strong> — 오늘과 같은 날짜(월/일)에 과거 어느 해든 운동 기록이나 일지가 있으면 대시보드에 자동으로 보여줍니다. 여러 해에 기록이 있으면 각 연도별로 모두 표시됩니다. 기록이 없는 날짜에는 카드 자체가 나타나지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">이정표 자동 축하</strong> — 누적 거리가 100·500·1,000km 같은 의미 있는 기준을 처음 넘거나, 5K·10K·하프·풀코스 기록이 서브20·서브40·서브2:00·서브4:00 같은 상징적인 기준을 처음 돌파하면 축하 화면이 자동으로 뜹니다. 한 번 축하한 기준은 기록되어 다시 뜨지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">러닝 탭의 추천 케이던스</strong> — 러닝 시작 화면에서 메트로놈을 켜면, 기존과 똑같이 케이던스·소리만 나오는 기본 화면이 먼저 보입니다. "추천 케이던스로 설정하기"를 펼치면 운동목표·거리조건을 고를 수 있고, 이미 입력해둔 페이스주(또는 등록된 기록)를 자동으로 가져와 추천값을 계산합니다. 활동 종류나 모드를 바꾸면 펼쳐진 상태에서는 자동으로 다시 계산됩니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">점진적 훈련량 상향 코칭</strong> — 통계 탭에서, 최근 4주간 급성:만성 부하비(ACWR)가 안정 구간(0.8~1.3)을 3주 이상 유지하고 급격한 부하 급증이 없었으며 평균 주 3회 이상 훈련했을 때만 "상향해도 좋은 시점"으로 코칭합니다. 정해진 "주 10% 증량 규칙"은 최근 연구(Buist 외 2008; Nielsen 외 2012)에서 근거가 약한 것으로 나타나 채택하지 않았고, 대신 단일 주 급증을 피하고 만성부하 대비 완만히(3주 모두 안정적이면 10%, 3주만 충족하면 5%) 늘리도록 안내합니다. 페이스 목표는 최근 6주 내 PR 갱신이 있을 때만 "올릴 근거가 있다"고 안내합니다(추정만으로 올리지 않음). 카드의 "적용" 버튼을 눌러야만 실제로 대회 플랜의 목표 페이스 상향 한도(기본 0%, 최대 30%)가 올라가며, 자동으로는 절대 바뀌지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">운동 결과 코칭 + 오늘의 운동일지</strong> — 운동 기록을 저장할 때마다(수동 기록·계획 결과 기록·러닝 측정 종료 후 저장 모두 포함) 그 기록에 대한 짧은 코칭이 자동으로 생성되어 저장 완료 토스트에 함께 뜨고, 캘린더의 "오늘의 운동일지"(과거 "오늘의 달리기 일지"에서 이름 변경 — 달리기뿐 아니라 그날 기록한 모든 운동이 이미 여기 함께 표시됩니다)에서 해당 운동 항목 아래 계속 남아 다시 볼 수 있습니다. 계획과 연결된 기록이면 계획이 요구한 강도·거리를 실제로 지켰는지 비교하고, 그렇지 않으면 같은 강도의 최근 기록(3개 이상 쌓였을 때) 대비 오늘이 빠른지 느린지 알려줍니다. 크로스트레이닝은 심박존 페이스 개념이 없어 운동 시간 중심의 짧은 격려 문구만 표시합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">자체진단</strong> — 설정 → 자체진단에서 핵심 기능의 배선(HTML 버튼이 실제 존재하는 함수를 가리키는지, 과거 있었던 버그 패턴이 재발하지 않았는지, 핵심 계산이 예외 없이 도는지)을 자동으로 점검합니다. 앱을 열 때마다 조용히 한 번 실행되어 문제가 있으면 개발자 콘솔에 기록되고, 이 화면에서 직접 실행해 눈으로 결과를 볼 수도 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">추천 케이던스 계산기</strong> — 설정의 메트로놈 기본값과 러닝 탭의 "추천 케이던스로 설정하기" 두 곳에 있으며, 같은 입력(운동목표·거리조건·기준페이스)과 같은 계산을 씁니다. 기준 페이스를 비우면 러닝 탭은 목표페이스 → 내 기록, 설정은 내 기록 순으로 자동으로 채웁니다. 페이스별 일반적인 케이던스 범위를 기준으로 키·러너 수준(프로필)·거리·목표를 보정하고, 계산 과정을 화면에 그대로 보여줍니다. 부상방지 목표는 연구(Heiderscheit 외 2011)에 따라 평소 대비 +5%로 계산합니다. VDOT처럼 검증된 회귀식이 있는 건 아니라 추정치이며 개인차가 큽니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">훈련부하 포커스</strong> — 통계 탭에서 무산소·고강도유산소·저강도유산소로 나눠 최근 4주 누적 TRIMP를 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"를 참고했습니다. "적정범위"는 개인화된 학습 모델이 없어, 최근 12주 평균을 4주 단위로 환산한 값의 80~120%로 근사합니다(ACWR과 같은 원리).</div>
@@ -2506,7 +2513,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.40.4",APP_BUILD="2026-09-30";
+const APP_VERSION="2.42.0",APP_BUILD="2026-10-01";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2548,6 +2555,20 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.42.0",d:"2026-10-01",title:"운동 기록 저장 시 결과 코칭 자동 삽입 + '오늘의 달리기 일지' → '오늘의 운동일지'로 이름 변경",items:[
+    "운동 기록을 저장할 때마다(수동 기록·계획 결과 기록·러닝 측정 종료 후 저장 모두 포함) workoutResultCoachText()가 그 기록에 대한 코칭 문구를 자동 생성 — 저장 완료 토스트에 바로 표시되고, 기록(log) 자체에도 함께 저장되어 이후에도 계속 보임",
+    "계획과 연결된 기록이면 계획이 요구한 강도(zone)·거리를 실제로 지켰는지 비교(정확히 지킴/더 강하게/더 여유롭게), 계획과 연결되지 않았으면 같은 강도의 최근 기록(3개 이상 쌓였을 때만 — 우연한 변동에 과민 반응하지 않도록)과 페이스를 비교해 오늘이 빠른지 느린지 알려줌. 크로스트레이닝은 심박존 페이스 개념이 없어 운동시간 중심의 짧은 격려 문구만 표시",
+    "'오늘의 달리기 일지'를 '오늘의 운동일지'로 이름 변경 — 이 섹션(및 그 위의 운동 기록 목록)은 원래부터 달리기뿐 아니라 그날 기록한 모든 활동(사이클·수영·헬스 등)을 종류 구분 없이 함께 보여주고 있었는데, 이름이 '달리기'로 한정돼 있어 실제 내용과 맞지 않았던 것을 바로잡음(목록을 담는 로직 자체는 변경 없음 — 이미 dayLogs()가 활동 종류를 가리지 않고 전부 반환하고 있었음)",
+    "회귀 검사 추가: 자체진단 ㉜ workoutResultCoachText가 계획 강도 일치/불일치, 크로스트레이닝, 비교 근거가 없을 때의 기본 문구를 각각 올바르게 생성하는지 확인"
+  ]},
+  {v:"2.41.0",d:"2026-10-01",title:"점진적 훈련량 상향 코칭 + 알고리즘 강화 — 논문·코칭이론 검토 반영",items:[
+    "통계 탭에 '점진적 훈련량 상향 코칭' 카드 추가 — 최근 4주간 급성:만성 부하비(ACWR, 이미 앱에 있던 계산 재사용)가 안정 구간(0.8~1.3)을 3주 이상 유지하고 급격한 부하 급증이 없었으며 평균 주 3회 이상 훈련했을 때만 '지금 거리·페이스를 올려도 좋은 시점'으로 코칭",
+    "근거 검토: 고정 '주 10% 증량 규칙'은 채택하지 않음 — Buist 외(2008, 위트레흐트대) 532명 대상 연구에서 10%군·50%군 부상률이 20.8% vs 20.3%로 비슷했고, Nielsen 외(2012, 오르후스대) GPS 추적 연구에서 비부상군은 평균 22.1% 증량했음에도 무사했던 반면 부상군은 단일 주 30%대 급증이 특징이었음 → '정해진 %'가 아니라 '단일주 급증을 피하고 만성부하 대비 완만하게' 늘리는 방식(ACWR 스위트스팟, Gabbett·Hulin 등)을 채택",
+    "최소 적응 기간은 표준 주기화 마이크로사이클(3~4주 훈련+1주 완화 — 이 앱의 대회 플랜도 이미 3주마다 20% 감량으로 반영 중)과 ACWR의 만성부하 정의(28일)에 맞춰 '최근 4주 연속 확인'을 최소 기준으로 설정",
+    "페이스 목표는 최근 6주 내 실제 PR 갱신이 있을 때만 '올릴 근거가 있다'고 안내(Daniels의 VDOT 재산정 권고 — 추정만으로 올리지 않음)하고, 거리는 주간 마일리지를 현재 만성부하 대비 5~10%(스위트스팟 유지 정도에 따라) 범위로 제안",
+    "알고리즘 강화: 대회 플랜의 목표 페이스 조정 한도를 계산하는 realisticGoalMP()에 progressionMaxGain() 경유로 상향분(progressionBonusPct, 기본 0%·최대 30%)을 반영하도록 변경 — 단, 이 값은 사용자가 코칭 카드의 '적용' 버튼을 직접 눌러야만 올라가며 자동으로는 절대 바뀌지 않음(기본값 0%일 때는 기존 계산과 완전히 동일 — 회귀 없음)",
+    "회귀 검사 추가: 자체진단 ㉚ progressionMaxGain이 기본값(0%)에서 기존 계산과 정확히 같고 값 설정 시 정확히 비례 반영되는지 확인, ㉛ 꾸준한 8주 패턴에서는 상향 판정·급격한 부하 급증 직후엔 보류 판정이 나오는지, 그리고 미충족 상태에서 적용 버튼을 눌러도 실제로는 아무것도 바뀌지 않는지(안전장치) 확인"
+  ]},
   {v:"2.40.4",d:"2026-09-30",title:"[긴급수정] v2.40.3에서 놓친 부분 — '지금 진단 실행' 시 가짜 토스트 메시지가 실제로 화면에 뜨던 문제 수정",items:[
     "v2.40.3에서 자체진단이 탭을 강제 이동시키던 문제는 고쳤지만, 검사 ㉖이 호출하는 startTodayWorkoutForRace()가 화면 이동뿐 아니라 실제 showToast()도 띄운다는 점을 놓쳤음 — 그 결과 탭은 그대로인데 '오늘 A대회으로 배치된 훈련이 없어 자유 달리기 모드로 이동했습니다' 같은, 검사용으로 지어낸 가짜 안내 메시지가 화면에 실제로 표시되는 문제가 남아있었음(사용자가 보내주신 스크린샷에서 확인)",
     "수정: runSelfTests() 실행 중에는 showToast()를 빈 함수로 잠깐 바꿔서(검사가 끝나면 원래대로 복원) 어떤 검사도 실제 토스트를 띄우지 못하게 막음 — v2.40.3에서 만든 '탭·스크롤 원상복구' 안전장치와 같은 방식으로, 앞으로 비슷한 실수가 있는 검사가 추가돼도 화면에 보이지 않도록 함"
@@ -3355,6 +3376,64 @@ function runSelfTests(){
         detail:!finishGoesToDashboard?"완료 후 대시보드 이동 이상":!skipGoesToDashboard?"건너뛰기 후 대시보드 이동 이상":""};
     }finally{goToSlide(savedSlide);_obShownThisSession=false;
       try{if(savedOnboarded===null)localStorage.removeItem(ONBOARD_KEY);else localStorage.setItem(ONBOARD_KEY,savedOnboarded);}catch(e){}}});
+  check("㉚ progressionMaxGain — progressionBonusPct 기본값(0%)일 때 기존 계산과 완전히 동일, 값 설정 시 정확히 비례 반영",()=>{
+    const savedBonus=DB.profile&&DB.profile.progressionBonusPct;
+    try{
+      if(DB.profile)delete DB.profile.progressionBonusPct;
+      const base=progressionMaxGain(16); // weeks*1.2 = 19.2초, 기존 realisticGoalMP 공식과 동일해야 함
+      const baseOk=Math.abs(base-19.2)<0.001;
+      DB.profile=DB.profile||{};DB.profile.progressionBonusPct=10;
+      const bumped=progressionMaxGain(16);
+      const bumpedOk=Math.abs(bumped-19.2*1.1)<0.001;
+      return{pass:baseOk&&bumpedOk,detail:!baseOk?"기본값(0%) 계산 이상: "+base:!bumpedOk?"10% 반영 계산 이상: "+bumped:""};
+    }finally{if(DB.profile){if(savedBonus===undefined)delete DB.profile.progressionBonusPct;else DB.profile.progressionBonusPct=savedBonus;}}});
+  check("㉛ progressionReadiness — 꾸준한 8주 패턴(격일 러닝)에서는 상향 판정, 급격한 부하 급증 직후엔 상향 보류 판정",()=>{
+    const savedCalendar=DB.calendar,savedBonus=DB.profile&&DB.profile.progressionBonusPct,savedApplied=DB.profile&&DB.profile.progressionAppliedAt;
+    const savedConfirm=window.confirm,savedShowToast=window.showToast;
+    window.confirm=()=>true;window.showToast=function(){}; // 이 검사가 실제 팝업·토스트를 띄우지 않도록 차단
+    try{
+      DB.calendar={}; // 실제 사용자 데이터와 완전히 격리된 빈 캘린더에서 검증
+      if(DB.profile){delete DB.profile.progressionBonusPct;delete DB.profile.progressionAppliedAt;}
+      for(let i=0;i<56;i++){if(i%2===0){const d=addDays(TODAY,-i); // 8주간 이틀에 한 번(주 3~4회) 같은 강도로 꾸준히 — chronic≈acute로 ACWR이 스위트스팟에 안정적으로 머무는 상황을 흉내
+        DB.calendar[d]={plans:[],logs:[{id:"pt"+i,type:"run",sport:"run",dist:8,duration:40,avghr:145,maxhr:165,notes:""}]};}}
+      const steadyInfo=progressionReadiness();
+      const steadyOk=steadyInfo.ready===true&&steadyInfo.sweetSpotWeeks>=3&&!steadyInfo.anySpike;
+      // 오늘 갑자기 훈련량이 크게 튄 상황을 추가 — 최근 주 ACWR이 급증해 상향이 보류돼야 함
+      DB.calendar[TODAY]={plans:[],logs:[{id:"spike",type:"run",sport:"run",dist:8,duration:40,avghr:145,maxhr:165,notes:""},
+        {id:"spike2",type:"run",sport:"run",dist:30,duration:240,avghr:175,maxhr:190,notes:""}]};
+      const spikeInfo=progressionReadiness();
+      const spikeOk=spikeInfo.anySpike===true&&spikeInfo.ready===false;
+      // 상향 보류 상태에서 applyProgressionBonus()를 호출해도 실제로는 아무것도 바뀌지 않아야 함(안전장치)
+      applyProgressionBonus();
+      const guardOk=((DB.profile&&DB.profile.progressionBonusPct)||0)===0;
+      return{pass:steadyOk&&spikeOk&&guardOk,
+        detail:!steadyOk?"꾸준한 패턴 상향 판정 이상: ready="+steadyInfo.ready+" sweetSpotWeeks="+steadyInfo.sweetSpotWeeks:
+          !spikeOk?"급증 감지 이상: anySpike="+spikeInfo.anySpike+" ready="+spikeInfo.ready:
+          !guardOk?"미충족 상태에서 적용 방지 이상":""};
+    }finally{DB.calendar=savedCalendar;window.confirm=savedConfirm;window.showToast=savedShowToast;
+      if(DB.profile){if(savedBonus===undefined)delete DB.profile.progressionBonusPct;else DB.profile.progressionBonusPct=savedBonus;
+        if(savedApplied===undefined)delete DB.profile.progressionAppliedAt;else DB.profile.progressionAppliedAt=savedApplied;}}});
+  check("㉜ workoutResultCoachText — 운동 기록 저장 시 결과 코칭 문구 생성(계획 강도 일치/불일치, 크로스트레이닝, 근거 없을 때 기본 문구)",()=>{
+    const savedCalendar=DB.calendar;
+    try{
+      DB.calendar={}; // 격리된 빈 캘린더 — recentSameZoneLogs가 실제 데이터를 건드리지 않음
+      const crossLog={id:"c1",type:"cross",sport:"bike",dist:0,duration:40,avghr:0};
+      const crossTxt=workoutResultCoachText(crossLog,TODAY);
+      const crossOk=/수고하셨습니다/.test(crossTxt);
+      DB.calendar[TODAY]={plans:["이지런 5km (Z2)"],planSrc:[],logs:[]};
+      const matchLog={id:"m1",type:"run",sport:"run",dist:5,duration:35,avghr:140,zone:2,planRef:0};
+      const matchTxt=workoutResultCoachText(matchLog,TODAY);
+      const matchOk=/정확히 지켰습니다/.test(matchTxt);
+      const overLog={id:"o1",type:"run",sport:"run",dist:5,duration:20,avghr:175,zone:4,planRef:0};
+      const overTxt=workoutResultCoachText(overLog,TODAY);
+      const overOk=/강도가 높았습니다/.test(overTxt);
+      const plainLog={id:"p1",type:"run",sport:"run",dist:6,duration:36,avghr:140,zone:2};
+      const plainTxt=workoutResultCoachText(plainLog,TODAY);
+      const plainOk=/완주했습니다/.test(plainTxt);
+      return{pass:crossOk&&matchOk&&overOk&&plainOk,
+        detail:!crossOk?"크로스트레이닝 문구 이상: "+crossTxt:!matchOk?"계획 강도 일치 문구 이상: "+matchTxt:
+          !overOk?"계획 강도 초과 문구 이상: "+overTxt:!plainOk?"근거 없을 때 기본 문구 이상: "+plainTxt:""};
+    }finally{DB.calendar=savedCalendar;}});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -3453,14 +3532,80 @@ function currentBasisRecord(){ // 현재 기량 추정(currentMPace)의 근거�
 function currentMPace(){const rec=currentBasisRecord();if(!rec)return null;
   const d1=PRED_M[rec.distM]||rec.distM,t1=rec.sec;const full=d1===42195?t1:riegel(t1,d1,42195);return full/42.195;}
 function pacesFromMP(m){return{easy:m+70,lsd:m+85,recovery:m+100,tempo:m-25,interval:m-40,tt5k:m-30,mpace:m};} // tempo(Z4 젖산역치)는 M-Pace보다 뚜렷하게 빨라야 함(기존 -12초는 너무 좁아 Z3와 거의 붙어보임)
-function realisticGoalMP(cMP,gMP,weeks){if(cMP==null)return gMP;const maxGain=Math.min(weeks*1.2,45);return Math.max(gMP,cMP-maxGain);}
+function progressionMaxGain(weeks){ // 목표 페이스를 현재 PR 대비 주당 최대 얼마나 당길 수 있는지의 상한(초/주)
+  // 기본 상한(weeks*1.2초/주, 최대 45초)에, 사용자가 progressionReadiness 코칭 카드에서 직접 승인한
+  // 상향분(DB.profile.progressionBonusPct, 기본 0%)만 곱해서 반영한다 — 기본값 0일 때는 기존 계산과 완전히 동일.
+  const base=Math.min(weeks*1.2,45);
+  const bonusPct=(DB.profile&&DB.profile.progressionBonusPct)||0;
+  return base*(1+bonusPct/100);}
+function realisticGoalMP(cMP,gMP,weeks){if(cMP==null)return gMP;const maxGain=progressionMaxGain(weeks);return Math.max(gMP,cMP-maxGain);}
 function raceGoalSecFromMP(r,mp){const dm=raceDistM(r),full=mp*42.195;return dm===42195?full:riegel(full,42195,dm);} // 풀코스 환산 페이스를 실제 대회 거리 기록(초)으로 역산
 function raceDifficultyInfo(r,N){ // 목표가 현재 PR 대비 얼마나 도전적인지 — 실제 훈련 페이스 계산(realisticGoalMP)과 같은 공식을 재사용(수치 불일치 방지)
   const cMP=currentMPace(),gMP=goalMPace(r);
   if(cMP==null)return{cMP:null,gMP,rgMP:gMP,gapSec:0,maxGain:0,ratio:0,level:"unknown"};
-  const maxGain=Math.min(N*1.2,45),gapSec=cMP-gMP,rgMP=realisticGoalMP(cMP,gMP,N),ratio=maxGain>0?gapSec/maxGain:0;
+  const maxGain=progressionMaxGain(N),gapSec=cMP-gMP,rgMP=realisticGoalMP(cMP,gMP,N),ratio=maxGain>0?gapSec/maxGain:0;
   const level=ratio>=1.5?"extreme":ratio>1?"high":"ok"; // extreme: N주를 다 채워도 현실적 개선 한계의 1.5배 이상 모자람
   return{cMP,gMP,rgMP,gapSec,maxGain,ratio,level};}
+/* ═══════════════════════════════════════════════════════════════════════════
+   점진적 훈련량 상향 코칭 (Progressive Overload Readiness) — v2.41.0
+   근거(요청에 따라 논문·코칭이론을 검토해 반영):
+   - 고정 "주 10% 증량 규칙"은 최근 연구에서 근거가 약함 — Buist et al.(2008, 위트레흐트대)
+     532명 대상 10주/13주 프로그램 비교에서 10%군 부상률 20.8% vs 50%군 20.3%로 유사했고,
+     Nielsen et al.(2012, 오르후스대) GPS 추적 연구에서는 비부상군이 평균 22.1% 증량했음에도
+     무사했던 반면, 부상군은 단일 주 30%대 급증이 특징이었음. → 결론: 정해진 %가 아니라
+     "단일주 급증을 피하고 최근 만성부하 대비 완만하게" 늘리는 것이 핵심.
+   - 급성:만성 부하비(ACWR, Gabbett·Hulin 등) 0.8~1.3 "스위트스팟" 유지가 부상 위험을 낮추면서
+     체력 향상도 이뤄지는 구간으로 다수 종목 연구에서 보고됨(이 앱은 이미 ACWR을 계산 중 —
+     metricSnapshot().acwr, 통계 탭 대시보드 카드에 반영되어 있음. 같은 임계값 재사용).
+   - 최소 적응 기간: 표준 훈련 주기화(periodization) 마이크로사이클은 통상 3~4주 훈련+1주
+     완화 구조(이 앱의 대회 플랜도 longRunSeries에서 3주마다 20% 감량으로 이미 반영 중)이므로,
+     ACWR의 만성부하 정의(최근 28일 = 4주)와 맞물려 "최근 4주 연속 스위트스팟 유지"를
+     상향 자격의 최소 기준으로 삼는다 — 한 주만 보고 성급하게 판단하지 않음.
+   - 페이스 목표 상향은 실제로 더 빨라졌다는 증거(최근 PR 갱신)가 있을 때 더 설득력 있음
+     (Daniels, VDOT 재산정은 실측 개선 확인 후에 하도록 권장 — 추정만으로 올리지 않음).
+   설계: 이 코칭은 사용자가 카드에서 직접 "적용"을 눌러야만 실제로 progressionMaxGain의
+   상향분(progressionBonusPct)이 올라간다(자동 적용 아님) — 자체진단·데모 데이터 등 어떤
+   백그라운드 동작도 이 값을 몰래 바꾸지 않으므로 항상 예측 가능하고, v2.40.x에서 겪은
+   "자체진단이 실제 화면/상태를 조용히 바꿔버리는" 부류의 문제를 원천적으로 피한다.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function weeklyLoadHistory(nWeeks){ // 최근 nWeeks주(월~일), 과거→최신 순으로 주간 거리·세션수·ACWR을 계산
+  const out=[];
+  for(let i=nWeeks-1;i>=0;i--){
+    const weekEnd=addDays(TODAY,-7*i),weekStart=addDays(weekEnd,-6);
+    const wk=sumWindow(weekStart,weekEnd);
+    let sessions=0;for(let d=0;d<7;d++)sessions+=dayLogs(addDays(weekStart,d)).filter(l=>l.type==="run"||l.type==="track"||l.type==="trail").length;
+    const acute=sumWindow(addDays(weekEnd,-6),weekEnd).tr,chronic=sumWindow(addDays(weekEnd,-27),weekEnd).tr/4;
+    out.push({weekStart,weekEnd,km:wk.km,sessions,acwr:chronic>0?acute/chronic:null});}
+  return out;}
+function recentPRWithinWeeks(weeks){ // 지정 기간 내 갱신된 PR이 하나라도 있는지 — 페이스 상향의 실제 근거로 삼음
+  const cutoff=addDays(TODAY,-weeks*7);
+  return Object.values(DB.records||{}).some(rec=>rec&&rec.date&&rec.date>=cutoff&&rec.date<=TODAY);}
+function progressionReadiness(){ // 상향 코칭 판정 — 순수 함수, 어떤 상태도 바꾸지 않음
+  const hist=weeklyLoadHistory(4);
+  const validWeeks=hist.filter(w=>w.acwr!=null);
+  const sweetSpotWeeks=hist.filter(w=>w.acwr!=null&&w.acwr>=0.8&&w.acwr<=1.3).length;
+  const anySpike=hist.some(w=>w.acwr!=null&&w.acwr>1.5);
+  const avgSessions=hist.length?hist.reduce((s,w)=>s+w.sessions,0)/hist.length:0;
+  const lastApplied=DB.profile&&DB.profile.progressionAppliedAt;
+  const cooldownOk=!lastApplied||diffDays(TODAY,lastApplied)>=28; // 같은 4주 사이클 안에서 중복 적용 방지
+  const currentBonus=(DB.profile&&DB.profile.progressionBonusPct)||0;
+  const ready=validWeeks.length>=4&&sweetSpotWeeks>=3&&!anySpike&&avgSessions>=3&&cooldownOk&&currentBonus<30;
+  const chronicWeeklyKm=hist.length?hist.reduce((s,w)=>s+w.km,0)/hist.length:0;
+  const currentWeeklyKm=hist.length?hist[hist.length-1].km:0;
+  const suggestPct=sweetSpotWeeks>=4?10:5; // 4주 내내 안정적이면 10%, 3주만 충족했으면 보수적으로 5%(둘 다 위 연구에서 부상 없이 관찰된 범위 안)
+  const suggestedKm=Math.round(chronicWeeklyKm*(1+suggestPct/100));
+  const prRecent=recentPRWithinWeeks(6);
+  return{hist,validWeeks:validWeeks.length,sweetSpotWeeks,anySpike,avgSessions,ready,cooldownOk,
+    currentWeeklyKm:Math.round(currentWeeklyKm),chronicWeeklyKm:Math.round(chronicWeeklyKm),
+    suggestPct,suggestedKm,prRecent,currentBonus};}
+function applyProgressionBonus(){ // 코칭 카드 "지금 적용" 버튼 — 사용자 승인 후에만 실제로 반영됨
+  const info=progressionReadiness();
+  if(!info.ready){showToast("아직 상향 조건을 충족하지 않았습니다.");return;}
+  const nextBonus=Math.min(30,info.currentBonus+(info.suggestPct>=10?10:5));
+  if(!confirm(`최근 4주 훈련이 안정적으로 쌓였습니다(급성:만성 부하비 스위트스팟 ${info.sweetSpotWeeks}/4주 유지).\n\n· 주간 거리: 약 ${info.chronicWeeklyKm}km → ${info.suggestedKm}km 부근까지 점진적으로 늘려보세요(단, 한 주에 몰아서 늘리지 말고 몇 주에 걸쳐 나눠서).\n· 페이스 목표 상향 한도: ${info.currentBonus}% → ${nextBonus}%로 올립니다 — 다음 대회 플랜 생성 시 목표 페이스 쪽으로 더 적극적으로 당겨서 배치됩니다.\n\n적용할까요?`))return;
+  DB.profile=DB.profile||{};DB.profile.progressionBonusPct=nextBonus;DB.profile.progressionAppliedAt=TODAY;
+  save();showToast("상향 적용 완료 — 다음 대회 플랜 생성부터 반영됩니다.");
+  renderProgressionCoaching();}
 function blendedMP(week,a,cMP,gMP){let gw;
   if(week<=a.base)gw=0;else if(week<=a.base+a.build){const i=week-a.base;gw=0.3+0.5*(i/Math.max(1,a.build));}else gw=1;
   return cMP+(gMP-cMP)*Math.min(1,gw);}
@@ -5349,7 +5494,7 @@ const RUN_TIPS_BUILTIN=[
   "대회 전 지나친 긴장은 오히려 퍼포먼스를 떨어뜨릴 수 있어, 적당한 긴장을 즐기려는 태도가 도움이 됩니다.",
   "러닝은 문제 해결 능력이나 창의적 사고에도 긍정적 영향을 준다는 연구들이 있습니다.",
   "목표를 너무 크게 잡으면 시작도 전에 부담이 커질 수 있어, 작은 성공부터 쌓아가는 게 지속가능성에 유리합니다.",
-  "러닝 일지에 그날의 기분·생각을 함께 적어두면 몸뿐 아니라 마음의 패턴도 파악할 수 있습니다.",
+  "운동일지에 그날의 기분·생각을 함께 적어두면 몸뿐 아니라 마음의 패턴도 파악할 수 있습니다.",
   "힘든 훈련을 마쳤을 때의 성취감은 다음 훈련을 이어가는 강력한 동기가 됩니다.",
   "러닝은 스트레스 해소와 우울감 완화에 도움이 된다는 연구 결과가 폭넓게 존재합니다.",
   "완벽한 하루보다 꾸준한 하루들이 쌓여 실력을 만든다는 사실을 기억하면 하루의 부진에 덜 흔들릴 수 있습니다.",
@@ -5607,7 +5752,8 @@ function renderSelectedDay(key){
     const actIcon=act?`<i class="bi ${act.icon}" style="font-size:11px;color:#94a3b8;margin-right:3px"></i>`:"";
     html+=`<div class="day-log-item" style="border-left:4px solid var(--${ZONE_VAR[l.color]})">
       <div><span class="log-badge-time">${l.time}</span>${actIcon}<strong style="font-size:13.5px;color:#fff">${l.title}</strong>${logHasRoute(l)?' <i class="bi bi-geo-alt-fill" style="color:#38bdf8;font-size:11px"></i>':""}${l.rating?` <span class="zone-badge ${RATINGS[l.rating].c}">${RATINGS[l.rating].e} ${RATINGS[l.rating].t}</span>`:""}
-      <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${zlabel} · 거리 <strong style="color:#38bdf8">${l.dist>0?l.dist+"km":"-"}</strong> · 평균 <strong style="color:#10b981">${l.avghr}bpm</strong> · TRIMP <strong style="color:#fcd34d">${l.trimp}</strong></div></div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${zlabel} · 거리 <strong style="color:#38bdf8">${l.dist>0?l.dist+"km":"-"}</strong> · 평균 <strong style="color:#10b981">${l.avghr}bpm</strong> · TRIMP <strong style="color:#fcd34d">${l.trimp}</strong></div>
+      ${l.coachNote?`<div style="font-size:11.5px;color:#6ee7b7;margin-top:4px;line-height:1.5">${escapeHtml(l.coachNote)}</div>`:""}</div>
       <div style="display:flex;align-items:center;gap:6px">
         ${l.type==="run"?`<button class="btn btn-sm btn-secondary" style="padding:2px 8px" onclick="startRunFromLog('${key}','${l.id}')" title="이 운동과 동일하게 러닝 시작 탭 연결"><i class="bi bi-play-fill"></i> Run</button>`:""}
         <button class="btn btn-sm btn-secondary" style="padding:2px 6px" onclick="editLog('${key}','${l.id}')"><i class="bi bi-pencil"></i></button>
@@ -5640,7 +5786,7 @@ function renderSelectedDay(key){
   const vitals=((DB.calendar[key]||{}).vitals)||{};
   html+=`<div style="margin-top:14px;border-top:1px solid var(--border-light);padding-top:12px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <strong style="font-size:13.5px;color:#fff"><i class="bi bi-journal-text" style="color:#a78bfa"></i> 오늘의 달리기 일지</strong>
+      <strong style="font-size:13.5px;color:#fff"><i class="bi bi-journal-text" style="color:#a78bfa"></i> 오늘의 운동일지</strong>
       <button class="btn btn-sm btn-success" onclick="saveDiary('${key}')"><i class="bi bi-save"></i> 일지 저장</button></div>
     <div class="grid-2col" style="gap:8px">
       <div class="form-group" style="margin-bottom:8px"><label>아침 맥박 (bpm)</label><input type="number" id="vt-pulse" value="${vitals.pulse||""}" placeholder="예: 49" oninput="updateVitalsCoach()"></div>
@@ -5818,6 +5964,33 @@ function autoTitle(log){const act=ACT_BY_ID[log.sport]||(log.type==="cross"?ACT_
   if(act.bucket==="cross")return(log.notes||"").trim()||act.label;
   const z=zoneFromHR(log.avghr,calculatedZones),nm={1:"회복 조깅",2:"이지/LSD",3:"템포런",4:"역치 템포",5:"인터벌"}[z];
   return `${nm} ${log.dist>0?log.dist+"km":""}`.trim();}
+function recentSameZoneLogs(zone,excludeId,limit){ // 같은 존(강도)의 최근 기록들(자기 자신 제외) — 오늘 결과와 비교할 기준선
+  const out=[];
+  for(const d in DB.calendar)dayLogs(d).forEach(l=>{if(l.id!==excludeId&&l.zone===zone&&l.dist>0&&l.duration>0)out.push({...l,_date:d});});
+  return out.sort((a,b)=>b._date.localeCompare(a._date)).slice(0,limit);}
+function workoutResultCoachText(log,date){ // 운동 기록 저장 직후 1회 생성되는 결과 코칭 — 계획 대비 달성도 + 같은 강도의 최근 기록 대비 변화
+  const act=ACT_BY_ID[log.sport]||(log.type==="cross"?ACT_BY_ID.etc:ACT_BY_ID.run);
+  if(act.bucket==="cross"){if(!log.duration)return"";return `💪 ${act.label} ${fmtDur(log.duration*60)} — 수고하셨습니다.`;}
+  if(!log.dist||!log.duration)return"";
+  const bits=[];
+  const avgPace=log.avgPaceSec!=null?log.avgPaceSec:(log.duration*60/log.dist);
+  const z=log.zone||zoneFromHR(log.avghr,calculatedZones);
+  if(log.planRef!=null){ // 계획과 연결된 기록이면 계획이 요구한 강도·거리와 비교
+    const planStr=(dayPlans(date)||[])[log.planRef];
+    if(planStr){const pp=parsePlan(planStr);
+      if(pp.zone){
+        if(pp.zone===z)bits.push(`계획한 강도(${ZONE_NAME[pp.zone]})를 정확히 지켰습니다`);
+        else if(z>pp.zone)bits.push(`계획보다 강도가 높았습니다(${ZONE_NAME[pp.zone]} 목표 → 실제 ${ZONE_NAME[z]}) — 다음엔 페이스를 조금 늦춰보세요`);
+        else bits.push(`계획보다 여유 있게 뛰었습니다(${ZONE_NAME[pp.zone]} 목표 → 실제 ${ZONE_NAME[z]})`);}
+      if(pp.km&&log.dist){const diffPct=(log.dist-pp.km)/pp.km*100;
+        if(Math.abs(diffPct)>=15)bits.push(`거리는 계획(${pp.km}km) 대비 ${diffPct>0?"+":""}${Math.round(diffPct)}%였습니다`);}}}
+  const recent=recentSameZoneLogs(z,log.id,8); // 표본 3개 이상일 때만 비교(우연 변동에 과민 반응하지 않도록)
+  if(recent.length>=3){
+    const avgOfRecent=recent.reduce((s,l)=>s+(l.avgPaceSec!=null?l.avgPaceSec:(l.duration*60/l.dist)),0)/recent.length;
+    const d=avgOfRecent-avgPace; // 양수면 오늘이 더 빠름(페이스초가 작을수록 빠름)
+    if(Math.abs(d)>=5)bits.push(`같은 강도(${ZONE_NAME[z]}) 최근 평균보다 ${d>0?"빠르게":"느리게"}(${fmtPace(Math.abs(d))}/km 차이) 뛰었습니다`);}
+  if(!bits.length)bits.push(`${ZONE_NAME[z]||"보통"} 강도로 ${log.dist}km 완주했습니다`);
+  return "🏃 "+bits.join(". ")+".";}
 function saveManualWorkoutLog(){
   const date=document.getElementById("m-log-date").value;
   const actId=document.getElementById("m-log-type").value,act=ACT_BY_ID[actId]||ACT_BY_ID.run;
@@ -5844,11 +6017,12 @@ function saveManualWorkoutLog(){
   else{const auto=autoStrideM(log.dist,log.duration,watchCad>0?watchCad:log.avgCadenceSpm);if(auto)log.strideM=auto;}
   log.title=(log.notes||"").trim()||autoTitle(log);
   if(edit){const[k,id]=edit.split("|");DB.calendar[k].logs=DB.calendar[k].logs.filter(l=>l.id!==id);}
+  log.coachNote=workoutResultCoachText(log,date); // 저장 직후 1회 생성해 로그에 함께 보관 — 오늘의 운동일지에서 계속 다시 보임
   if(!DB.calendar[date])DB.calendar[date]={plans:[],logs:[]};
   DB.calendar[date].logs.push(log);save();
   closeManualLogModal();selectedDate=date;renderCalendar();refreshAll();
   const dynCoach=dynamicsCoachText(log);
-  showToast(`${date} 기록을 ${edit?"수정":"등록"}했습니다.`+(dynCoach?` ${dynCoach}`:""));
+  showToast(`${date} 기록을 ${edit?"수정":"등록"}했습니다.`+(log.coachNote?` ${log.coachNote}`:"")+(dynCoach?` ${dynCoach}`:""));
   if(!edit)autoDetectPR(log,date);
   checkDistanceMilestones();
   if(currentSlideIndex!==1)goToSlide(3); // 러닝 측정 탭에서 저장한 경우엔 그대로 머무름(측정 화면이 갑자기 사라지는 혼란 방지)
@@ -5997,6 +6171,29 @@ function renderLoadFocusChart(){const box=document.getElementById("loadFocusChar
     <span><span style="display:inline-block;width:8px;height:8px;background:#10b981;opacity:.3;border-radius:2px;margin-right:3px"></span>적정범위(최근 12주 평균 기준 80~120%)</span></div>`+
     data.filter(d=>d.status!=="baseline"&&d.status!=="optimal").map(d=>
       `<div style="font-size:11px;color:${LOADFOCUS_STATUS_COLOR[d.status]};margin-top:4px">· ${d.label}: ${LOADFOCUS_STATUS_LABEL[d.status]} (${d.cur} / 적정 ${d.rangeMin}~${d.rangeMax})</div>`).join("");}
+function renderProgressionCoaching(){const box=document.getElementById("progression-coaching-card");if(!box)return;
+  const info=progressionReadiness();
+  const dots=info.hist.map(w=>{const c=w.acwr==null?"#475569":w.acwr>1.5?"#ef4444":(w.acwr>=0.8&&w.acwr<=1.3)?"#10b981":"#f59e0b";
+    return `<span title="${w.weekStart}~${w.weekEnd}: ACWR ${w.acwr==null?"—":w.acwr.toFixed(2)}" style="display:inline-block;width:20px;height:20px;border-radius:5px;background:${c};margin-right:4px"></span>`;}).join("");
+  const weekRow=`<div style="margin-bottom:10px">${dots}<div style="font-size:10px;color:#64748b;margin-top:4px">← 4주 전 · · · 이번 주 → (초록 = ACWR 스위트스팟 0.8~1.3)</div></div>`;
+  if(info.validWeeks<4){
+    box.innerHTML=weekRow+`<div style="font-size:12.5px;color:#94a3b8;line-height:1.7">아직 최근 4주치 훈련 기록(만성부하 계산 기준)이 충분하지 않습니다. 꾸준히 기록을 쌓으면 상향 시점을 코칭해드립니다.</div>`;
+    return;}
+  if(info.ready){
+    box.innerHTML=weekRow+`<div style="background:rgba(16,185,129,.12);border:1px solid #10b981;border-radius:8px;padding:12px">
+      <div style="font-size:13.5px;font-weight:800;color:#10b981;margin-bottom:6px"><i class="bi bi-check-circle-fill"></i> 상향해도 좋은 시점입니다</div>
+      <div style="font-size:12.5px;color:#e2e8f0;line-height:1.75">최근 ${info.sweetSpotWeeks}/4주 동안 급성:만성 부하비가 안정 구간을 유지했습니다(평균 주 ${info.avgSessions.toFixed(1)}회).<br>
+      · 주간 거리: 약 ${info.chronicWeeklyKm}km → <strong>${info.suggestedKm}km</strong> 부근까지, 몇 주에 걸쳐 나눠서 늘려보세요(한 주에 몰아서 늘리지 마세요).<br>
+      · 페이스: ${info.prRecent?"최근 6주 내 PR 갱신이 확인돼 목표 페이스를 올릴 근거가 있습니다.":"단, 최근 6주 내 PR 갱신은 없었습니다 — 거리 위주로 먼저 늘리고, 페이스 목표는 실제 기록이 나온 뒤 올리는 걸 권합니다."}</div>
+      <button class="btn btn-sm btn-success" style="width:100%;margin-top:10px" onclick="applyProgressionBonus()"><i class="bi bi-arrow-up-circle"></i> 페이스 목표 상향 한도 적용 (${info.currentBonus}% → ${Math.min(30,info.currentBonus+(info.suggestPct>=10?10:5))}%)</button></div>`;
+  }else{
+    const reasons=[];
+    if(info.anySpike)reasons.push("최근 4주 중 부하가 급격히 튄 주가 있었습니다(ACWR 1.5 초과) — 이런 급증 직후에는 늘리지 않는 게 안전합니다.");
+    if(info.sweetSpotWeeks<3)reasons.push(`안정 구간(ACWR 0.8~1.3) 유지 주가 ${info.sweetSpotWeeks}/4주로 아직 부족합니다(최소 3주 필요).`);
+    if(info.avgSessions<3)reasons.push(`평균 훈련 빈도가 주 ${info.avgSessions.toFixed(1)}회로 다소 낮습니다(주 3회 이상 권장).`);
+    if(!info.cooldownOk)reasons.push("최근에 이미 상향을 적용했습니다 — 몸이 적응할 시간(약 4주)을 두고 다시 확인해주세요.");
+    if(info.currentBonus>=30)reasons.push("이미 상향 한도(30%)까지 적용돼 있습니다.");
+    box.innerHTML=weekRow+`<div style="font-size:12.5px;color:#94a3b8;line-height:1.75">아직은 거리·페이스를 올리기보다 지금 리듬을 유지할 시점입니다.<br>${reasons.map(r=>"· "+r).join("<br>")}</div>`;}}
 function onAnaWindowChange(){anaOffset=0;renderAnalyticsCharts();}
 function shiftAnaWindow(dir){const n=anaOffset+(dir<0?1:-1);if(n<0)return;anaOffset=n;renderAnalyticsCharts();}
 function renderComplianceReport(){
@@ -9127,7 +9324,7 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
     const kkInput=document.getElementById("kakao-js-key");if(kkInput)kkInput.value=DB.kakaoJsKey||"";
     renderKakaoMapStatus();
     renderStravaStatus();}
-  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();renderPremiumGate();},80);}
+  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();renderPremiumGate();renderProgressionCoaching();},80);}
   else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){renderErrorReportToggle();populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();renderGearList();populateShoeSelect();onShoeCategoryChange();renderDynamicsCompare();renderDynamicsPrefsUI();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
