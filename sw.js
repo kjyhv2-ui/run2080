@@ -9,7 +9,7 @@
      서비스 워커가 아예 손대지 않는다 → Strava 토큰이 든 URL·응답이 캐시에 저장되지 않고,
      오프라인일 때 API 호출에 index.html이 대신 돌아가 JSON 파싱이 깨지는 일도 없다.
    - 정상 응답(200)만 캐시한다 → 배포가 잠깐 깨져 404가 나도 그 404가 오프라인용 캐시를 덮어쓰지 않는다. */
-const CACHE_NAME = "run2080-shell-v2";
+const CACHE_NAME = "run2080-shell-v3";
 const APP_SHELL = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
