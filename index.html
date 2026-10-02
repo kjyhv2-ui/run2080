@@ -1107,7 +1107,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     </div>
     <div class="grid-2col" style="gap:10px">
       <div class="form-group"><label>거리 (km)</label><input type="number" step="0.01" id="m-log-dist" value="10" oninput="previewZone()"></div>
-      <div class="form-group"><label>소요 시간 (분)</label><input type="number" step="0.1" id="m-log-duration" value="60" oninput="previewZone()"></div>
+      <div class="form-group"><label>소요 시간 (분:초)</label><input type="text" inputmode="numeric" placeholder="60:00" id="m-log-duration" value="60:00" oninput="previewZone()"></div>
     </div>
     <div class="grid-2col" style="gap:10px">
       <div class="form-group"><label>평균 심박수 (bpm)</label><input type="number" id="m-log-avghr" value="135" oninput="previewZone()"></div>
@@ -2562,7 +2562,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.43.1",APP_BUILD="2026-10-01";
+const APP_VERSION="2.43.2",APP_BUILD="2026-10-02";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2604,6 +2604,12 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.43.2",d:"2026-10-02",title:"소요시간 입력 mm:ss 형식 변경 + 저장 시 예상 심박수를 실제 평균 페이스 기준으로 수정 + GPS 거리 과다누적 완화",items:[
+    "운동 기록 저장 모달의 '소요 시간' 입력란을 분(소수) 직접입력(예: 0.2)에서 분:초(mm:ss, 예: 0:12) 형식으로 변경 — 60:00처럼 익숙한 시간 표기로 보고 입력할 수 있음. 기존처럼 콜론 없이 숫자만 입력하면 '분' 단위로 그대로 해석되어 이전 방식과도 호환됨. DB에 저장되는 값(분 단위 소수)은 기존과 동일해 통계·엑셀 내보내기 등 다른 기능에는 영향 없음",
+    "계획/워크아웃 러닝을 측정 종료 후 저장할 때 자동으로 채워지던 '평균/최대 심박수'가 지금까지는 항상 '계획한 목표존(Z2)'을 고정으로 보여주고 있었던 문제 수정 — 이제는 실제로 달린 평균 페이스를 기준·목표기록 페이스표와 비교해 가장 가까운 강도존을 역산하고, 그 존의 심박수 범위로 채움(계획보다 느리게/빠르게 달렸으면 그만큼 다른 존으로 표시됨). 이 앱은 심박 센서 연동을 지원하지 않는다는 점과 실측값이 있으면 직접 수정하라는 안내를 저장 메모에 함께 추가. '계획 결과 기록'(러닝 없이 직접 완료 체크)처럼 애초에 실제 데이터가 없는 수동 입력 경로는 기존처럼 계획값을 기본값으로 유지(실측이 없으므로)",
+    "사용자가 실제 기기(가민 등)와 비교해 제보한 사례 검토 — 걷기/정지가 섞인 조깅 구간에서 GPS 거리가 시계 대비 더 많이 누적되는 경향을 확인. 원인으로 보이는 '정지 중 GPS 흔들림 판정 기준(최소 이동속도)'이 신호 정확도와 무관하게 고정값(0.3m/s)이었던 부분을 신호가 나쁠수록(정확도 ±35m 초과) 기준을 0.5~0.8m/s로 높이도록 완화 — 신호 양호 시(±20m 이내)는 기존과 동일하게 동작해 평소 정확도에는 영향 없음. 실기기 비교 1건에 근거한 조정이라 추가 실측으로 계속 검증 필요",
+    "회귀 검사 추가: 자체진단 ㊲ 소요시간 mm:ss 왕복 변환, ㊳ 저장 시 예상 심박수가 고정 Z2가 아니라 실제 페이스로 역산되는지, ㊴ GPS 최소 이동속도가 신호 정확도에 따라 올바르게 높아지는지 확인"
+  ]},
   {v:"2.43.1",d:"2026-10-01",title:"유료 출시 대비 — 해설 문구의 타사 브랜드명(가민·Firstbeat·Training Effect 등) 전면 일반화",items:[
     "v2.43.0에서 추가한 운동결과 지표(유산소/무산소효과)·속도별 다이나믹스 그래프 해설에 쓰인 '가민(Garmin)', 'Firstbeat', 'Training Effect' 같은 타사 브랜드명·상표 문구를 모두 '일부 GPS 러닝워치 제품', 'GPS 러닝워치 제조사' 같은 일반 표현으로 교체 — 계산식·벤치마크 수치(케이던스 164~183spm, 진폭율 6.1~8.6% 등 공개 자료 기준)와 설명 내용 자체는 그대로 유지하고 브랜드 표기만 일반화",
     "앱이 참고한 개념·공식·벤치마크 수치는 전부 공개된 학술논문(Margaria 외 1963 등)이나 제조사가 자사 매뉴얼에 공개해둔 자료이며, 이 앱이 계산하는 값은 그 알고리즘을 재현한 것이 아니라 TRIMP·강도존만으로 만든 독자적 근사치라는 점은 기존과 동일하게 명시",
@@ -3578,6 +3584,23 @@ function runSelfTests(){
       return{pass:countOk&&refOk&&totalsOk&&noviceExcludesOk,
         detail:!countOk?"생성 갯수 이상":!refOk?"기준기록 고정값 이상(자동계산 방해)":!totalsOk?"총량 계산 이상":"입문 수준 고강도 제외 이상: "+JSON.stringify(novicePool)};
     }finally{DB.workouts=savedWorkouts;}});
+  check("㊲ 소요시간 mm:ss 입력 변환 — 분(소수)↔mm:ss 왕복 변환, 콜론 없는 입력은 기존처럼 분으로 해석",()=>{
+    const a=minToMMSS(9.5)==="9:30", // 9.5분 = 9분30초
+      b=Math.abs(mmssToMin("9:30")-9.5)<0.001,
+      c=mmssToMin("60")===60, // 콜론 없음 → 기존 동작(분)
+      d=minToMMSS(0.2)==="0:12"; // 0.2분(=12초) 같은 짧은 값도 00:00 형식으로
+    return{pass:a&&b&&c&&d,detail:`minToMMSS(9.5)=${minToMMSS(9.5)} mmssToMin(9:30)=${mmssToMin("9:30")} mmssToMin(60)=${mmssToMin("60")} minToMMSS(0.2)=${minToMMSS(0.2)}`};});
+  check("㊳ 저장 시 예상 심박수 — 계획한 목표존이 아니라 실제 평균 페이스로 역산한 존을 사용",()=>{
+    const savedRecords=DB.records,savedZones=calculatedZones;
+    try{
+      DB.records={42195:{sec:12600,date:TODAY}};calculatedZones=computeZones(DB.profile); // 3:30 완주 기준
+      const easyZ=estimateRunZoneFromPace(zonePaceSec(1,null,null)+2,null,null); // 회복존 페이스로 달렸으면
+      const hardZ=estimateRunZoneFromPace(zonePaceSec(5,null,null)-2,null,null); // 인터벌존 페이스로 달렸으면
+      return{pass:easyZ===1&&hardZ===5,detail:`느린 페이스→Z${easyZ}(기대 Z1), 빠른 페이스→Z${hardZ}(기대 Z5) — 더이상 항상 고정된 Z2가 아님`};
+    }finally{DB.records=savedRecords;calculatedZones=savedZones;}});
+  check("㊴ GPS 최소 이동속도 — 신호 정확도가 나쁠수록(정지 중 흔들림 오인 방지) 기준을 높여 거리 과다누적 억제",()=>{
+    const goodAcc=minMoveSpeedFor(15),midAcc=minMoveSpeedFor(28),badAcc=minMoveSpeedFor(50);
+    return{pass:goodAcc<midAcc&&midAcc<badAcc,detail:`정확도별 최소속도: 양호(±15m)=${goodAcc} 보통(±28m)=${midAcc} 나쁨(±50m)=${badAcc}`};});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -6091,7 +6114,7 @@ function logPlanResult(date,i){const planStr=dayPlans(date)[i];if(planStr==null)
   document.getElementById("m-log-planref").value=i;
   if(existing){document.getElementById("m-log-editid").value=date+"|"+existing.id;document.getElementById("log-modal-title").textContent="계획 결과 수정";
     document.getElementById("m-log-date").value=date;document.getElementById("m-log-time").value=existing.time;document.getElementById("m-log-type").value=existing.type;
-    document.getElementById("m-log-dist").value=existing.dist;document.getElementById("m-log-duration").value=existing.duration;
+    document.getElementById("m-log-dist").value=existing.dist;document.getElementById("m-log-duration").value=minToMMSS(existing.duration);
     document.getElementById("m-log-avghr").value=existing.avghr;document.getElementById("m-log-maxhr").value=existing.maxhr;
     document.getElementById("m-log-notes").value=existing.notes||"";document.getElementById("m-log-rating").value=(existing.rating==null?"":existing.rating);
     populateShoeSelect();document.getElementById("m-log-shoe").value="";
@@ -6103,7 +6126,7 @@ function logPlanResult(date,i){const planStr=dayPlans(date)[i];if(planStr==null)
   document.getElementById("m-log-editid").value="";document.getElementById("log-modal-title").textContent="계획 결과 기록";
   document.getElementById("m-log-date").value=date;document.getElementById("m-log-time").value="06:30";
   document.getElementById("m-log-type").value="run";document.getElementById("m-log-dist").value=Math.round(km*10)/10;
-  document.getElementById("m-log-duration").value=dur;document.getElementById("m-log-avghr").value=mid;
+  document.getElementById("m-log-duration").value=minToMMSS(dur);document.getElementById("m-log-avghr").value=mid;
   document.getElementById("m-log-maxhr").value=z.max;document.getElementById("m-log-rating").value="4";
   document.getElementById("m-log-notes").value=planStr.replace(/\s*@[\d:]+\/km/g,"").replace(/\s*\(Z\d\)/g,"").replace(/🏆\s*/,"").trim();
   populateShoeSelect();document.getElementById("m-log-shoe").value="";
@@ -6117,7 +6140,7 @@ function closeManualLogModal(){document.getElementById("manualLogModal").classLi
 function previewZone(){
   const hr=parseInt(document.getElementById("m-log-avghr").value)||0,actId=document.getElementById("m-log-type").value;
   const act=ACT_BY_ID[actId]||ACT_BY_ID.run;
-  const dist=parseFloat(document.getElementById("m-log-dist").value)||0,dur=parseFloat(document.getElementById("m-log-duration").value)||0;
+  const dist=parseFloat(document.getElementById("m-log-dist").value)||0,dur=mmssToMin(document.getElementById("m-log-duration").value)||0;
   const el=document.getElementById("zone-preview");let pace=dist>0&&dur>0?` · 페이스 ${fmtPace(dur*60/dist)}/km`:"";
   if(act.bucket==="cross"){el.innerHTML=`<i class="bi ${act.icon}" style="color:#38bdf8"></i> ${act.label} → <span class="zone-badge z1">파란색 막대</span>${pace}`;return;}
   const z=zoneFromHR(hr,calculatedZones);
@@ -6125,7 +6148,7 @@ function previewZone(){
 function editLog(key,id){const l=(DB.calendar[key].logs||[]).find(x=>x.id===id);if(!l)return;
   document.getElementById("m-log-editid").value=key+"|"+id;document.getElementById("log-modal-title").textContent="기록 수정";
   document.getElementById("m-log-date").value=key;document.getElementById("m-log-time").value=l.time;document.getElementById("m-log-type").value=l.sport||(l.type==="run"?"run":"etc");
-  document.getElementById("m-log-dist").value=l.dist;document.getElementById("m-log-duration").value=l.duration;
+  document.getElementById("m-log-dist").value=l.dist;document.getElementById("m-log-duration").value=minToMMSS(l.duration);
   document.getElementById("m-log-avghr").value=l.avghr;document.getElementById("m-log-maxhr").value=l.maxhr;document.getElementById("m-log-notes").value=l.notes||"";
   document.getElementById("m-log-planref").value=(l.planRef==null?"":l.planRef);document.getElementById("m-log-rating").value=(l.rating==null?"":l.rating);
   populateShoeSelect();document.getElementById("m-log-shoe").value=l.shoeId||"";
@@ -6178,7 +6201,7 @@ function saveManualWorkoutLog(){
   const date=document.getElementById("m-log-date").value;
   const actId=document.getElementById("m-log-type").value,act=ACT_BY_ID[actId]||ACT_BY_ID.run;
   const log={id:uid(),time:document.getElementById("m-log-time").value,type:act.bucket,sport:actId,
-    dist:parseFloat(document.getElementById("m-log-dist").value)||0,duration:parseFloat(document.getElementById("m-log-duration").value)||0,
+    dist:parseFloat(document.getElementById("m-log-dist").value)||0,duration:mmssToMin(document.getElementById("m-log-duration").value)||0,
     avghr:parseInt(document.getElementById("m-log-avghr").value)||0,maxhr:parseInt(document.getElementById("m-log-maxhr").value)||0,
     notes:document.getElementById("m-log-notes").value};
   const edit=document.getElementById("m-log-editid").value;
@@ -6576,6 +6599,14 @@ const MILE=1609.344;
 const PRED_ROWS=[{label:"1마일",m:MILE},{label:"5K",m:5000},{label:"10K",m:10000},{label:"10마일",m:MILE*10},{label:"하프",m:21097.5},{label:"30K",m:30000},{label:"풀 마라톤",m:42195}];
 const PRED_M={1000:1000,1609:MILE,2000:2000,3000:3000,5000:5000,10000:10000,21097:21097.5,42195:42195};
 let predUnit="km";
+/* "소요 시간" 입력란 전용 mm:ss 변환 — DB에는 기존과 동일하게 분(소수) 단위로 저장되므로
+   여기서만 화면 표시(00:00)와 사용자 입력(mm:ss, 콜론 없으면 분)을 분(min) 값으로 서로 변환한다(v2.43.2) */
+function minToMMSS(min){if(min==null||isNaN(min)||min<0)return"";
+  const totalSec=Math.round(min*60),m=Math.floor(totalSec/60),s=totalSec%60;return `${m}:${pad(s)}`;}
+function mmssToMin(str){const s=String(str==null?"":str).trim();if(!s)return 0;
+  if(s.includes(":")){const p=s.split(":").map(x=>parseFloat(x));if(p.some(isNaN))return 0;
+    if(p.length===2)return p[0]+p[1]/60;if(p.length===3)return p[0]*60+p[1]+p[2]/60;return 0;}
+  const v=parseFloat(s);return isNaN(v)?0:v;} // 콜론 없이 숫자만 입력하면 기존처럼 "분"으로 해석
 function fmtDur(s){if(s==null)return"—";
   const total=Math.round(s); // 전체 초를 먼저 반올림한 뒤 나눔 — fmtPace와 같은 이유로 "M:60" 같은 표시를 방지
   if(total<3600){const m=Math.floor(total/60),sec=total%60;return`${m}:${pad(sec)}`;}
@@ -7051,6 +7082,14 @@ function refMPaceFor(refDist,refTimeSec){ // 워크아웃별 기준기록이 있
 function zonePaceSec(zone,refDist,refTimeSec){
   const pc=pacesFromMP(refMPaceFor(refDist,refTimeSec));
   return{1:pc.recovery,2:pc.easy,3:pc.mpace,4:pc.tempo,5:pc.interval}[zone]||pc.easy;}
+/* 실제 달리기 결과(평균 페이스)로부터 가장 가까운 심박존(Z1~5)을 역산 — 센서가 없는 상태에서
+   "저장 시 예상 심박수"가 계획한 목표존이 아니라 실제로 달린 결과를 반영하도록 하기 위함(v2.43.2) */
+function estimateRunZoneFromPace(avgPaceSec,refDist,refTimeSec){
+  if(!avgPaceSec||avgPaceSec<=0)return 2; // 페이스 계산 불가(거리 0 등) → 기본 Z2
+  let best=2,bestDiff=Infinity;
+  for(let z=1;z<=5;z++){const zp=zonePaceSec(z,refDist,refTimeSec);const diff=Math.abs(avgPaceSec-zp);
+    if(diff<bestDiff){bestDiff=diff;best=z;}}
+  return best;}
 function stepDistTime(s,refDist,refTimeSec){const calc=(type,val,zone)=>{const pace=zonePaceSec(zone,refDist,refTimeSec);
   return type==="dist"?{km:val,min:val*pace/60}:{km:(val*60)/pace,min:val};};
   if(s.kind==="repeat"){const w=calc(s.wType,s.wVal,s.wZone),r=calc(s.rType,s.rVal,s.rZone);return{km:(w.km+r.km)*s.reps,min:(w.min+r.min)*s.reps};}
@@ -7314,7 +7353,7 @@ function logWorkoutResult(id){const w=(DB.workouts||[]).find(x=>x.id===id);if(!w
   document.getElementById("m-log-editid").value="";document.getElementById("log-modal-title").textContent="운동 결과 기록";
   document.getElementById("m-log-date").value=selectedDate||TODAY;document.getElementById("m-log-time").value="06:30";
   document.getElementById("m-log-type").value="run";document.getElementById("m-log-dist").value=Math.round(t.km*10)/10;
-  document.getElementById("m-log-duration").value=Math.round(t.min);document.getElementById("m-log-avghr").value=mid;
+  document.getElementById("m-log-duration").value=minToMMSS(t.min);document.getElementById("m-log-avghr").value=mid;
   document.getElementById("m-log-maxhr").value=z.max;document.getElementById("m-log-notes").value=w.name;
   document.getElementById("m-log-planref").value="";document.getElementById("m-log-rating").value="";
   populateShoeSelect();document.getElementById("m-log-shoe").value="";
@@ -8419,6 +8458,9 @@ function bridgeGap(P0,P1,P2){ // P1(두절 직전)→P2(재획득) 사이를 진
 const PACE_SMOOTH_SEC=5; // 기본 스무딩 구간(초, 신호 양호 시) — 가민 등의 실측 관행(3~7초)에 맞춤
 const PACE_SMOOTH_SEC_MAX=7; // GPS 정확도가 나쁠 때(캐노피·빌딩숲 등) 완만히 확장하는 상한 — 가민의 범위(3~7초)를 벗어나지 않음
 const MIN_MOVE_SPEED=0.3; // m/s — 이 미만은 정지 중 GPS 흔들림으로 간주. 절대거리(예: 1.5m)가 아닌 '속도'로 판단해야 도보 페이스(초당 약1.2m)도 정상 인식됨
+// 신호가 나쁠수록 정지 중 위치 흔들림의 '겉보기 속도'도 커지므로, 정확도가 나쁠 때는 최소 이동속도 기준을 함께 높인다
+// (실제 손목시계 대비 실측 비교에서, 걷기/정지가 섞인 구간에서 거리가 과다 누적되는 사례를 확인해 v2.43.2에 추가)
+function minMoveSpeedFor(acc){return acc<=20?MIN_MOVE_SPEED:acc<=35?0.5:0.8;}
 function paceSmoothWindow(){ // 최근 GPS 정확도가 나쁠수록(신호 약함) 스무딩 구간을 완만히 확장 — 나무 그늘·빌딩숲 등에서 순간 페이스가 들쭉날쭉해지는 것을 줄임
   const acc=RUN&&RUN.accEMA;
   if(acc==null||acc<=15)return PACE_SMOOTH_SEC;
@@ -8473,7 +8515,7 @@ function onGpsPoint(pos){if(!RUN||RUN.paused)return;
         banner.innerHTML=`<div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b"></i> 사람이 달릴 수 없는 속도(시속 43km 초과)가 ${RUN.overSpeedCount}회 감지되어 <strong>해당 구간은 거리에 반영되지 않았습니다</strong>. 차량·자전거 이동 중이거나 GPS 신호가 심하게 튀는 환경일 수 있습니다.</div>${bannerCloseBtn("gps-error-banner")}</div>`;}
       showToast(`측정 불가 속도 ${RUN.overSpeedCount}회 — 그 구간은 거리에서 제외됩니다.`);}
     return;}
-  if(spd<MIN_MOVE_SPEED)return; // 최소 이동속도 미만 — 정지 중 GPS 흔들림으로 간주(절대거리 기준이면 도보 페이스가 매번 걸러져 순간페이스가 들쭉날쭉해짐)
+  if(spd<minMoveSpeedFor(c.accuracy))return; // 최소 이동속도 미만 — 정지 중 GPS 흔들림으로 간주(절대거리 기준이면 도보 페이스가 매번 걸러져 순간페이스가 들쭉날쭉해짐)
   if(RUN.active){
     if(dt>=GAP_SEC){ // 신호 두절 구간: 진행방향으로 완만한 곡선 보간 + 보정 거리 반영, '추정 구간'으로 표시
       const br=bridgeGap(RUN.prev2||null,RUN.prev,cur);
@@ -8687,22 +8729,25 @@ function finishRunSession(){if(!RUN)return;
     const planKm=RUN.steps.filter(s=>s.type==="dist").reduce((a,s)=>a+s.val,0);
     if(planKm>0&&km<planKm*0.95)showToast(`계획 ${planKm}km 중 실제 ${km}km 완료 — 실측 기록으로 저장됩니다.`);}
   // 기록 모달 프리필
-  const z=calculatedZones[2]||{min:130,max:150};
+  const lapSummary=pendingLaps?lapsSummaryText(pendingLaps.laps,pendingLaps.trackMode):"";
+  const avgPaceSec=km>0.05?RUN.elapsed/km:null;
+  const bestPaceSec=bestSegmentPace(RUN.allSegs);
+  // 심박수 예상치: 계획/목표존이 아니라 "실제로 달린 평균 페이스"에서 역산한 존을 사용(센서 실측이 아닌 추정치)
+  const estZone=estimateRunZoneFromPace(avgPaceSec,RUN.refDist,RUN.refTimeSec);
+  const z=calculatedZones[estZone]||calculatedZones[2]||{min:130,max:150};
   document.getElementById("m-log-editid").value="";document.getElementById("log-modal-title").textContent=`${(ACT_BY_ID[RUN.actType]||ACT_BY_ID.run).label} 결과 저장`;
   document.getElementById("m-log-date").value=TODAY;
   document.getElementById("m-log-time").value=new Date(RUN.startTs).toTimeString().slice(0,5);
   document.getElementById("m-log-type").value=RUN.actType||"run";
-  document.getElementById("m-log-dist").value=km;document.getElementById("m-log-duration").value=min;
+  document.getElementById("m-log-dist").value=km;document.getElementById("m-log-duration").value=minToMMSS(min);
   document.getElementById("m-log-avghr").value=Math.round((z.min+z.max)/2);document.getElementById("m-log-maxhr").value=z.max;
-  const lapSummary=pendingLaps?lapsSummaryText(pendingLaps.laps,pendingLaps.trackMode):"";
-  const avgPaceSec=km>0.05?RUN.elapsed/km:null;
-  const bestPaceSec=bestSegmentPace(RUN.allSegs);
   if(avgCadenceSpm)cadenceCoachTxt=cadenceCoachText(avgCadenceSpm,avgPaceSec);
   pendingSummary={km,min,avgPaceSec,bestPaceSec,elapsed:RUN.elapsed,avgCadenceSpm,cadenceMount:avgCadenceSpm?RUN.cadenceMount:null};
   const resultLine=`실측 ${km}km · ${fmtDur(RUN.elapsed)}${avgPaceSec?` · 평균 ${fmtPace(avgPaceSec)}/km`:""}${bestPaceSec?` · 최고 ${fmtPace(bestPaceSec)}/km(${BEST_PACE_WINDOW_M}m 기준)`:""}`;
   const overLine=RUN.overSpeedCount>0?`\n⚠️ 측정 불가 속도(43km/h 초과) ${RUN.overSpeedCount}회 제외됨 — 실제 거리와 차이가 있을 수 있습니다`:"";
   const cadLine=cadenceCoachTxt?`\n케이던스: ${cadenceCoachTxt} (휴대폰 센서 추정치)`:"";
-  document.getElementById("m-log-notes").value=RUN.title+(RUN.trackMode?` · ${RUN.trackLapsDone}바퀴(${RUN.trackLane}레인)`:"")+`\n${resultLine}`+overLine+cadLine+(lapSummary?`\n랩: ${lapSummary}`:"");
+  const hrLine=avgPaceSec?`\n심박수(Z${estZone} ${Math.round(z.min)}~${z.max}bpm)는 실제 달린 평균 페이스로 추정한 값입니다 — 이 앱은 심박 센서 연동을 지원하지 않아, 실제 측정값과 다를 수 있습니다. 실측값이 있다면 아래 항목을 직접 수정해 주세요.`:"";
+  document.getElementById("m-log-notes").value=RUN.title+(RUN.trackMode?` · ${RUN.trackLapsDone}바퀴(${RUN.trackLane}레인)`:"")+`\n${resultLine}`+overLine+cadLine+hrLine+(lapSummary?`\n랩: ${lapSummary}`:"");
   if(RUN.overSpeedCount>=5)showToast(`측정 불가 속도 ${RUN.overSpeedCount}회가 제외되었습니다. 기록을 확인하세요.`);
   document.getElementById("m-log-planref").value=(RUN.planIdx==null?"":RUN.planIdx);
   document.getElementById("m-log-rating").value="";
