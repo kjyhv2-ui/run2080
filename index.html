@@ -2562,7 +2562,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.43.2",APP_BUILD="2026-10-02";
+const APP_VERSION="2.43.3",APP_BUILD="2026-10-02";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2604,6 +2604,12 @@ function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.43.3",d:"2026-10-02",title:"폰 케이던스 센서 — 정지 상태 미세 진동 오검출 수정",items:[
+    "휴대폰을 책상 등에 가만히 두거나 살짝 건드리기만 해도 케이던스가 30~140spm 사이를 들쭉날쭉 오검출하던 문제 수정 — 걸음 감지 문턱값이 '최근 진동의 적응형 평균(env)'에만 의존하고 있어서, 정지 중 노이즈가 아주 작을 때는 문턱값도 함께 낮아져 미세한 흔들림까지 걸음으로 잡히는 구조였음",
+    "착용 위치(손/벨트)별로 적응형 평균이 아무리 낮아져도 내려가지 않는 절대 최소 문턱값(absFloor)을 추가 — 책상 위 미세 진동 정도는 이 문턱값을 넘지 못해 더 이상 걸음으로 잡히지 않고, 실제 걷기·뛰기 수준의 상하 진동(이 문턱값보다 한참 큼)은 기존과 동일하게 정상 검출됨",
+    "실기기로 검증된 값은 아니며(제보 기반 조정), 실제 러닝 중 과소검출이 발생하면 추가 조정이 필요할 수 있음",
+    "회귀 검사 추가: 자체진단 ㊵ 정지 중 미세 진동은 0걸음으로 처리되고, 동일 상태에서 실제 걷기 수준 신호는 여전히 정상 검출되는지 확인"
+  ]},
   {v:"2.43.2",d:"2026-10-02",title:"소요시간 입력 mm:ss 형식 변경 + 저장 시 예상 심박수를 실제 평균 페이스 기준으로 수정 + GPS 거리 과다누적 완화",items:[
     "운동 기록 저장 모달의 '소요 시간' 입력란을 분(소수) 직접입력(예: 0.2)에서 분:초(mm:ss, 예: 0:12) 형식으로 변경 — 60:00처럼 익숙한 시간 표기로 보고 입력할 수 있음. 기존처럼 콜론 없이 숫자만 입력하면 '분' 단위로 그대로 해석되어 이전 방식과도 호환됨. DB에 저장되는 값(분 단위 소수)은 기존과 동일해 통계·엑셀 내보내기 등 다른 기능에는 영향 없음",
     "계획/워크아웃 러닝을 측정 종료 후 저장할 때 자동으로 채워지던 '평균/최대 심박수'가 지금까지는 항상 '계획한 목표존(Z2)'을 고정으로 보여주고 있었던 문제 수정 — 이제는 실제로 달린 평균 페이스를 기준·목표기록 페이스표와 비교해 가장 가까운 강도존을 역산하고, 그 존의 심박수 범위로 채움(계획보다 느리게/빠르게 달렸으면 그만큼 다른 존으로 표시됨). 이 앱은 심박 센서 연동을 지원하지 않는다는 점과 실측값이 있으면 직접 수정하라는 안내를 저장 메모에 함께 추가. '계획 결과 기록'(러닝 없이 직접 완료 체크)처럼 애초에 실제 데이터가 없는 수동 입력 경로는 기존처럼 계획값을 기본값으로 유지(실측이 없으므로)",
@@ -3601,6 +3607,23 @@ function runSelfTests(){
   check("㊴ GPS 최소 이동속도 — 신호 정확도가 나쁠수록(정지 중 흔들림 오인 방지) 기준을 높여 거리 과다누적 억제",()=>{
     const goodAcc=minMoveSpeedFor(15),midAcc=minMoveSpeedFor(28),badAcc=minMoveSpeedFor(50);
     return{pass:goodAcc<midAcc&&midAcc<badAcc,detail:`정확도별 최소속도: 양호(±15m)=${goodAcc} 보통(±28m)=${midAcc} 나쁨(±50m)=${badAcc}`};});
+  check("㊵ 케이던스 센서 — 책상 위 미세 진동(절대 문턱값 미만)은 걸음으로 오검출되지 않음",()=>{
+    const savedRun=RUN,savedState=cadenceState,realNow=Date.now;let fakeT=3000000;
+    try{
+      RUN={active:true,paused:false};
+      cadenceState={base:null,env:1.2,armed:true,lastStepT:0,recentSteps:[],totalSteps:0,spm:null,mount:"hand",profile:CADENCE_MOUNT_PROFILES.hand};
+      Date.now=()=>fakeT;
+      // 정지 상태 미세 진동(진폭 0.3 — absFloor 1.1보다 한참 작음)을 8초간 흉내냄
+      for(let t=0;t<=8000;t+=20){fakeT=3000000+t;
+        onCadenceMotion({accelerationIncludingGravity:{x:0,y:0,z:9.8+0.3*Math.sin(2*Math.PI*t/310)}});}
+      const jitterSteps=cadenceState.totalSteps,noFalseSteps=jitterSteps===0;
+      // 같은 state로 실제 걷기 수준(진폭 2.5)의 신호를 주면 여전히 정상 검출되는지(과도하게 둔감해지지 않았는지)
+      cadenceState.totalSteps=0;cadenceState.recentSteps=[];
+      for(let t=0;t<=7000;t+=20){fakeT=3000000+8000+t;
+        onCadenceMotion({accelerationIncludingGravity:{x:0,y:0,z:9.8+2.5*Math.sin(2*Math.PI*t/(60000/170))}});}
+      const stillDetects=cadenceState.totalSteps>10;
+      return{pass:noFalseSteps&&stillDetects,detail:`미세진동 오검출 걸음수=${jitterSteps} 실제걸음 재검출=${stillDetects?"정상("+cadenceState.totalSteps+"걸음)":"과도하게 둔감해짐"}`};
+    }finally{Date.now=realNow;RUN=savedRun;cadenceState=savedState;}});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -8098,9 +8121,13 @@ const CADENCE_WINDOW_MS=8000; // 화면에 보여줄 순간 케이던스는 최�
    문턱값·평활 계수를 더 민감하게(baseSmooth↑, envMin↓, threshMult↓, minStepMs↓) 잡았습니다.
    손에 들면 팔 스윙 각도 때문에 노이즈가 커서 기존 기본값을 그대로 유지합니다.
    두 경우 모두 절대 정확도를 보장하진 않으며, 앱의 보정 기능(워치 실측값과 비교)으로 남은 오차를 사용자가 직접 줄일 수 있습니다. */
+// absFloor: 책상 위에 가만히 두거나 살짝 건드렸을 때의 미세한 진동만으로는 절대 걸음으로 인정되지 않도록 한
+// 최소 문턱값(적응형 env가 아무리 낮아져도 이 아래로는 내려가지 않음). 실측 제보(정지 상태에서 케이던스가
+// 30~140spm으로 들쭉날쭉 오검출되던 사례)를 반영해 v2.43.3에서 추가 — 실제 걷기/뛰기의 상하 가속도 변화폭보다는
+// 한참 작고, 책상 진동·손 떨림 같은 미세 노이즈보다는 크게 잡은 경험적 값이라 실기기 재검증이 필요합니다.
 const CADENCE_MOUNT_PROFILES={
-  hand:{baseSmooth:0.05,envSmooth:0.02,envMin:0.6,threshMult:0.7,disarmMult:0.3,minStepMs:230},
-  belt:{baseSmooth:0.08,envSmooth:0.02,envMin:0.45,threshMult:0.55,disarmMult:0.3,minStepMs:210}
+  hand:{baseSmooth:0.05,envSmooth:0.02,envMin:0.6,threshMult:0.7,disarmMult:0.3,minStepMs:230,absFloor:1.1},
+  belt:{baseSmooth:0.08,envSmooth:0.02,envMin:0.45,threshMult:0.55,disarmMult:0.3,minStepMs:210,absFloor:0.9}
 };
 function cadenceMountProfile(mount){return CADENCE_MOUNT_PROFILES[mount]||CADENCE_MOUNT_PROFILES.hand;}
 function onCadenceToggleChange(){const t=document.getElementById("run-cadence-sensor-toggle"),block=document.getElementById("run-cadence-mount-block");
@@ -8126,7 +8153,7 @@ function onCadenceMotion(e){
   cs.base=(cs.base==null)?mag:cs.base+pf.baseSmooth*(mag-cs.base); // 느린 이동평균 — 자세·중력(DC 성분) 추적
   const dev=mag-cs.base; // 걸음마다 오르내리는 성분
   cs.env=cs.env+pf.envSmooth*(Math.abs(dev)-cs.env);cs.env=Math.max(cs.env,pf.envMin); // 적응형 문턱값(정지 중 오검출 방지용 최소치)
-  const now=Date.now(),thresh=cs.env*pf.threshMult;
+  const now=Date.now(),thresh=Math.max(cs.env*pf.threshMult,pf.absFloor||0);
   if(cs.armed&&dev>thresh){
     if(now-cs.lastStepT>=pf.minStepMs){
       cs.lastStepT=now;cs.armed=false;cs.totalSteps++;
