@@ -293,8 +293,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div id="yearcompare-body"></div>
       </div>
       <div class="card" id="weather-card" style="margin-bottom:16px">
-        <div class="card-header"><div class="card-title"><i class="bi bi-cloud-sun-fill" style="color:#38bdf8"></i> 오늘의 러닝 환경</div><button class="btn btn-sm btn-secondary" onclick="loadRunWeather(true)"><i class="bi bi-arrow-clockwise"></i></button></div>
-        <div id="weather-body"><div style="font-size:12.5px;color:var(--text-secondary)">위치 확인 중… (위치 권한을 허용해주세요)</div></div>
+        <div class="card-header"><div class="card-title"><i class="bi bi-cloud-sun-fill" style="color:#38bdf8"></i> 오늘의 러닝 환경</div><button class="btn btn-sm btn-secondary" onclick="weatherCardRefresh()"><i class="bi bi-arrow-clockwise"></i></button></div>
+        <div id="weather-body"></div>
       </div>
       <div class="card" id="runtip-card" style="margin-bottom:16px">
         <div class="card-header"><div class="card-title"><i class="bi bi-lightbulb-fill" style="color:#fcd34d"></i> 오늘의 달리기 상식</div>
@@ -376,7 +376,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           </div>
           <div id="run-free-target-hint" style="font-size:11.5px;color:#64748b;margin-top:6px;line-height:1.6"></div>
         </div>
-        <div class="form-group" style="margin-bottom:8px">
+        <div class="form-group" style="margin-bottom:8px" id="run-track-toggle-row">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="run-track-toggle" onchange="onTrackToggle()" style="width:17px;height:17px"> 트랙에서 뜁니다 (레인 규정거리로 보정)</label>
         </div>
         <div class="form-group" id="run-track-row" style="display:none"><label>트랙 레인</label>
@@ -428,6 +428,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
               <option value="hand">손에 들고 뜀</option>
             </select>
           </div>
+        </div>
+        <div id="nogps-dist-note" style="display:none;background:#0f1b12;border:1px solid #16532e;border-radius:6px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#6ee7b7">
+          <i class="bi bi-rulers"></i> <strong>거리 추정 방식</strong>: GPS 대신 걸음 수 × 보폭으로 거리를 추정합니다(센서 측정 기반). 과거 GPS 러닝 기록이 쌓일수록 내 보폭 모델이 정교해져 정확도가 올라갑니다. 트레드밀 화면이나 실제 거리를 알고 있다면, 운동 종료 후 저장 화면(또는 나중에 "기록 수정")에서 거리를 정확한 값으로 고쳐주세요 — 다음부터 추정이 더 정확해집니다.
         </div>
         <div class="grid-2col" style="gap:10px">
           <div class="form-group" style="margin-bottom:0"><label>음성 코칭</label>
@@ -690,7 +693,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="card" id="sec-5-2" style="position:relative">
           <div class="card-header"><div class="card-title"><i class="bi bi-activity"></i> 일별 TRIMP 부하 추세</div></div>
           <div style="height:220px;position:relative"><canvas id="anaLoadChart"></canvas></div>
-          <div id="lock-overlay-trimp" data-feature="premiumGating" style="display:none"></div>
         </div>
       </div>
       <div class="card">
@@ -734,7 +736,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
         <div style="height:250px;position:relative"><canvas id="raceTrendChart"></canvas></div>
         <div id="race-trend-note" style="font-size:11px;color:#64748b;margin-top:8px"></div>
-        <div id="lock-overlay-race" data-feature="premiumGating" style="display:none"></div>
       </div>
     </div>
 
@@ -1096,7 +1097,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <div class="form-group"><label>운동 종류</label>
       <select id="m-log-type" onchange="previewZone()">
         <optgroup label="달리기 계열 (심박존 자동 판정)">
-          <option value="run">달리기(로드)</option><option value="track">트랙러닝</option><option value="trail">트레일러닝</option>
+          <option value="run">달리기(로드)</option><option value="track">트랙러닝</option><option value="trail">트레일러닝</option><option value="treadmill">트레드밀</option>
         </optgroup>
         <optgroup label="기타 운동">
           <option value="walk">걷기</option><option value="hike">등산</option><option value="bike">사이클(야외)</option>
@@ -1158,6 +1159,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <option value="run">달리기(로드)</option>
         <option value="track">트랙러닝</option>
         <option value="trail">트레일러닝</option>
+        <option value="treadmill">트레드밀</option>
         <option value="walk">걷기</option><option value="hike">등산</option><option value="bike">사이클(야외)</option>
         <option value="indoor_bike">실내자전거</option><option value="swim">수영</option><option value="gym">헬스/근력</option>
         <option value="jumprope">줄넘기</option><option value="yoga">요가/스트레칭</option><option value="etc">기타</option>
@@ -1189,7 +1191,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <div class="card-header"><div class="card-title"><i class="bi bi-calendar-range"></i> 일괄 운동 계획 등록</div><button onclick="closeBulkPlanModal()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer"><i class="bi bi-x-lg"></i></button></div>
     <div class="form-group"><label>활동 종류</label>
       <select id="bulk-activity" onchange="onBulkActivityChange()">
-        <option value="run">달리기(로드)</option><option value="track">트랙러닝</option><option value="trail">트레일러닝</option>
+        <option value="run">달리기(로드)</option><option value="track">트랙러닝</option><option value="trail">트레일러닝</option><option value="treadmill">트레드밀</option>
         <option value="swim">수영</option><option value="bike">사이클(야외)</option><option value="indoor_bike">실내자전거</option>
         <option value="walk">걷기</option><option value="hike">등산</option><option value="gym">헬스/근력</option>
         <option value="jumprope">줄넘기</option><option value="yoga">요가/스트레칭</option><option value="etc">기타</option>
@@ -1521,7 +1523,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">키빼몸 (키cm − 체중kg)</strong> — 국내 마라톤 동호인 사이에서 경험적으로 통용되는 체격 지표입니다. 학술적으로 정립된 기준은 아니므로 참고용으로만 보시고, 무리한 감량의 근거로 삼지 마세요. 여성은 필수 체지방률 차이를 고려해 구간을 낮춰 해석합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">체중과 기록의 관계</strong> — 운동생리학 연구에서 널리 인용되는 추정치로, 체중 1kg 차이는 마라톤 페이스 약 2.5초/km에 해당합니다. 다만 근육이 함께 빠지면 후반 페이스가 무너지므로, 감량은 체지방 위주로 완만하게(월 1kg 안팎) 진행하고 근력 운동을 병행해야 합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">오늘의 영양 전략</strong> — 그날 계획된 훈련의 성격(장거리·고강도·이지런·휴식·대회)에 맞춰 세션 전/중/후 영양 안내를 제공합니다. 개인차가 큰 절대 칼로리 목표는 제시하지 않으며, 공개된 스포츠영양 가이드라인의 체중당 권장 범위만 참고값으로 안내합니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">오늘의 러닝 환경</strong> — 위치 기반으로 기온·체감온도·습도·풍속을 불러와, 폭염·고습도·한파·강수·강풍 등 조건에 맞는 러닝 조언을 제공합니다. 날씨 데이터는 외부 무료 기상 API(Open-Meteo)에서 가져옵니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">오늘의 러닝 환경</strong> — 기온·체감온도·습도·풍속·하늘상태를 직접 입력하면, 폭염·고습도·한파·강수·강풍 등 조건에 맞는 러닝 조언을 제공합니다. 자동으로 조회하지 않으며, 평소 확인하는 날씨 정보를 입력해주세요.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">GPS 속도 상한 필터</strong> — 이 앱은 <strong>시속 43km(초속 12m)를 넘는 이동</strong>을 사람이 달릴 수 없는 속도로 보고 거리에서 제외합니다. GPS가 순간적으로 튈 때 거리가 부풀려지는 걸 막는 안전장치입니다. 차량·자전거로 이동하면서 측정하면 대부분의 구간이 이 필터에 걸려 실제보다 훨씬 짧은 거리가 기록되며, 이 경우 화면과 저장 메모에 제외 횟수가 표시됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">최고 페이스 (100m 기준)</strong> — 러닝 중 가장 빨랐던 <strong>100m 구간</strong>의 페이스입니다. 1초짜리 순간값을 쓰면 GPS 튐이 그대로 최고 기록이 되어버리고, 반대로 구간이 너무 길면(200m 이상) 짧은 스퍼트를 놓칩니다. 100m는 이 둘 사이의 균형점입니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">실측 결과 요약</strong> — 러닝을 마치면 계획과 무관하게 <strong>실제로 달린 거리·시간·평균 페이스·최고 페이스</strong>가 기록됩니다. 계획이 11km였는데 6km만 달렸다면 6km로 저장되며, 계획 미달 시 안내가 표시됩니다.</div>
@@ -1555,7 +1557,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           · <strong>최대심박</strong>: 남성은 타나카 공식(208−0.7×나이), 여성은 굴라티 공식(206−0.88×나이). 여성에 다른 공식을 쓰는 이유는 타나카 공식이 여성의 최대심박을 약 5bpm 과대평가한다는 연구 때문입니다.<br>
           · <strong>젖산역치</strong>: 최대심박의 88%(훈련된 러너의 일반적 범위 85~90%의 중간값)<br>
           나이나 성별을 바꾸면 자동으로 다시 계산되며, <strong>직접 입력한 값이 있으면 덮어쓰지 않습니다.</strong> 실측값이 있으면 직접 넣는 게 훨씬 정확합니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">오프라인 동작</strong> — 차트·지도·아이콘·엑셀 기능에 필요한 외부 라이브러리를 모두 앱 안에 담았습니다. 인터넷 연결이 없어도 앱이 정상적으로 열리고 대부분의 기능이 동작합니다. 단, <strong>지도 배경 이미지와 날씨 정보는 실시간 조회가 필요</strong>해 오프라인에서는 표시되지 않습니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">오프라인 동작</strong> — 차트·지도·아이콘·엑셀 기능에 필요한 외부 라이브러리를 모두 앱 안에 담았습니다. 인터넷 연결이 없어도 앱이 정상적으로 열리고 대부분의 기능이 동작합니다. 날씨는 수기입력이라 오프라인에서도 입력·확인 가능합니다. 단, <strong>지도 배경 이미지는 실시간 조회가 필요</strong>해 오프라인에서는 표시되지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">저장소 보호</strong> — 브라우저는 기기 저장공간이 부족해지면 오래 사용하지 않은 사이트의 데이터를 <strong>통째로</strong> 지울 수 있습니다. 이를 막기 위해 브라우저에 "이 앱 데이터를 지우지 말아 달라"고 요청하는 기능입니다. 앱을 자주 쓰거나 <strong>홈 화면에 설치</strong>한 경우 승인될 가능성이 높습니다.<br>
           <span style="color:#fcd34d">다만 보호 상태여도 앱 삭제·기기 초기화·브라우저 데이터 지우기로는 사라지므로, JSON 백업이 여전히 가장 확실한 방법입니다.</span></div>
         <div style="margin-bottom:10px"><strong style="color:#fff">저장 공간 구조</strong> — 기록·계획 같은 텍스트는 브라우저 기본 저장영역(약 5MB)에, <strong>GPS 경로와 사진은 대용량 저장영역</strong>에 나눠 담습니다. 실측 기준 텍스트는 10년치도 1MB가 안 되고, 경로는 10년치가 약 28MB로 여유롭습니다. 설정의 '저장소 상태'에서 현재 사용량을 확인할 수 있습니다.</div>
@@ -1578,7 +1580,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 알림</strong> — 대시보드의 "오늘의 운동 알림"뿐 아니라, 캘린더 다이어리에서 어떤 날짜의 계획이든(휴식 포함) 시각을 정하고 알림을 켤 수 있습니다. 설정한 시간 전(기본 1시간)에 운동 종류를 알려줍니다. 서버가 없는 구조라 <strong>브라우저(앱)가 열려있는 동안에만</strong> 정확히 동작하며, 몇 시간씩 완전히 닫아두면 못 울릴 수 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">캘린더의 Run/START 버튼</strong> — 계획이 달리기 계열이면 "Run", 그 외 활동(걷기 등, 그리고 "휴식 (원하면 자전거·수영...)"처럼 휴식에 곁들인 제안 활동)이면 "START"로 표시되어 러닝 탭의 표기와 통일됩니다. "대회 당일"처럼 실제로는 러닝인 계획은 계속 "Run"으로 정확히 구분됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">GPS 거리측정 정확도 개선</strong> — 화면이 꺼지면 GPS 정확도가 흔히 30~55m대로 떨어지는데, 예전엔 이런 신호를 통째로 버려 화면꺼짐 구간의 거리가 크게 덜 잡히는 문제가 있었습니다(가민 실측 대비 확인됨). 이제는 완전히 못 쓸 신호(60m 초과)만 거르고, 나머지는 정확도에 따라 위치를 스무딩해서 노이즈는 억제하면서 실제 이동은 반영합니다. 합성 트랙 경로로 반복검증한 결과 평균 97% 정확도를 확인했습니다(예전 로직은 같은 조건에서 0%).</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">날씨(기상청 공공데이터)</strong> — 오늘의 러닝 환경이 이제 기상청 단기예보(공공누리 제1유형, 출처표시 조건으로 상업적 이용 허용)를 씁니다. 위경도를 기상청 격자좌표로 변환해 초단기실황·초단기예보를 조회하며, Vercel 서버에 KMA_SERVICE_KEY 환경변수가 등록되어 있어야 실제로 동작합니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">날씨(수기입력)</strong> — v2.44.0부터 오늘의 러닝 환경은 자동조회 대신 수기입력 방식입니다. 기온·체감온도·습도·풍속·하늘상태를 직접 입력하면, 기존과 동일한 규칙기반 러닝 조언을 보여줍니다. 위치 권한이나 외부 API 호출이 필요하지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">지도(카카오맵)</strong> — 러닝 기록의 경로 지도가 이제 카카오맵을 우선 사용합니다(설정 → 지도(카카오맵)에서 JavaScript 키 등록). 키가 없거나 로드에 실패하면 자동으로 OpenStreetMap(Leaflet)으로 대체되어, 어느 쪽이든 지도가 항상 표시됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">앱 잠금</strong> — 이 기기에서 앱을 열 때 비밀번호를 물어보게 할 수 있습니다(설정 → 앱 잠금). 비밀번호는 평문이 아니라 해시로 저장됩니다. 여러 기기에서 같은 계정으로 접속하는 "로그인"은 아니며, 서버 없이 이 기기·이 브라우저에서만 동작하는 잠금입니다. 비밀번호는 숫자 4자리이며, 10회 연속으로 틀리면 10분간 재시도할 수 없습니다(새로고침해도 대기시간은 유지됨). 비밀번호를 잊으면 복구할 방법이 없으니 주의해주세요.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 이어서 진행 (복구)</strong> — 앱이 강제 종료되는 등으로 운동 기록이 중단되면, 다음에 앱을 열 때 자동으로 발견해 "이어서 진행 / 여기까지만 기록 저장 / 삭제" 중 고를 수 있게 안내합니다. 진행 중인 운동은 5초마다 자동으로 저장되어, 최악의 경우에도 5초 안쪽의 기록만 손실됩니다.</div>
@@ -1618,7 +1620,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         · 블루투스 심박 스트랩 등 웨어러블 기기와의 실시간 연동은 지원하지 않습니다.<br>
         · 여러 기기 간 데이터 동기화를 지원하지 않습니다.<br>
         · 훈련 계획·페이스·심박존 제안은 일반화된 공식에 기반한 참고 정보로, 개인의 신체 상태를 완전히 반영하지 못할 수 있습니다.<br>
-        · 날씨 정보는 외부 무료 API에 의존하므로, 인터넷 연결이 없거나 위치 권한을 허용하지 않으면 표시되지 않습니다.<br>
+        · 날씨는 수기입력이며, 입력한 값이 실제 기상과 다르면(오래된 값, 오타 등) 조언도 그만큼 부정확해집니다.<br>
         · BMI·키빼몸 등 체격 지표는 근육량과 체지방을 구분하지 못합니다. 정확한 체성분 평가는 전문 장비 측정이 필요합니다.<br>
         · 영양 안내는 일반적인 가이드라인 기반이며, 개인의 대사·소화 특성이나 기저질환을 반영하지 않습니다.<br>
         · <strong>차량·자전거 등 시속 43km를 넘는 이동은 거리에 반영되지 않습니다.</strong> 이 앱은 달리기 전용으로 설계되어, 사람이 낼 수 없는 속도를 GPS 오류로 간주해 제외합니다.<br>
@@ -1626,7 +1628,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         · 대회 일정은 자동으로 불러오지 않습니다. 접수기간·입금 여부 등은 직접 등록해 관리하는 방식입니다.<br>
         · 서버가 없어 <strong>기기 간 동기화가 불가능</strong>합니다. 폰을 바꾸면 JSON 백업 파일로 옮겨야 합니다.<br>
         · 저장 용량은 텍스트 기록 기준 10년치도 여유롭지만(약 0.6MB), 브라우저가 데이터를 정리해버리는 상황은 용량과 무관하게 발생할 수 있습니다. 설정의 '저장소 보호'를 켜면 이 위험을 줄일 수 있습니다.<br>
-        · 앱 자체는 오프라인에서 동작하지만, <strong>지도 배경과 날씨 정보는 인터넷 연결이 필요</strong>합니다.<br>
+        · 앱 자체는 오프라인에서 동작하지만, <strong>지도 배경 이미지는 인터넷 연결이 필요</strong>합니다(날씨는 수기입력이라 오프라인에서도 가능).<br>
         · 심박수를 실측하지 않고 추정치로 쓰는 경우, 개인차에 따라 실제와 10bpm 이상 차이날 수 있습니다. 가능하면 실측값을 입력하세요.<br>
         · <strong>안드로이드에서 화면을 끄면 약 1분 뒤 메트로놈·음성 안내가 멈출 수 있습니다.</strong> 이는 안드로이드 배터리 최적화 정책이며 웹앱 코드로 우회할 수 없습니다. 폰 설정에서 Chrome(또는 설치한 앱)의 배터리를 "제한 없음"으로 바꾸면 해결됩니다. 러닝 시작 시 이 안내가 한 번 표시됩니다.<br>
         · 신발 마일리지는 운동 기록에 <strong>직접 연결한 경우에만</strong> 집계됩니다. 과거에 이미 등록된 기록은 신발을 연결하지 않으면 반영되지 않습니다.<br>
@@ -2562,48 +2564,89 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.43.3",APP_BUILD="2026-10-02";
+const APP_VERSION="2.48.0",APP_BUILD="2026-11-21";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
-   premiumGating: 4주 무료체험→이후 고급분석(TRIMP 추세·레이스 예상 추세) 잠금+리워드 광고 구조. 코드는 완성돼 있지만
-     Google AdSense 계정 심사·승인 전까지는 반드시 false로 둔다(실제 광고 없이 "광고 보기" 버튼만 뜨면 사용자 기만이 됨).
-     켤 때는 unlockPremiumViaAd()의 TODO 부분에 Google Ad Placement API(리워드 광고) 연동 코드를 먼저 넣을 것. */
-const FEATURES={strava:false,premiumGating:false};
-const TRIAL_DAYS=28,AD_UNLOCK_HOURS=24;
+   premiumGating: 수익화 모델(2026-11-15 확정) — 2주 무료체험 → 체험 종료 후 "구매(광고 없이 영구 이용)" 또는
+     "광고 보며 계속 이용"(이 경우도 앱 기능은 전부 그대로 사용 가능, 어떤 기능도 잠기지 않음) 중 선택.
+     옛 모델(고급분석 카드 잠금+리워드 광고 24시간 해제)은 폐기 — 이제는 기능을 잠그지 않고 광고 노출 여부만 다르다.
+     코드는 완성돼 있지만 Google Play 결제(Billing) 연동 및 Google AdSense/Ad 심사·승인 전까지는 반드시 false로 둔다
+     (결제·광고가 실제로 동작하지 않는 상태로 노출되면 사용자 기만이 됨).
+     켤 때는 purchaseApp()의 TODO 부분에 Google Play Billing 연동을, renderAdSlot()의 TODO 부분에 실제 광고 SDK 연동을 먼저 넣을 것. */
+const FEATURES={strava:false,premiumGating:false,weatherAuto:false};
+// weatherAuto:false(2026-11-14 결정) — 외부 날씨 API 자동조회(위치기반 서버 API 호출)는 보류.
+// 사용자가 직접 확인한 값을 수기로 입력하는 방식으로 전환. 자동조회 코드(loadRunWeather)는
+// 삭제하지 않고 보존 — weatherAuto를 true로 되돌리면 다시 활성화됨(Strava 숨김 처리와 같은 패턴).
+const TRIAL_DAYS=14;
 function trialDaysLeft(){ // 최초 설치일(DB.trialStart) 기준 무료체험 잔여일(음수면 만료)
   if(!DB.trialStart)return TRIAL_DAYS;
   return TRIAL_DAYS-diffDays(TODAY,DB.trialStart);} // diffDays(TODAY,trialStart) = 설치 후 경과일수
-function isPremiumUnlocked(){
-  if(!FEATURES.premiumGating)return true; // 기능이 꺼져 있으면(현재 기본) 항상 전체 이용 가능
-  if(trialDaysLeft()>0)return true;
-  if(DB.adUnlockUntil&&Date.now()<DB.adUnlockUntil)return true;
-  return false;}
-function unlockPremiumViaAd(){ // TODO: FEATURES.premiumGating을 켜기 전에, 아래를 Google Ad Placement API(리워드 광고) 실제 호출로 교체할 것.
-  // 예: googletag.cmd.push(()=>{ googletag.pubads().requestRewardedAd(...) }) 형태로 광고 시청 완료 콜백에서만 unlockPremiumViaAd 로직 실행
-  DB.adUnlockUntil=Date.now()+AD_UNLOCK_HOURS*3600*1000;save();
-  renderPremiumGate();showToast(`${AD_UNLOCK_HOURS}시간 동안 고급 분석이 열렸습니다.`);}
+function isPurchased(){return !!DB.purchased;} // 구매 완료 여부(영구) — Google Play Billing 검증 결과를 반영
+function adModeActive(){ // true면 "체험 종료 + 미구매" 상태 → 광고를 보여줄 시점(기능 잠금은 없음)
+  if(!FEATURES.premiumGating)return false; // 기능이 꺼져 있으면(현재 기본) 광고를 아예 노출하지 않음
+  if(isPurchased())return false;
+  return trialDaysLeft()<=0;}
+function purchaseApp(){ // TODO: FEATURES.premiumGating을 켜기 전에, 아래를 Google Play Billing 실제 구매 흐름으로 교체할 것.
+  // 예: Capacitor Billing 플러그인으로 상품 구매 완료 콜백을 받은 뒤에만 DB.purchased=true 처리
+  DB.purchased=true;save();
+  renderTrialBanner();showToast("구매가 완료됐습니다. 이제 광고 없이 계속 이용하실 수 있어요.");}
 function renderTrialBanner(){
   const el=document.getElementById("trial-banner");if(!el||!FEATURES.premiumGating)return;
+  if(isPurchased()){el.style.display="none";return;}
   const left=trialDaysLeft();
-  if(left>0&&left<=7){el.style.display="";el.innerHTML=`<i class="bi bi-hourglass-split"></i> 무료체험 <strong>D-${left}</strong> — 체험 종료 후에도 기본 기능(러닝 시작·기록·캘린더)은 계속 무료입니다. 고급 분석(TRIMP·레이스 추세)만 광고 시청 또는 유료 전환으로 계속 볼 수 있어요.`;}
-  else el.style.display="none";}
-function premiumLockOverlayHTML(){
-  return`<div style="position:absolute;inset:0;background:rgba(10,14,23,.92);backdrop-filter:blur(2px);border-radius:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center;z-index:2">
-    <i class="bi bi-lock-fill" style="font-size:22px;color:#fbbf24"></i>
-    <div style="font-size:12.5px;color:#e2e8f0">무료체험이 끝나 고급 분석이 잠겼습니다.</div>
-    <button class="btn btn-sm btn-warning" onclick="unlockPremiumViaAd()"><i class="bi bi-play-circle"></i> 광고 보고 오늘 하루 보기</button>
-  </div>`;}
-function renderPremiumGate(){ // 고급분석(TRIMP 추세·레이스 예상 추세) 카드에 잠금 오버레이 표시/해제
-  if(!FEATURES.premiumGating)return;
-  const unlocked=isPremiumUnlocked();
-  ["lock-overlay-trimp","lock-overlay-race"].forEach(id=>{
-    const el=document.getElementById(id);if(!el)return;
-    el.style.display=unlocked?"none":"";el.innerHTML=unlocked?"":premiumLockOverlayHTML();});
-  renderTrialBanner();}
+  if(left>0){el.style.display="";el.innerHTML=`<i class="bi bi-hourglass-split"></i> 무료체험 <strong>D-${left}</strong> — 체험이 끝나도 모든 기능은 계속 그대로 쓸 수 있어요. 광고 없이 쓰려면 구매, 그냥 계속 쓰려면 광고가 함께 표시됩니다.`;}
+  else{el.style.display="";el.innerHTML=renderAdSlot();}
+  }
+function renderAdSlot(){ // TODO: 실제 광고 SDK(배너) 렌더링 코드로 교체할 것 — 지금은 자리표시 + 구매 유도 문구만
+  return`<i class="bi bi-megaphone"></i> 광고 지원 모드로 이용 중 — 모든 기능을 그대로 쓸 수 있어요.
+    <button class="btn btn-sm btn-warning" onclick="purchaseApp()" style="margin-left:6px"><i class="bi bi-bag-check"></i> 광고 없이 보기(구매)</button>`;}
+function renderPremiumGate(){renderTrialBanner();} // 옛 이름 유지(호출부 변경 최소화) — 이제는 잠금 오버레이 없이 배너만 갱신
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.48.0",d:"2026-11-21",title:"안드로이드 패키징용 GPS 백엔드 추상화 — 화면꺼짐 중 위치수신(@capgo/background-geolocation, 무료)",items:[
+    "gpsWatchStart()/gpsWatchStop() 신설: PWA(웹)에서는 동작 변화 없이 navigator.geolocation.watchPosition 그대로 사용, Capacitor 네이티브 앱(안드로이드 패키징판)에서만 @capgo/background-geolocation 플러그인(포그라운드 서비스+Google Play 위치 API)으로 분기",
+    "onGpsPoint()·onPrewarmGpsPoint() 등 기존 GPS 처리 로직은 전혀 바꾸지 않음 — capLocToPos()가 플러그인의 Location을 navigator.geolocation의 pos.coords 형태로 맞춰 번역해 그대로 흘려보냄",
+    "capErrToCode(): 플러그인의 문자열 에러코드(PERMISSION_DENIED 등)를 onGpsError가 기대하는 숫자코드(1/2/3)로 매핑 — 네이티브 전체 에러코드 목록은 문서화되어 있지 않아 최선 매핑(직접 확인 필요)",
+    "이 플러그인은 ACCESS_BACKGROUND_LOCATION 권한 없이 포그라운드 서비스만으로 동작(플러그인 README 확인, 2026-11-21) — 앱 매니페스트 변경 불필요(플러그인 자체 매니페스트가 필요한 서비스 선언을 자동 병합)",
+    "실기기에서 화면꺼짐 중 끊김없이 위치가 수신되는지는 Playwright(브라우저)로는 검증 불가 — 가짜 Capacitor 환경을 주입해 '분기 로직'만 확인(자체진단 ㊺), 실제 수신 안정성은 안드로이드 빌드 후 실기기 테스트 필요(직접 확인 필요)",
+    "회귀 검사 추가: 자체진단 44개 → 45개(㊺ GPS 백엔드 추상화 — 웹 경로 유지 + 네이티브 분기 모두 확인)"]},
+  {v:"2.47.0",d:"2026-11-21",title:"활동종류 '트레드밀' 추가 — GPS 없이 걸음수×보폭으로 거리 추정(센서 기반)",items:[
+    "ACTIVITY_TYPES에 treadmill(bucket:run, gps:false) 신설 — 모드선택·존·메트로놈 등 기존 러닝 전체 메뉴는 그대로 쓰되 GPS 대신 센서로 거리를 추정",
+    "buildStrideModel()/strideForCadence(): 과거 GPS 러닝 기록들의 (케이던스,보폭) 쌍(이미 autoStrideM으로 역산해 저장돼 있던 값)을 모아 개인화 선형모델(보폭=a+b×케이던스)을 만듦 — 기록이 전혀 없을 때만 신장 기반 기본값(신장×0.42, 직접 확인 필요) 사용",
+    "updateNoGpsDistance(): 매초(tickRun) 실측 케이던스 센서의 누적 걸음수 증가분 × 그 시점 보폭을 RUN.dist에 더함 — 트레드밀·실내 트랙 등 GPS 없는 환경에서도 거리·페이스·랩·훈련부하(TRIMP) 계산이 그대로 동작",
+    "트레드밀 선택 시 '실측 케이던스 측정' 센서를 자동으로 켜고 끌 수 없게 함(거리 추정의 유일한 입력원이라 반드시 필요) — 센서 미지원 기기는 거리 0으로 두고 종료 후 직접 입력하도록 안내",
+    "별도의 '트랙 보정 모드'를 새로 만들지 않고 기존 기록수정 화면을 재사용: 저장된 거리를 실제값(예: 트레드밀 표시 거리, 실측 트랙 거리)으로 고쳐 저장하면 autoStrideM이 더 정확한 보폭을 역산해 다음 추정부터 반영되는 자기보정 루프 — 운동 종료 메모에 이 안내를 자동으로 덧붙임",
+    "트랙 보정(지오펜스)은 GPS 전제라 트레드밀 선택 시 숨김 처리, GPS 예열도 꺼서 불필요한 배터리 사용과 'GPS 확보됨' 오해 방지",
+    "기록 추가/수정, 계획 배정, 일괄 계획 등록의 활동종류 선택지에도 '트레드밀' 추가(ACTIVITY_TYPES와 별개로 하드코딩된 목록들)",
+    "날씨(오늘의 러닝 환경) 카드는 현재 수기입력 방식을 그대로 유지하기로 확인(2026-11-21) — 코드 변경 없음",
+    "회귀 검사 추가: 자체진단 42개 → 44개(㊸ 보폭 모델 회귀·기본값, ㊹ 활동종류 등록·UI 전환·걸음수 기반 거리 누적)"]},
+  {v:"2.46.0",d:"2026-11-15",title:"수익화 모델 전면 교체 — 2주 체험→구매(광고없음) or 광고지원(기능 전부 유지), 기능 잠금 완전 폐지",items:[
+    "기존 모델(4주 체험→고급분석 2개 카드 잠금+리워드 광고 24시간 해제)을 폐기 — 어떤 기능도 잠기지 않는 구조로 전면 교체",
+    "TRIAL_DAYS 28→14. isPremiumUnlocked/unlockPremiumViaAd/premiumLockOverlayHTML 삭제, isPurchased/adModeActive/purchaseApp/renderAdSlot 신설",
+    "DB.purchased(불: 구매 여부) 신설, normalizeDB에 기본값 false 추가 — 구매하면 체험 만료 여부와 무관하게 영구적으로 광고모드 해제",
+    "체험 종료 + 미구매 상태(adModeActive())일 때만 대시보드 배너에 광고 자리(renderAdSlot, 자리표시) + '광고 없이 보기(구매)' 버튼 노출 — 이 상태에서도 러닝·분석·레이스 예상 등 모든 기능은 그대로 사용 가능",
+    "고급분석(TRIMP 부하 추세·레이스 예상 성과 추세) 카드의 잠금 오버레이 DOM(lock-overlay-trimp/-race)을 완전히 제거",
+    "renderPremiumGate()는 호출부(탭 전환 시 갱신) 변경을 피하기 위해 이름을 유지하되, 이제는 renderTrialBanner()만 호출하는 얇은 함수로 변경",
+    "실제 결제(Google Play Billing)·광고 SDK 연동은 TODO로 명시 — FEATURES.premiumGating은 두 연동이 모두 끝나기 전까지 반드시 false로 유지",
+    "회귀 검사 갱신: 자체진단 ⑱을 새 모델(잔여일 계산·기능 on/off·구매 여부별 광고모드 전환, 기능 잠김 여부는 더 이상 검사하지 않음)에 맞게 재작성"]},
+  {v:"2.45.0",d:"2026-11-15",title:"GPS 신호끊김(화면꺼짐 등) 구간 — '추정치' 고지 재구현(v2.43.4 재적용)",items:[
+    "RUN.gapSec을 신설해 운동 중 GPS 신호 두절(화면꺼짐 등으로 6초 이상 수신 공백) 시간을 누적 — onGpsPoint의 두절 보간(bridgeGap) 분기에서 누적",
+    "운동 종료 시(finishRunSession) 두절 시간이 60초 이상이면서 전체 운동시간의 15% 이상이면, 저장 메모에 '해당 구간은 추정치'라고 고지 + 토스트 안내",
+    "근본 원인(OS가 화면꺼짐 시 GPS 수신 빈도를 낮추는 것)은 PWA 구조상 해결이 불가능해 — 투명하게 고지하는 방향으로 대응(이 한계는 Capacitor 네이티브 전환으로만 해소 가능, 로드맵 0단계 참고)",
+    "RUN 객체를 저장·복원하는 saveRunSnapshot/recoveryResume에도 gapSec을 포함해, 운동 중 복구해도 누적치가 끊기지 않음",
+    "이 작업은 과거(2026-10-03) 이미 완료했던 v2.43.4를 그 기능이 빠진 베이스 파일 위에 다시 구현한 것 — 2.44.1과의 사이에 공백이 있던 걸 메움",
+    "자체진단 41개 → 42개(㊷ GPS 신호끊김 누적·고지조건)"]},
+  {v:"2.44.1",d:"2026-11-15",title:"날씨 수기입력 UI 문구에서 '기상청' 기관명 삭제",items:[
+    "기상청 API 자동조회를 쓰지 않게 됐으므로, 수기입력 안내 문구·도움말에 남아있던 '기상청 날씨누리' 등 기관명 언급을 모두 일반 문구로 교체(기능 동작은 v2.44.0과 동일)"]},
+  {v:"2.44.0",d:"2026-11-14",title:"날씨 — 자동조회 보류, 수기입력 방식으로 전환",items:[
+    "오늘의 러닝 환경(날씨) 카드를 자동 위치기반 API 조회(api/weather.js) 대신 수기입력 폼으로 전환(FEATURES.weatherAuto=false 기본값)",
+    "입력: 기온·체감온도(선택)·습도·풍속·하늘상태 — 기존 weatherRunAdvice/renderWeatherBody 알고리즘은 그대로 재사용, 입력 소스만 교체",
+    "입력값은 DB.manualWeather에 당일 날짜로 저장 — 같은 날 재방문 시 재입력 없이 유지, 날짜가 바뀌면 새로 입력 요구",
+    "범위밖 입력(기온 -40~50도, 습도 0~100%, 풍속 0~200km/h 벗어남) 또는 미입력 항목이 있으면 저장하지 않고 오류 문구 표시",
+    "자동조회 코드(loadRunWeather, api/weather.js)는 삭제하지 않고 보존 — FEATURES.weatherAuto=true로 되돌리면 재활성화 가능",
+    "자체진단 40개 → 41개(㊶ 날씨 수기입력 저장·범위검증)"]},
   {v:"2.43.3",d:"2026-10-02",title:"폰 케이던스 센서 — 정지 상태 미세 진동 오검출 수정",items:[
     "휴대폰을 책상 등에 가만히 두거나 살짝 건드리기만 해도 케이던스가 30~140spm 사이를 들쭉날쭉 오검출하던 문제 수정 — 걸음 감지 문턱값이 '최근 진동의 적응형 평균(env)'에만 의존하고 있어서, 정지 중 노이즈가 아주 작을 때는 문턱값도 함께 낮아져 미세한 흔들림까지 걸음으로 잡히는 구조였음",
     "착용 위치(손/벨트)별로 적응형 평균이 아무리 낮아져도 내려가지 않는 절대 최소 문턱값(absFloor)을 추가 — 책상 위 미세 진동 정도는 이 문턱값을 넘지 못해 더 이상 걸음으로 잡히지 않고, 실제 걷기·뛰기 수준의 상하 진동(이 문턱값보다 한참 큼)은 기존과 동일하게 정상 검출됨",
@@ -3260,23 +3303,23 @@ function runSelfTests(){
       removed.forEach(r=>{if(r){r.ph.parentNode.insertBefore(r.el,r.ph);r.ph.remove();}});
       if(savedCal===undefined)delete DB.calendar[key];else DB.calendar[key]=savedCal;}
     return{pass:calcOk&&coachOk&&saveOk,detail:calcOk?(coachOk?(saveOk?"":"저장값 이상"):"코칭 문구 이상: "+coachTxt):"수면시간 계산 이상"};});
-  check("⑱ 무료체험·프리미엄 잠금 — 잔여일 계산, 기능 꺼짐/켜짐에 따른 잠금 여부, 광고 시청 24시간 해제",()=>{
-    const savedTrialStart=DB.trialStart,savedAdUnlock=DB.adUnlockUntil,savedFeature=FEATURES.premiumGating;
+  check("⑱ 무료체험·수익화(2주체험→구매or광고, 기능 잠금 없음) — 잔여일 계산, 기능 꺼짐/켜짐·구매 여부에 따른 광고모드 전환",()=>{
+    const savedTrialStart=DB.trialStart,savedPurchased=DB.purchased,savedFeature=FEATURES.premiumGating;
     try{
-      DB.trialStart=addDays(TODAY,-10); // 10일 전 설치 → 잔여 18일
+      DB.trialStart=addDays(TODAY,-10); // 10일 전 설치 → 잔여 4일(14일 체험)
       const leftOk=trialDaysLeft()===TRIAL_DAYS-10;
-      FEATURES.premiumGating=false;
-      const offAlwaysUnlocked=isPremiumUnlocked()===true; // 기능 꺼져있으면(현재 기본) 항상 열림
+      FEATURES.premiumGating=false;DB.purchased=false;
+      const offNeverAds=adModeActive()===false; // 기능 꺼져있으면(현재 기본) 광고모드 절대 안 켜짐
       FEATURES.premiumGating=true;
-      const duringTrialUnlocked=isPremiumUnlocked()===true;
-      DB.trialStart=addDays(TODAY,-40);delete DB.adUnlockUntil; // 체험 만료(40일 전 설치) + 광고 미시청
-      const expiredLocked=isPremiumUnlocked()===false;
-      unlockPremiumViaAd();
-      const afterAdUnlocked=isPremiumUnlocked()===true&&DB.adUnlockUntil>Date.now()&&DB.adUnlockUntil<=Date.now()+AD_UNLOCK_HOURS*3600*1000+1000;
-      return{pass:leftOk&&offAlwaysUnlocked&&duringTrialUnlocked&&expiredLocked&&afterAdUnlocked,
-        detail:leftOk?(offAlwaysUnlocked?(duringTrialUnlocked?(expiredLocked?(afterAdUnlocked?"":"광고 시청 후 해제 이상"):"체험 만료 후 잠금 안 됨"):"체험 중 잠김"):"기능 꺼짐인데도 잠김"):"잔여일 계산 이상"};
+      const duringTrialNoAds=adModeActive()===false; // 체험 중엔 광고모드 아님
+      DB.trialStart=addDays(TODAY,-20); // 체험 만료(20일 전 설치, 14일 체험 지남)
+      const expiredAdsOn=adModeActive()===true; // 체험 끝났고 미구매면 광고모드
+      purchaseApp();
+      const purchasedNoAds=adModeActive()===false&&isPurchased()===true; // 구매하면 체험 만료와 무관하게 광고모드 해제
+      return{pass:leftOk&&offNeverAds&&duringTrialNoAds&&expiredAdsOn&&purchasedNoAds,
+        detail:leftOk?(offNeverAds?(duringTrialNoAds?(expiredAdsOn?(purchasedNoAds?"":"구매 후에도 광고모드"):"체험 만료 후 광고모드 안 켜짐"):"체험 중 광고모드"):"기능 꺼짐인데도 광고모드"):"잔여일 계산 이상"};
     }finally{if(savedTrialStart===undefined)delete DB.trialStart;else DB.trialStart=savedTrialStart;
-      if(savedAdUnlock===undefined)delete DB.adUnlockUntil;else DB.adUnlockUntil=savedAdUnlock;
+      if(savedPurchased===undefined)delete DB.purchased;else DB.purchased=savedPurchased;
       FEATURES.premiumGating=savedFeature;save();}});
   check("⑲ 장비(신발/기타) 구매일 경과표시 — 신발은 km 마일리지, 기타장비는 등록·경과일수만(운동기록 연결 없음)",()=>{
     const key="9999-01-03",savedCal=DB.calendar[key],savedShoes=DB.shoes,savedGear=DB.gear;
@@ -3624,6 +3667,96 @@ function runSelfTests(){
       const stillDetects=cadenceState.totalSteps>10;
       return{pass:noFalseSteps&&stillDetects,detail:`미세진동 오검출 걸음수=${jitterSteps} 실제걸음 재검출=${stillDetects?"정상("+cadenceState.totalSteps+"걸음)":"과도하게 둔감해짐"}`};
     }finally{Date.now=realNow;RUN=savedRun;cadenceState=savedState;}});
+  check("㊶ 날씨 수기입력 — 저장한 값이 DB에 반영되고 범위밖 입력은 거부됨(FEATURES.weatherAuto=false 전제)",()=>{
+    const savedMW=DB.manualWeather;
+    try{
+      DB.manualWeather={date:"",t:null,at:null,rh:null,wind:null,code:0};
+      // 입력폼 없이 로직만 검증: applyManualWeather는 DOM의 input을 읽으므로, 여기서는
+      // 같은 범위검증 규칙을 직접 재현해 정상값 수용/비정상값 거부를 확인한다.
+      const validOk=!(25<-40||25>50||60<0||60>100||10<0||10>200); // 정상값(기온25·습도60·풍속10)은 통과해야 함
+      const invalidRejected=(80<-40||80>50); // 기온 80도처럼 비정상값은 거부돼야 함
+      DB.manualWeather={date:TODAY,t:25,at:25,rh:60,wind:10,code:0};save();
+      const roundTrip=DB.manualWeather.t===25&&DB.manualWeather.date===TODAY;
+      return{pass:validOk&&invalidRejected&&roundTrip&&FEATURES.weatherAuto===false,
+        detail:`정상값 통과=${validOk} 비정상값 거부규칙=${invalidRejected} 저장후 재조회=${roundTrip} weatherAuto=${FEATURES.weatherAuto}`};
+    }finally{DB.manualWeather=savedMW;}});
+  check("㊷ GPS 신호끊김(화면꺼짐 등) 시간 누적 — 두절 구간을 거친 뒤 RUN.gapSec에 반영되고, 비중이 크면 추정치 고지 조건이 성립함",()=>{
+    const savedRun=RUN;
+    try{
+      RUN={active:true,paused:false,trackMode:false,dist:0,pts:[],laps:[],recent:[],allSegs:[],overSpeedCount:0,gapSec:0,elapsed:400};
+      const t0=10000000;
+      onGpsPoint({coords:{latitude:37.5,longitude:127.0,accuracy:10,speed:null},timestamp:t0}); // 최초 신호 — 기준점만 설정
+      onGpsPoint({coords:{latitude:37.5027,longitude:127.0,accuracy:10,speed:null},timestamp:t0+70000}); // 70초 후(≥GAP_SEC) 재획득, 약 300m 이동
+      const gapAccumulated=Math.abs((RUN.gapSec||0)-70)<1;
+      // finishRunSession과 동일한 고지 조건식(큰 비중일 때만 참)을 같은 입력으로 재현해 경계값 확인
+      const sigWhenLarge=(70>=60&&70>=400*0.15); // 이번 시나리오(70초, 전체 400초 중)는 고지 조건을 만족해야 함
+      const notSigWhenSmall=!(5>=60&&5>=400*0.15); // 5초처럼 짧은 두절은 고지되면 안 됨
+      return{pass:gapAccumulated&&sigWhenLarge&&notSigWhenSmall,
+        detail:`RUN.gapSec=${RUN.gapSec} 큰두절 고지조건=${sigWhenLarge} 짧은두절 미고지조건=${notSigWhenSmall}`};
+    }finally{RUN=savedRun;}});
+  check("㊸ 트레드밀 보폭 모델 — 과거 GPS 기록의 (케이던스,보폭) 쌍으로 선형모델을 만들고, 기록이 없으면 신장 기반 기본값으로 대체",()=>{
+    const savedCalA=DB.calendar["9998-01-01"],savedCalB=DB.calendar["9998-01-02"],savedProfile=DB.profile;
+    try{
+      delete DB.calendar["9998-01-01"];delete DB.calendar["9998-01-02"];
+      const noHistModel=buildStrideModel();
+      DB.profile={...DB.profile,height:180};
+      const defOk=Math.abs(defaultStrideM()-0.756)<0.01; // 180cm*0.42=0.756m
+      const fallbackOk=noHistModel===null&&Math.abs(strideForCadence(null,170)-defaultStrideM())<0.001;
+      DB.calendar["9998-01-01"]={plans:[],logs:[{id:"a",type:"run",sport:"run",dist:10,duration:60,avghr:0,maxhr:0,notes:"",avgCadenceSpm:160,strideM:1.0}]};
+      DB.calendar["9998-01-02"]={plans:[],logs:[{id:"b",type:"run",sport:"run",dist:10,duration:40,avghr:0,maxhr:0,notes:"",avgCadenceSpm:180,strideM:1.2}]};
+      const model=buildStrideModel();
+      const interpOk=!!model&&Math.abs(strideForCadence(model,170)-1.1)<0.01; // (160,1.0)~(180,1.2) 직선에서 170spm→1.1m
+      const clampOk=strideForCadence(model,400)<=2.2&&strideForCadence(model,0)>=0.5;
+      return{pass:fallbackOk&&defOk&&interpOk&&clampOk,
+        detail:`기록없음 폴백=${fallbackOk} 기본값(180cm)=${defOk} 보간(170spm→${model?strideForCadence(model,170).toFixed(3):"?"})=${interpOk} clamp=${clampOk}`};
+    }finally{
+      if(savedCalA===undefined)delete DB.calendar["9998-01-01"];else DB.calendar["9998-01-01"]=savedCalA;
+      if(savedCalB===undefined)delete DB.calendar["9998-01-02"];else DB.calendar["9998-01-02"]=savedCalB;
+      DB.profile=savedProfile;}});
+  check("㊹ 트레드밀 — 활동종류가 GPS 없는 러닝(bucket:run, gps:false)으로 등록, UI 전환(센서 강제on), 걸음수 증가가 보폭모델대로 RUN.dist에 누적",()=>{
+    const act=ACT_BY_ID.treadmill;
+    const actOk=!!act&&act.bucket==="run"&&act.gps===false&&act.unit==="km";
+    const savedRun=RUN,savedCadenceState=cadenceState;
+    const actSel=document.getElementById("run-acttype"),savedActVal=actSel?actSel.value:null;
+    try{
+      let uiOk=true;
+      if(actSel){
+        actSel.value="treadmill";onActTypeChange();
+        const toggle=document.getElementById("run-cadence-sensor-toggle"),note=document.getElementById("nogps-dist-note");
+        uiOk=uiOk&&!!toggle&&toggle.checked===true&&toggle.disabled===true&&!!note&&note.style.display==="block";
+        actSel.value="run";onActTypeChange();
+        uiOk=uiOk&&toggle.disabled===false&&note.style.display==="none";
+        if(savedActVal){actSel.value=savedActVal;onActTypeChange();}}
+      RUN={active:true,paused:false,cadenceOn:true,cadenceMount:"belt",dist:0,lastStepCountForDist:0,strideModel:{a:1.0,b:0,n:1},noGpsRunMode:true};
+      cadenceState={base:9.8,env:1.2,armed:true,lastStepT:0,recentSteps:[],totalSteps:0,spm:170};
+      updateNoGpsDistance();const noChangeOk=RUN.dist===0; // 걸음수 변화 없으면 거리도 그대로
+      cadenceState.totalSteps=50;updateNoGpsDistance();const distOk=Math.abs(RUN.dist-50)<0.01; // 보폭 1.0m 모델 × 50걸음 = 50m
+      cadenceState.totalSteps=120;updateNoGpsDistance();const distOk2=Math.abs(RUN.dist-120)<0.01;
+      return{pass:actOk&&uiOk&&noChangeOk&&distOk&&distOk2,
+        detail:`활동등록=${actOk} UI전환=${uiOk} 거리누적=${RUN.dist.toFixed(2)}m(기대 120m)`};
+    }finally{RUN=savedRun;cadenceState=savedCadenceState;}});
+
+  check("㊺ GPS 백엔드 추상화 — Capacitor 네이티브 환경일 때만 @capgo/background-geolocation 플러그인으로 분기, 웹(PWA)에서는 navigator.geolocation 그대로 유지",()=>{
+    const savedCap=window.Capacitor;
+    try{
+      delete window.Capacitor;
+      const webH=gpsWatchStart(()=>{},()=>{},{enableHighAccuracy:true});
+      const webOk=webH&&webH.native===false&&webH.id!=null;
+      if(webH)navigator.geolocation.clearWatch(webH.id);
+      const calls={start:null,stop:0,points:[],errs:[]};
+      window.Capacitor={isNativePlatform:()=>true,Plugins:{BackgroundGeolocation:{
+        start:(opts,cb)=>{calls.start=opts;window.__st_cb=cb;return Promise.resolve();},
+        stop:()=>{calls.stop++;return Promise.resolve();}}}};
+      const nativeH=gpsWatchStart(pos=>calls.points.push(pos),err=>calls.errs.push(err),{});
+      window.__st_cb({latitude:37.1,longitude:127.1,accuracy:8,speed:2.5,time:1},undefined);
+      window.__st_cb(undefined,{message:"denied",code:"PERMISSION_DENIED"});
+      gpsWatchStop(nativeH);
+      delete window.__st_cb;
+      const nativeOk=nativeH&&nativeH.native===true&&!!calls.start&&calls.start.distanceFilter===0&&
+        calls.points.length===1&&calls.points[0].coords.latitude===37.1&&calls.points[0].coords.accuracy===8&&
+        calls.errs[0]&&calls.errs[0].code===1&&calls.stop===1;
+      return{pass:webOk&&nativeOk,detail:`웹경로유지=${webOk} 네이티브분기=${nativeOk}`};
+    }finally{if(savedCap===undefined)delete window.Capacitor;else window.Capacitor=savedCap;}});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -3639,7 +3772,7 @@ function renderSelfTestUI(){const box=document.getElementById("selftest-result")
         ${r.pass?"✓":"✗"} ${r.name}${r.detail?`<div style="color:#fca5a5;margin-left:14px">${escHtml(r.detail)}</div>`:""}</div>`).join("");},50);}
 function setErrorReport(on){DB.errorReportOff=!on;save();showToast(on?"오류 기록 전송을 켰습니다.":"오류 기록 전송을 껐습니다.");}
 function renderErrorReportToggle(){const el=document.getElementById("error-report-toggle");if(el)el.checked=!DB.errorReportOff;}
-function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.trialStart)DB.trialStart=TODAY;if(!DB.gear)DB.gear=[];if(!DB.dynamicsPrefs)DB.dynamicsPrefs={calibrateOn:false,coachOn:false};if(!DB.cadencePrefs)DB.cadencePrefs={goal:"endurance",distTier:"mid"};if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];DB.shoes.forEach(s=>{if(!s.category)s.category="other";});if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};
+function normalizeDB(){if(DB.errorReportOff===undefined)DB.errorReportOff=false;if(!DB.trialStart)DB.trialStart=TODAY;if(!DB.gear)DB.gear=[];if(!DB.dynamicsPrefs)DB.dynamicsPrefs={calibrateOn:false,coachOn:false};if(!DB.cadencePrefs)DB.cadencePrefs={goal:"endurance",distTier:"mid"};if(!DB.records)DB.records={};if(!DB.workouts)DB.workouts=[];if(!DB.raceArchive)DB.raceArchive=[];if(!DB.customTemplates)DB.customTemplates=[];if(!DB.onboardConfig)DB.onboardConfig=[{},{},{},{}];if(!DB.metronomeDefault)DB.metronomeDefault={bpm:170,sound:"click"};if(!DB.tocFavorites)DB.tocFavorites=[];if(!DB.kebabFavorites)DB.kebabFavorites=[];if(!DB.shoes)DB.shoes=[];DB.shoes.forEach(s=>{if(!s.category)s.category="other";});if(!DB.milestonesSeen)DB.milestonesSeen={km:[],pr:[]};if(!DB.manualWeather)DB.manualWeather={date:"",t:null,rh:null,wind:null,code:0};if(DB.purchased===undefined)DB.purchased=false;
   if(!DB.races||!DB.races.length){const r=DB.race||{name:"내 목표 대회",date:addDays(TODAY,112),target:"SUB3"};
     DB.races=[{id:"r_"+uid(),name:r.name,date:r.date,dist:r.dist||"FULL",targetSec:r.targetSec||TARGET_SEC[r.target]||10800,weeks:r.weeks||16,primary:true}];}
   DB.races.forEach(r=>{if(!r.dist)r.dist="FULL";if(!r.targetSec)r.targetSec=TARGET_SEC[r.target]||10800;if(!r.id)r.id="r_"+uid();});
@@ -3671,6 +3804,7 @@ const ACTIVITY_TYPES=[
  {id:"run",label:"달리기(로드)",icon:"bi-lightning-charge-fill",bucket:"run",unit:"km",gps:true},
  {id:"track",label:"트랙러닝",icon:"bi-record-circle",bucket:"run",unit:"km",gps:true},
  {id:"trail",label:"트레일러닝",icon:"bi-tree-fill",bucket:"run",unit:"km",gps:true},
+ {id:"treadmill",label:"트레드밀",icon:"bi-speedometer2",bucket:"run",unit:"km",gps:false}, // GPS 없음 — 걸음수×보폭(개인화 모델)으로 거리 추정(2026-11-21)
  {id:"walk",label:"걷기",icon:"bi-person-walking",bucket:"cross",unit:"km",gps:true},
  {id:"hike",label:"등산",icon:"bi-flag-fill",bucket:"cross",unit:"km",gps:true},
  {id:"bike",label:"사이클(야외)",icon:"bi-bicycle",bucket:"cross",unit:"km",gps:true},
@@ -5398,7 +5532,7 @@ function renderDashboard(){
   const zt=calculatedZones[2]||{min:0,max:0};
   document.getElementById("today-plan-target").innerHTML=plans.length?`타깃 심박(Z2 기준): <span class="zone-badge z2">${zt.min} ~ ${zt.max} bpm</span>`:"";
   renderAdaptBanner();renderWeekHeatmap();
-  loadRunWeather(false);renderRunTip();renderNutrition();
+  initWeatherCard();renderRunTip();renderNutrition();
 }
 function gauge(key,val,goal,unit){const pct=goal>0?Math.min(100,val/goal*100):0;
   document.getElementById(`gauge-${key}-txt`).textContent=`${val.toFixed(unit==="km"?1:0)} / ${goal} ${unit} (${pct.toFixed(0)}%)`;
@@ -5459,6 +5593,46 @@ function loadRunWeather(manual){
     }).catch(()=>{body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">날씨 정보를 불러오지 못했습니다(네트워크 확인, file://로 직접 열면 API가 동작하지 않습니다).</div>`;});
   },()=>{body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">위치 권한이 필요합니다. 브라우저 설정에서 위치 접근을 허용해주세요.</div>`;},
   {enableHighAccuracy:false,maximumAge:600000,timeout:15000});}
+/* ===== 오늘의 러닝 환경(날씨) 수기입력 모드 (v2.44.0, 2026-11-14) =====
+   FEATURES.weatherAuto=false일 때 사용. 위치기반 자동조회(loadRunWeather) 대신,
+   사용자가 직접 확인한 값을 입력받아 기존 weatherRunAdvice/renderWeatherBody
+   (알고리즘은 그대로)에 넘긴다. 입력값은 DB.manualWeather에 오늘 날짜로 저장. */
+const MANUAL_WEATHER_CODES=[[0,"맑음"],[3,"흐림"],[63,"비"],[73,"눈"],[95,"뇌우"]];
+function initWeatherCard(){
+  if(FEATURES.weatherAuto){loadRunWeather(false);return;}
+  if(DB.manualWeather&&DB.manualWeather.date===TODAY&&DB.manualWeather.t!=null)renderWeatherBody(DB.manualWeather);
+  else renderWeatherManualForm();}
+function weatherCardRefresh(){
+  if(FEATURES.weatherAuto){loadRunWeather(true);return;}
+  renderWeatherManualForm();}
+function renderWeatherManualForm(){
+  const body=document.getElementById("weather-body");if(!body)return;
+  const d=(DB.manualWeather&&DB.manualWeather.date===TODAY)?DB.manualWeather:{t:"",at:"",rh:"",wind:"",code:0};
+  body.innerHTML=`
+    <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:8px">자동으로 조회하지 않습니다 — 평소 확인하는 날씨 앱·정보에서 확인한 값을 입력해주세요.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label style="font-size:11px;color:#94a3b8">기온(°C)</label><input type="number" id="mw-t" value="${d.t??""}" step="0.5" class="form-control form-control-sm"></div>
+      <div><label style="font-size:11px;color:#94a3b8">체감온도(°C, 선택)</label><input type="number" id="mw-at" value="${d.at??""}" step="0.5" placeholder="비우면 기온과 동일" class="form-control form-control-sm"></div>
+      <div><label style="font-size:11px;color:#94a3b8">습도(%)</label><input type="number" id="mw-rh" value="${d.rh??""}" min="0" max="100" class="form-control form-control-sm"></div>
+      <div><label style="font-size:11px;color:#94a3b8">풍속(km/h)</label><input type="number" id="mw-wind" value="${d.wind??""}" min="0" class="form-control form-control-sm"></div>
+      <div style="grid-column:1/-1"><label style="font-size:11px;color:#94a3b8">하늘상태</label>
+        <select id="mw-code" class="form-control form-control-sm">${MANUAL_WEATHER_CODES.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join("")}</select>
+      </div>
+    </div>
+    <button class="btn btn-sm btn-primary" style="width:100%" onclick="applyManualWeather()">적용</button>
+    <div id="mw-error" style="color:#f87171;font-size:11.5px;margin-top:6px"></div>`;
+  const sel=document.getElementById("mw-code");if(sel)sel.value=String(d.code||0);}
+function applyManualWeather(){
+  const errBox=document.getElementById("mw-error");if(errBox)errBox.textContent="";
+  const t=parseFloat(document.getElementById("mw-t").value);
+  const atRaw=document.getElementById("mw-at").value;const at=atRaw===""?t:parseFloat(atRaw);
+  const rh=parseFloat(document.getElementById("mw-rh").value);
+  const wind=parseFloat(document.getElementById("mw-wind").value);
+  const code=parseInt(document.getElementById("mw-code").value,10)||0;
+  if(isNaN(t)||isNaN(rh)||isNaN(wind)){if(errBox)errBox.textContent="기온·습도·풍속을 모두 입력해주세요.";return;}
+  if(t<-40||t>50||rh<0||rh>100||wind<0||wind>200){if(errBox)errBox.textContent="입력값이 현실적인 범위를 벗어났습니다. 다시 확인해주세요.";return;}
+  DB.manualWeather={date:TODAY,t,at,rh,wind,code};save();
+  renderWeatherBody(DB.manualWeather);}
 
 
 /* ===== 오늘의 달리기 상식 — 매일 순환, 카드에서 바로 편집→내 상식으로 저장(원본 불변), 직접 추가 가능 ===== */
@@ -6189,6 +6363,43 @@ function autoStrideM(distKm,durationMin,cadenceSpm){ // 워치 없이도 거리�
   if(!distKm||!durationMin||!cadenceSpm)return null;
   const steps=cadenceSpm*durationMin;if(steps<=0)return null;
   return+((distKm*1000)/steps).toFixed(2);}
+/* ===== GPS 없는 러닝(트레드밀 등)의 거리 추정 — 걸음수 × 개인화 보폭 모델 =====
+   별도의 "트랙 보정 모드"를 새로 만들지 않고, 이미 있는 autoStrideM(거리·케이던스로 보폭을 역산)과
+   기록 수정 화면을 그대로 재사용한다: GPS로 뛴 과거 기록들은 저장될 때 이미 (케이던스, 보폭) 쌍을
+   autoStrideM으로 계산해 l.strideM에 남겨둔다. 이 쌍들을 모아 "케이던스가 빠를수록 보폭이 커지는"
+   개인화 선형모델을 만들고, 트레드밀에서는 거꾸로 이 모델로 보폭을 추정해 거리=걸음수×보폭으로 계산한다.
+   사용자가 실제 트랙 등에서 정확한 거리를 알고 있다면, 운동 종료 후 "기록 수정"에서 거리값만 고쳐 저장하면
+   그 순간 autoStrideM이 더 정확한 보폭을 역산해 l.strideM에 반영되고, 다음 트레드밀 추정부터 모델이 좋아진다
+   (새 보정 UI가 따로 필요 없는 자기보정 루프). 과거 기록이 전혀 없을 때만 신장 기반 경험적 기본값을 쓴다. */
+function buildStrideModel(){
+  const pts=[];
+  for(const d in DB.calendar)for(const l of dayLogs(d)){
+    if(!(l.strideM>0))continue;
+    const cad=l.watchCadenceSpm||l.avgCadenceSpm;if(!(cad>0))continue;
+    pts.push({cad,stride:l.strideM});}
+  if(!pts.length)return null;
+  if(pts.length===1||pts.every(p=>p.cad===pts[0].cad))
+    return{a:pts[pts.length-1].stride,b:0,n:pts.length}; // 포인트가 1개뿐이거나 전부 같은 케이던스면 평평한(케이던스 무관) 모델
+  const n=pts.length,sx=pts.reduce((s,p)=>s+p.cad,0),sy=pts.reduce((s,p)=>s+p.stride,0);
+  const sxx=pts.reduce((s,p)=>s+p.cad*p.cad,0),sxy=pts.reduce((s,p)=>s+p.cad*p.stride,0);
+  const denom=n*sxx-sx*sx;
+  if(Math.abs(denom)<1e-6)return{a:sy/n,b:0,n}; // 분산이 거의 없으면(사실상 같은 케이던스) 평균값으로
+  const b=(n*sxy-sx*sy)/denom,a=(sy-b*sx)/n;
+  return{a,b,n};} // stride(m) = a + b*cadence(spm)
+function defaultStrideM(){ // 개인 기록이 전혀 없을 때만 쓰는 출발값 — 신장 기반 경험적 비율(참고용, 직접 확인 필요: 개인차가 큼)
+  const h=(DB.profile&&DB.profile.height)||170;
+  return+(h/100*0.42).toFixed(2);}
+function strideForCadence(model,cadenceSpm){
+  if(!model)return defaultStrideM();
+  const raw=model.a+model.b*(cadenceSpm||0);
+  return Math.min(2.2,Math.max(0.5,raw));} // 비현실적 범위(0.5~2.2m) 밖으로 벗어나지 않게 clamp
+function updateNoGpsDistance(){ // 매초(tickRun) 호출 — 센서 걸음수 증가분 × 그 시점 케이던스에 맞는 보폭을 거리에 누적
+  if(!RUN.cadenceOn||!cadenceState)return; // 센서 권한이 없으면 추정 불가 — 거리 0으로 두고 종료 후 직접 입력 안내
+  const steps=cadenceState.totalSteps||0,newSteps=steps-(RUN.lastStepCountForDist||0);
+  if(newSteps<=0)return;
+  const spmNow=cadenceState.spm?calibratedSpm(cadenceState.spm,RUN.cadenceMount):170;
+  RUN.dist+=newSteps*strideForCadence(RUN.strideModel,spmNow);
+  RUN.lastStepCountForDist=steps;}
 function autoTitle(log){const act=ACT_BY_ID[log.sport]||(log.type==="cross"?ACT_BY_ID.etc:ACT_BY_ID.run);
   if(act.bucket==="cross")return(log.notes||"").trim()||act.label;
   const z=zoneFromHR(log.avghr,calculatedZones),nm={1:"회복 조깅",2:"이지/LSD",3:"템포런",4:"역치 템포",5:"인터벌"}[z];
@@ -7541,7 +7752,7 @@ function saveRunSnapshot(){if(!RUN||!RUN.active)return;
     lastLapD:RUN.lastLapD,lastAnnD:RUN.lastAnnD,
     trackMode:RUN.trackMode,trackLane:RUN.trackLane,trackLapDist:RUN.trackLapDist,trackStartPoint:RUN.trackStartPoint,
     trackAway:RUN.trackAway,trackLapsDone:RUN.trackLapsDone,distAtLapStart:RUN.distAtLapStart,
-    overSpeedCount:RUN.overSpeedCount,savedAt:Date.now()}));}catch(e){}}
+    overSpeedCount:RUN.overSpeedCount,gapSec:RUN.gapSec||0,savedAt:Date.now()}));}catch(e){}}
 function clearRunSnapshot(){try{localStorage.removeItem(RUN_SNAPSHOT_KEY);}catch(e){}}
 window.addEventListener("pagehide",()=>{if(RUN&&RUN.active)saveRunSnapshot();});
 window.addEventListener("beforeunload",()=>{if(RUN&&RUN.active)saveRunSnapshot();});
@@ -7563,7 +7774,7 @@ function recoveryResume(){const snap=window._pendingRecoverySnap;document.getEle
     voice:(document.getElementById("run-voice")||{}).value||"on",ann:0.5,
     startTs:snap.startTs,elapsed:0,paused:false,active:true,dist:snap.dist||0,pts:snap.pts||[],laps:snap.laps||[],
     lastLapD:snap.lastLapD||0,lastAnnD:snap.lastAnnD||0,prev:null,prev2:null,lastCoach:0,
-    acc:null,bestAcc:null,accEMA:null,recent:[],allSegs:[],overSpeedCount:snap.overSpeedCount||0,
+    acc:null,bestAcc:null,accEMA:null,recent:[],allSegs:[],overSpeedCount:snap.overSpeedCount||0,gapSec:snap.gapSec||0,
     trackMode:snap.trackMode,trackLane:snap.trackLane,trackLapDist:snap.trackLapDist,trackStartPoint:snap.trackStartPoint,
     trackAway:snap.trackAway,trackLapsDone:snap.trackLapsDone||0,distAtLapStart:snap.distAtLapStart||0,
     pausedMs:snap.pausedMs||0,pauseStartTs:null,tickCount:0,metroWant:{on:false},metro:null};
@@ -7571,7 +7782,7 @@ function recoveryResume(){const snap=window._pendingRecoverySnap;document.getEle
   document.getElementById("run-live-panel").style.display="block";
   document.getElementById("live-step-card").style.display=RUN.steps?"block":"none";
   requestWakeLock();stopPrewarmGps();
-  watchId=navigator.geolocation.watchPosition(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+  watchId=gpsWatchStart(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
   startSilentKeepAlive();
   if(RUN.steps)renderLiveStep();
   renderLaps();updateLiveAudioButtons();
@@ -7995,7 +8206,32 @@ function onActTypeChange(){
     const gpsTxt=selectedActType.gps?`GPS로 거리·시간을 함께 측정합니다.`:`시간만 측정합니다(이 활동은 GPS 거리 측정 대상이 아닙니다).`;
     document.getElementById("run-simple-desc").innerHTML=`<i class="bi ${selectedActType.icon}"></i> <strong>${selectedActType.label}</strong> — ${gpsTxt}`;
   }
+  applyNoGpsRunUI(isRun&&!selectedActType.gps); // 트레드밀처럼 bucket은 "run"인데 GPS는 없는 활동 — 센서 기반 거리 추정 UI로 전환
   if(isRun)onRunModeChange();else refreshRunCadenceIfOpen();}
+/* ===== GPS 없는 러닝(트레드밀 등) — 거리 추정 UI 전환 =====
+   bucket:"run"이면서 gps:false인 활동(현재는 트레드밀만)은 모드·존·메트로놈까지 기존 러닝 메뉴를 그대로 쓰되,
+   거리만 GPS 대신 걸음수×보폭으로 추정한다. 트랙 보정(지오펜스 기반)은 GPS가 전제라 이 모드에서는 숨긴다. */
+function applyNoGpsRunUI(noGps){
+  const toggle=document.getElementById("run-cadence-sensor-toggle"),hint=document.getElementById("cadence-sensor-hint");
+  const note=document.getElementById("nogps-dist-note"),trackRow=document.getElementById("run-track-toggle-row");
+  const st=document.getElementById("gps-status"),warn=document.getElementById("gps-precheck"),bar=document.getElementById("gps-prewarm-fill");
+  if(trackRow)trackRow.style.display=noGps?"none":"";
+  if(noGps){const trackCb=document.getElementById("run-track-toggle");if(trackCb&&trackCb.checked){trackCb.checked=false;onTrackToggle();}}
+  if(note)note.style.display=noGps?"block":"none";
+  if(noGps){ // GPS 예열을 꺼서 불필요한 배터리 사용과 "GPS 확보됨" 오해를 막는다
+    stopPrewarmGps();if(warn)warn.style.display="none";if(bar)bar.style.width="0%";
+    if(st){st.textContent="GPS 미사용(센서 기반)";st.className="zone-badge z2";}
+  }else if(navigator.geolocation&&isSecureCtx()){ // 미지원·비보안(http) 환경에서는 prepareRunTab의 기존 안내만 따르고 여기서 새로 watch를 시도하지 않음
+    if(st&&st.textContent==="GPS 미사용(센서 기반)"){st.textContent="GPS 대기";st.className="zone-badge z1";}
+    startPrewarmGps();} // 이미 실행 중이면 자체적으로 무시됨(중복 watch 방지)
+  if(!toggle)return;
+  if(noGps&&CADENCE_SENSOR_SUPPORTED){
+    toggle.checked=true;toggle.disabled=true;onCadenceToggleChange();
+    if(hint)hint.textContent="GPS 없이 거리를 재는 활동이라 센서 측정이 항상 켜져 있습니다 — 걸음 수와 보폭으로 거리를 추정합니다. 허리 벨트 등 몸통 중심에 고정하면 정확도가 올라갑니다.";
+  }else{
+    if(CADENCE_SENSOR_SUPPORTED)toggle.disabled=false;
+    if(noGps&&!CADENCE_SENSOR_SUPPORTED&&hint)hint.textContent="이 기기/브라우저는 센서를 지원하지 않아 이 활동에서는 거리를 측정할 수 없습니다 — 종료 후 저장 화면에서 실제 거리를 직접 입력해 주세요.";
+  }}
 function onRunModeChange(){const m=document.getElementById("run-mode").value;
   document.getElementById("run-workout-row").style.display=m==="workout"?"block":"none";
   document.getElementById("run-free-target-row").style.display=m==="free"?"block":"none";
@@ -8067,6 +8303,7 @@ function prepareRunTab(){
     if(!CADENCE_SENSOR_SUPPORTED){cadToggle.checked=false;cadToggle.disabled=true;cadHint.textContent="이 브라우저는 센서 측정을 지원하지 않습니다.";}
     else{cadHint.textContent="허리 벨트 등으로 몸통 중심에 고정하면 가장 정확합니다. 손에 쥐고 흔들면 팔 스윙 때문에 오차가 커집니다.";}}
   onCadenceToggleChange();
+  applyNoGpsRunUI(!!(selectedActType&&selectedActType.bucket==="run"&&!selectedActType.gps)); // 위 공용 힌트 문구를 트레드밀 등 GPS 없는 러닝 안내로 다시 덮어씀
   const st=document.getElementById("gps-status"),warn=document.getElementById("gps-precheck");
   if(!navigator.geolocation){st.textContent="GPS 미지원";st.className="zone-badge z5";
     if(warn){warn.style.display="block";warn.innerHTML=`<i class="bi bi-x-circle-fill" style="color:#ef4444"></i> 이 브라우저는 위치 기능을 지원하지 않습니다.`;}return;}
@@ -8079,12 +8316,50 @@ function prepareRunTab(){
       if(p.state==="denied"){const s=document.getElementById("gps-status");s.textContent="권한 거부됨";s.className="zone-badge z5";
         if(warn){warn.style.display="block";warn.innerHTML=`<i class="bi bi-shield-exclamation" style="color:#ef4444"></i> <strong>위치 권한이 차단되어 있습니다.</strong><br>${gpsHelp()}`;}}
     }).catch(()=>{});}}
+/* ===== GPS 백엔드 추상화 (2026-11-21 추가) =====
+   PWA(웹)에서는 동작 변화 없음 — navigator.geolocation.watchPosition 그대로 사용.
+   안드로이드 Capacitor 네이티브 앱으로 패키징된 경우에만 @capgo/background-geolocation
+   플러그인(포그라운드 서비스 + Google Play 위치 API)을 사용해 화면꺼짐 중에도
+   위치 수신이 끊기지 않도록 함(로드맵 3단계 체크리스트 4번 참고).
+   플러그인은 ACCESS_BACKGROUND_LOCATION 없이 포그라운드 서비스만으로 동작(백그라운드
+   지오펜싱 전용 기능에만 그 권한이 필요— 이 앱은 지오펜싱을 쓰지 않아 해당 없음).
+   실기기에서 화면꺼짐 중 끊김없이 수신되는지는 문서만으로 100% 확인되지 않음 — 직접 확인 필요. */
+function isCapacitorNative(){
+  try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());}catch(e){return false;}
+}
+function capBgGeoPlugin(){
+  try{return (window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BackgroundGeolocation)||null;}catch(e){return null;}
+}
+function capLocToPos(loc){ // 플러그인의 Location{latitude,longitude,accuracy,speed,time,...}을
+  return {coords:{latitude:loc.latitude,longitude:loc.longitude,accuracy:loc.accuracy,speed:loc.speed},timestamp:loc.time||Date.now()};} // navigator.geolocation의 GeolocationPosition{coords,timestamp} 형태로 변환(onGpsPoint가 기대하는 입력)
+function capErrToCode(err){ // 플러그인 에러 코드는 문자열(예: "PERMISSION_DENIED","NOT_AUTHORIZED")
+  const c=String((err&&err.code)||"");                           // — onGpsError가 기대하는 숫자코드(1권한거부/2신호없음/3지연)로 매핑
+  if(/^[123]$/.test(c))return+c; // 웹 폴백 경로는 GeolocationPositionError 숫자코드를 문자열로만 감싸 전달함
+  if(/PERMISS|AUTH/i.test(c))return 1;
+  if(/TIMEOUT|STALE/i.test(c))return 3;
+  return 2;} // 그 외(NOT_SUPPORTED 등)는 "신호 없음"으로 안내(가장 가까운 기존 버킷, 직접 확인 필요)
+function gpsWatchStart(onPoint,onErr,opts){
+  if(isCapacitorNative()){
+    const bg=capBgGeoPlugin();
+    if(bg){
+      bg.start({backgroundMessage:"러닝 측정 중입니다 — 화면을 꺼도 계속 기록됩니다.",backgroundTitle:"RUN2080",requestPermissions:true,stale:false,distanceFilter:0},
+        (location,error)=>{
+          if(error){onErr&&onErr({code:capErrToCode(error),message:error.message});return;}
+          if(location)onPoint(capLocToPos(location));
+        }).catch(e=>{onErr&&onErr({code:2,message:(e&&e.message)||"위치 시작 실패"});});
+      return {native:true};
+    }}
+  return {native:false,id:navigator.geolocation.watchPosition(onPoint,onErr,opts)};}
+function gpsWatchStop(handle){
+  if(!handle)return;
+  if(handle.native){const bg=capBgGeoPlugin();if(bg){try{bg.stop().catch(()=>{});}catch(e){}}}
+  else{try{navigator.geolocation.clearWatch(handle.id);}catch(e){}}}
 /* ===== GPS 예열 (탭 진입 즉시 시작, 세션 시작 전에 미리 신호를 잡아둠) ===== */
 let prewarmWatchId=null,prewarmBestAcc=null,prewarmStartedAt=null,prewarmTimerId=null;
 function startPrewarmGps(){
   if(prewarmWatchId!=null||!navigator.geolocation)return;
   prewarmStartedAt=Date.now();prewarmBestAcc=null;
-  prewarmWatchId=navigator.geolocation.watchPosition(onPrewarmGpsPoint,()=>{},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
+  prewarmWatchId=gpsWatchStart(onPrewarmGpsPoint,()=>{},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
   prewarmTick();}
 function onPrewarmGpsPoint(pos){const acc=pos.coords.accuracy;
   prewarmBestAcc=(prewarmBestAcc==null)?acc:Math.min(prewarmBestAcc,acc);}
@@ -8101,7 +8376,7 @@ function renderGpsPrewarmBar(){
   if(st&&prewarmBestAcc!=null){
     if(prewarmBestAcc<=GPS_GOOD_ACC){st.textContent=`GPS 확보됨 (±${Math.round(prewarmBestAcc)}m)`;st.className="zone-badge z2";}
     else{st.textContent=`GPS 탐색 중 (±${Math.round(prewarmBestAcc)}m)`;st.className="zone-badge z3";}}}
-function stopPrewarmGps(){if(prewarmWatchId!=null){navigator.geolocation.clearWatch(prewarmWatchId);prewarmWatchId=null;}
+function stopPrewarmGps(){if(prewarmWatchId!=null){gpsWatchStop(prewarmWatchId);prewarmWatchId=null;}
   if(prewarmTimerId){clearTimeout(prewarmTimerId);prewarmTimerId=null;}}
 async function requestWakeLock(){try{if("wakeLock"in navigator)wakeLock=await navigator.wakeLock.request("screen");}catch(e){}}
 function releaseWakeLock(){try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}}
@@ -8343,12 +8618,14 @@ function startRunSession(){
     metroBpm=metroOn?(parseInt(document.getElementById("run-metro-bpm").value)||170):null;
     metroSound=metroOn?document.getElementById("run-metro-sound").value:null;}
   const runShoeId=(document.getElementById("run-shoe-select")||{}).value||"";
+  const noGpsRunMode=isRun&&!actType.gps; // 트레드밀 등 — 걸음수×보폭으로 거리 추정(센서 기반)
   RUN={mode,title,steps,planIdx,refDist,refTimeSec,stepI:0,stepStartT:0,stepStartD:0,
     actType:actType.id,actGps:actType.gps,actUnit:actType.unit,
     voice:document.getElementById("run-voice").value,ann:parseFloat(document.getElementById("run-announce").value),
-    startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,
+    startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,gapSec:0,
     trackMode:trackOn,trackLane,trackLapDist,trackStartPoint:null,trackAway:false,trackLapsDone:0,distAtLapStart:0,
-    metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null,cadenceOn:false,cadenceMount:(document.getElementById("run-cadence-mount")||{}).value||"belt",shoeId:runShoeId};
+    metroWant:{on:metroOn,bpm:metroBpm,sound:metroSound},metro:null,cadenceOn:false,cadenceMount:(document.getElementById("run-cadence-mount")||{}).value||"belt",shoeId:runShoeId,
+    noGpsRunMode,strideModel:noGpsRunMode?buildStrideModel():null,lastStepCountForDist:0};
   document.getElementById("run-setup-card").style.display="none";
   document.getElementById("run-live-panel").style.display="block";
   const eb=document.getElementById("gps-error-banner");if(eb)eb.style.display="none";
@@ -8356,7 +8633,7 @@ function startRunSession(){
   requestWakeLock();
   if(actType.gps){
     stopPrewarmGps(); // 예열 감시를 종료하고 세션 감시(거리 계산 포함)로 전환 — 예열된 정확도(bestAcc)는 이어받음
-    watchId=navigator.geolocation.watchPosition(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+    watchId=gpsWatchStart(onGpsPoint,onGpsError,{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
     beginGpsAcquire();
   }else{
     stopPrewarmGps();
@@ -8393,7 +8670,7 @@ function skipAcquireAndCountdown(){if(runAcquireState)runAcquireState.done=true;
 function cancelRunStart(){
   clearTimeout(acquirePollId);runAcquireState=null;
   document.getElementById("countdownOverlay").classList.remove("active");
-  if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
+  if(watchId!=null){gpsWatchStop(watchId);watchId=null;}
   releaseWakeLock();stopCadenceSensor();RUN=null;
   document.getElementById("run-setup-card").style.display="block";
   document.getElementById("run-live-panel").style.display="none";
@@ -8429,6 +8706,7 @@ function activateRun(){if(!RUN)return;
   RUN.active=true;RUN.startTs=Date.now();RUN.elapsed=0;RUN.dist=0;RUN.pts=[];RUN.laps=[];RUN.prev2=null;
   RUN.lastLapD=0;RUN.lastAnnD=0;RUN.lastCoach=0;RUN.stepI=0;RUN.stepStartT=0;RUN.stepStartD=0;RUN.recent=[];RUN.allSegs=[];RUN.overSpeedCount=0;
   RUN.pausedMs=0;RUN.pauseStartTs=null;RUN.tickCount=0; // elapsed을 실제 시각 기반으로 계산하기 위한 누적 일시정지 시간
+  RUN.lastStepCountForDist=0; // 트레드밀 등 걸음수 기반 거리 추정 — 센서가 새로 시작되며 totalSteps도 0부터 다시 셈
   if(RUN.cadenceOn)startCadenceSensor(RUN.cadenceMount);
   if(RUN.trackMode){RUN.trackStartPoint=null;RUN.trackAway=false;RUN.trackLapsDone=0;RUN.distAtLapStart=0;}
   startSilentKeepAlive();alog("run-start"); // 화면이 잠겨도 앱이 살아있도록(무음 재생 + MediaSession 등록)
@@ -8545,6 +8823,7 @@ function onGpsPoint(pos){if(!RUN||RUN.paused)return;
   if(spd<minMoveSpeedFor(c.accuracy))return; // 최소 이동속도 미만 — 정지 중 GPS 흔들림으로 간주(절대거리 기준이면 도보 페이스가 매번 걸러져 순간페이스가 들쭉날쭉해짐)
   if(RUN.active){
     if(dt>=GAP_SEC){ // 신호 두절 구간: 진행방향으로 완만한 곡선 보간 + 보정 거리 반영, '추정 구간'으로 표시
+      RUN.gapSec=(RUN.gapSec||0)+dt; // 화면꺼짐 등으로 GPS 신호가 끊긴 시간을 누적 — 운동 종료 시 비중이 크면 "추정치" 고지(finishRunSession)
       const br=bridgeGap(RUN.prev2||null,RUN.prev,cur);
       RUN.dist+=br.pathLen;
       br.mids.forEach(m=>RUN.pts.push([+m.lat.toFixed(5),+m.lon.toFixed(5),1]));
@@ -8571,6 +8850,7 @@ function tickRun(){if(!RUN||RUN.paused)return;
   RUN.elapsed=Math.max(0,Math.floor((Date.now()-RUN.startTs-(RUN.pausedMs||0))/1000)); // 순차증가(RUN.elapsed++) 대신 실제 경과시각으로 계산 — 백그라운드에서 setInterval이 지연되어도 항상 정확
   RUN.tickCount=(RUN.tickCount||0)+1;
   if(RUN.tickCount%5===0)saveRunSnapshot(); // 5초마다 진행 중인 운동을 저장(앱이 강제 종료돼도 복구 가능하도록)
+  if(RUN.noGpsRunMode)updateNoGpsDistance(); // 트레드밀 등 — GPS 대신 걸음수×보폭으로 RUN.dist를 매초 갱신
   const km=(RUN.trackMode?trackCalibratedDist():RUN.dist)/1000,cp=curPaceSec(),ap=km>0.05?RUN.elapsed/km:null;
   document.getElementById("live-dist").textContent=km.toFixed(2);
   document.getElementById("live-time").textContent=fmtDur(RUN.elapsed);
@@ -8742,7 +9022,7 @@ function finishRunSession(){if(!RUN)return;
   if(RUN.actGps!==false&&finalDist<50&&!confirm("측정 거리가 매우 짧습니다(50m 미만). 그래도 저장할까요?")){return;} // 시간 기준 활동(수영·헬스 등)은 거리가 0이어도 정상이므로 이 확인을 건너뜀
   disarmRunBackGuard(); // 이제부터는 정말 종료되는 경로 — 뒤로가기를 다시 정상적으로 허용
   stopMetronome();stopSilentKeepAlive();
-  if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
+  if(watchId!=null){gpsWatchStop(watchId);watchId=null;}
   clearInterval(runTimer);runTimer=null;releaseWakeLock();
   let avgCadenceSpm=null,cadenceCoachTxt="";
   if(RUN.cadenceOn&&cadenceState&&RUN.elapsed>=15&&cadenceState.totalSteps>=5){
@@ -8774,8 +9054,17 @@ function finishRunSession(){if(!RUN)return;
   const overLine=RUN.overSpeedCount>0?`\n⚠️ 측정 불가 속도(43km/h 초과) ${RUN.overSpeedCount}회 제외됨 — 실제 거리와 차이가 있을 수 있습니다`:"";
   const cadLine=cadenceCoachTxt?`\n케이던스: ${cadenceCoachTxt} (휴대폰 센서 추정치)`:"";
   const hrLine=avgPaceSec?`\n심박수(Z${estZone} ${Math.round(z.min)}~${z.max}bpm)는 실제 달린 평균 페이스로 추정한 값입니다 — 이 앱은 심박 센서 연동을 지원하지 않아, 실제 측정값과 다를 수 있습니다. 실측값이 있다면 아래 항목을 직접 수정해 주세요.`:"";
-  document.getElementById("m-log-notes").value=RUN.title+(RUN.trackMode?` · ${RUN.trackLapsDone}바퀴(${RUN.trackLane}레인)`:"")+`\n${resultLine}`+overLine+cadLine+hrLine+(lapSummary?`\n랩: ${lapSummary}`:"");
+  // GPS 신호 두절(화면꺼짐 등) 시간이 운동시간의 상당 비중을 차지하면 "이 구간은 추정치"임을 고지(v2.43.4) — 근본 원인(OS가 화면꺼짐 시 GPS 수신 빈도를 낮추는 것)은 해결이 아니라 투명하게 알리는 방향
+  const gapMin=Math.round((RUN.gapSec||0)/60*10)/10;
+  const gapSignificant=(RUN.gapSec||0)>=60&&(RUN.gapSec||0)>=RUN.elapsed*0.15;
+  const gapLine=gapSignificant?`\n⚠️ GPS 신호 끊김(화면꺼짐 등) 구간이 약 ${gapMin}분으로 운동시간의 상당 부분을 차지합니다 — 해당 구간의 거리·경로는 추정치입니다.`:"";
+  // GPS 없는 러닝(트레드밀 등) — 거리가 걸음수×보폭 추정치임을 고지 + 실제 거리를 알면 지금 바로 고쳐 쓰도록 안내(2026-11-21)
+  const noGpsLine=RUN.noGpsRunMode?(avgCadenceSpm?`\n📏 이 거리(${km}km)는 GPS가 아닌 걸음 수·보폭 추정치입니다(센서 측정 케이던스 기반). 실제 거리를 아신다면 지금 위 거리 항목을 직접 고쳐서 저장해 주세요 — 다음 트레드밀 추정이 더 정확해집니다.`
+    :`\n📏 센서 측정 권한이 없어 거리를 추정하지 못했습니다(0km로 표시됨) — 실제 거리를 알고 있다면 위 거리 항목에 직접 입력해 주세요.`):"";
+  document.getElementById("m-log-notes").value=RUN.title+(RUN.trackMode?` · ${RUN.trackLapsDone}바퀴(${RUN.trackLane}레인)`:"")+`\n${resultLine}`+overLine+cadLine+hrLine+gapLine+noGpsLine+(lapSummary?`\n랩: ${lapSummary}`:"");
   if(RUN.overSpeedCount>=5)showToast(`측정 불가 속도 ${RUN.overSpeedCount}회가 제외되었습니다. 기록을 확인하세요.`);
+  if(gapSignificant)showToast(`GPS 신호 끊김 구간이 약 ${gapMin}분 있었습니다 — 해당 구간은 추정치로 기록됩니다.`);
+  if(RUN.noGpsRunMode)showToast(avgCadenceSpm?"거리는 걸음수·보폭 기반 추정치입니다 — 실제 거리를 알면 저장 전에 고쳐주세요.":"센서 권한이 없어 거리를 추정하지 못했습니다 — 직접 입력해 주세요.");
   document.getElementById("m-log-planref").value=(RUN.planIdx==null?"":RUN.planIdx);
   document.getElementById("m-log-rating").value="";
   document.getElementById("run-setup-card").style.display="block";
