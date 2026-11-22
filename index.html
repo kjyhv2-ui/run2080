@@ -118,7 +118,7 @@ header{background:rgba(10,14,23,.95);backdrop-filter:blur(12px);border-bottom:1p
 .onboard-pulse::after{animation-delay:1.2s}
 @keyframes obping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.7);opacity:0}}
 .swipe-viewport{width:100%;overflow:hidden;position:relative}
-.swipe-container{display:flex;align-items:flex-start;transition:transform .35s cubic-bezier(.25,1,.5,1);will-change:transform} /* (2026-11-22) v2.50.1~v2.50.6에서 이 애니메이션·레이어 관련 설정을 여러 차례 건드려봤지만(will-change 제거→복원, 애니메이션 자체 제거 등) 전부 실기기에서 효과가 없었음 — 진짜 원인은 여기가 아니라 ㊽ 자체진단이 매 실행마다 실제 GPS 하드웨어를 건드리던 것이었음(아래 runSelfTests 쪽 수정 참고). 그 원인을 고쳤으므로 전환 애니메이션은 원래(v2.50.2 이전) 모습으로 되돌림
+.swipe-container{display:flex;align-items:flex-start;transition:transform .35s cubic-bezier(.25,1,.5,1);will-change:transform}
 .tab-slide.inactive-slide{max-height:0;overflow:hidden}.swipe-container.dragging{transition:none}
 .tab-slide{flex-shrink:0;padding:16px 12px 90px;max-width:1240px;margin:0 auto}
 .cal-nav-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px;flex-wrap:wrap;gap:8px}
@@ -340,26 +340,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div class="term" id="today-push-term" style="margin-top:12px;min-height:auto;display:none"></div>
         </div>
       </div>
-      <div class="card" id="diversity-card" style="margin-top:16px">
-        <div class="card-header" style="cursor:pointer" onclick="toggleDiversityCard()"><div class="card-title"><i class="bi bi-shuffle" style="color:#a78bfa"></i> 운동 다양성 코칭</div>
-          <i class="bi bi-chevron-down" id="diversity-chevron" style="color:#64748b"></i></div>
-        <div id="diversity-content" style="display:none">
-          <div style="display:flex;gap:6px;margin:4px 0 8px">
-            <button class="btn btn-sm" id="diversity-tab-week" onclick="setDiversityRange('week')">주간</button>
-            <button class="btn btn-sm" id="diversity-tab-month" onclick="setDiversityRange('month')">월간</button>
-          </div>
-          <div id="diversity-body"></div>
-        </div>
-      </div>
     </div>
 
     <!-- SLIDE 1: 러닝 측정 -->
     <div class="tab-slide" id="slide-1">
       <div id="tab-toc-1"></div>
-      <div id="quick-start-row" style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn btn-sm btn-success" style="flex:1;padding:10px 6px;font-size:12.5px" onclick="quickStartFreeRun()"><i class="bi bi-lightning-charge-fill"></i> 자유 달리기 바로시작</button>
-        <button class="btn btn-sm btn-secondary" style="flex:1;padding:10px 6px;font-size:12.5px" onclick="quickStartFromWorkoutLibrary()"><i class="bi bi-collection-play-fill"></i> 워크아웃에서 바로시작</button>
-      </div>
       <div class="card" id="run-setup-card">
         <div class="card-header"><div class="card-title"><i class="bi bi-geo-alt-fill" style="color:#10b981"></i> 운동시작</div>
           <span class="zone-badge z1" id="gps-status">GPS 대기</span></div>
@@ -1131,13 +1116,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     </div>
     <div style="background:#080e1a;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12.5px" id="zone-preview">—</div>
     <div class="form-group"><label>신발 (선택)</label><select id="m-log-shoe"><option value="">신발 선택 안 함</option></select></div>
-    <div class="form-group" id="m-log-traincat-group"><label>훈련 유형 (운동 다양성 코칭용 — 안 고르면 심박존·거리로 자동 추정)</label>
-      <select id="m-log-traincat">
-        <option value="">자동(기록 보고 추정)</option>
-        <option>인터벌</option><option>크루즈 인터벌</option><option>템포/역치</option><option>패스트 피니시</option>
-        <option>LSD</option><option>중장거리</option><option>회복주</option><option>기초주</option><option>파틀렉</option>
-        <option>힐 리피트</option><option>스트라이드</option><option>초급자</option><option>기타</option>
-      </select></div>
     <div style="margin-bottom:12px">
       <div style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;color:#38bdf8;font-weight:600" onclick="toggleDynamicsFields()">
         <i class="bi bi-chevron-down" id="m-log-dyn-chevron" style="transition:transform .2s"></i> 러닝 다이나믹스 (선택 — GPS 워치 화면 보고 입력)
@@ -2586,7 +2564,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.50.7",APP_BUILD="2026-11-22";
+const APP_VERSION="2.48.6",APP_BUILD="2026-11-22";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2627,61 +2605,6 @@ function renderPremiumGate(){renderTrialBanner();} // 옛 이름 유지(호출�
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
-  {v:"2.50.7",d:"2026-11-22",title:"버그 수정(추정) — 탭 어긋남·GPS 오류 배지 실기기 증상의 진짜 원인 발견: 전환 애니메이션이 아니라 자체진단이 매번 실제 GPS를 건드리고 있었음",items:[
-    "사용자가 결정적으로 확인해준 사실: v2.48.6까지는 완전히 정상이었고, v2.49.0(러닝 탭 '바로시작' 버튼 2개 추가)부터 문제가 시작됨. v2.49.0→v2.50.0(운동 다양성 코칭 카드) 사이의 코드 diff를 직접 대조한 결과, 둘 다 탭 전환 코드(goToSlide 등)는 전혀 건드리지 않았음 — 즉 v2.50.1~v2.50.6에서 시도한 여섯 번의 전환 애니메이션/리플로우 관련 수정이 전부 효과가 없었던 것이 당연했음(애초에 그쪽이 원인이 아니었으므로)",
-    "v2.48.6→v2.49.0의 유일한 실질 변화를 다시 살펴봄: '바로시작' 버튼 자체진단(㊽)이 매 앱 실행 0.3초 뒤 자동으로 quickStartFreeRun()→startRunSession()(진짜 GPS 감시 시작)→cancelRunStart()(진짜 GPS 감시 중지)를 실행하고 있었음. 특히 Capacitor 네이티브 빌드에서는 백그라운드GPS 플러그인의 시작/중지가 비동기(Promise)라, 이 자체진단이 앱을 열 때마다 실제 GPS 하드웨어·네이티브 브릿지에 수 차례의 start/stop 요청을 거의 동시에 겹쳐 쏟아붓고 있었던 셈 — 이 레이스가 'GPS 오류' 배지가 뜨는 것과 메인 스레드 지연으로 인한 탭 전환 시 화면 어긋남을 모두 설명할 수 있음(직접 확인 필요 — 추정이지만 v2.48.6→v2.49.0 사이 유일한 변화라 유력함)",
-    "조치: 자체진단 ㊽이 실행되는 동안만 gpsWatchStart/gpsWatchStop을 진짜 하드웨어를 건드리지 않는 가짜 함수로 바꿔두고, 검사가 끝나면 원래 함수로 복원 + 혹시 남아있을 가짜 GPS 예열 핸들도 비워둠(러닝 탭에 실제로 들어갈 때 정상적으로 다시 걸리도록). 케이던스 센서 권한 요청도 같은 이유로 검사 중엔 꺼둠",
-    "v2.50.1~v2.50.6에서 건드렸던 전환 애니메이션·will-change·scrollTo·강제 리플로우는 전부 원래(v2.50.0 이전) 모습으로 되돌림 — 진짜 원인이 아니었던 변경을 남겨두지 않기 위함. 운동 다양성 코칭 카드를 기본 접힘으로 바꾼 것(v2.50.4)은 그대로 유지(원인은 아니었지만 대시보드를 더 짧게 유지하는 합리적인 변경이라 남겨둠)",
-    "이번에도 완전히 확정된 '고쳐짐'은 아닙니다 — 다만 지금까지 여섯 번과 달리, 이번엔 v2.48.6→v2.49.0 사이의 유일한 실제 코드 변화를 직접 짚어 고친 것이라 가능성이 훨씬 높다고 봅니다. 자체진단 51개 그대로 유지, 전부 통과 확인"]},
-  {v:"2.50.6",d:"2026-11-22",title:"테스트 빌드 — 탭 어긋남 증상, 4차 시도: 지금까지 손대지 않았던 '가로 전환 애니메이션 자체'를 제거",items:[
-    "사용자가 v2.50.5(강제 리플로우)도 '해결되지 않음'으로 확인 — 이로써 will-change 제거(v2.50.1)·scrollTo 변경(v2.50.2)·전환중 전체 펼침(v2.50.3)·카드 기본 접힘(v2.50.4)·강제 리플로우(v2.50.5), 다섯 번의 시도가 전부 실기기에서 효과 없었음",
-    "지금까지 안 건드린 공통분모를 다시 짚어봄: .swipe-container의 transition:transform .35s(가로 전환 애니메이션) 자체는 한 번도 제거해본 적이 없었음 — 이 CSS 애니메이션이 실기기 WebView에서 최종 프레임을 제대로 합성(페인트)하지 못하는 부류의 버그일 가능성을 보고, 이번엔 애니메이션 자체를 없앰",
-    "조치: .swipe-container에서 transition:transform과 will-change:transform을 모두 제거 — 탭 전환이 부드럽게 미끄러지지 않고 즉시(순간 이동) 바뀌도록 변경. 기능상 손실은 '전환 애니메이션이 없어진다'는 것뿐이고, 탭 이동 자체·점 표시·내용은 그대로 동작함",
-    "이번에도 '고쳐짐'이 아니라 추정 단계입니다. 다만 다섯 번의 시도 중 처음으로 '애니메이션 그 자체'를 겨냥한 변경이라는 점에서 이전 시도들과는 성격이 다름 — 효과가 없다면 전환 애니메이션 외의 다른 부분(예: 탭 콘텐츠 자체의 어떤 특정 요소)을 다시 봐야 함",
-    "자체진단 51개 그대로 유지, 전부 통과 확인"]},
-  {v:"2.50.5",d:"2026-11-22",title:"테스트 빌드 — 탭 어긋남 증상의 결정적 단서 확보: 데이터가 아니라 '화면이 다시 그려지지 않는' 렌더링 버그로 추정, 강제 리플로우 적용",items:[
-    "사용자 제보(결정적 단서): 헤더·점은 0번 탭(목표 대시보드)인데 화면엔 1번 탭(운동시작) 내용이 보이던 상태에서, 그 화면 그대로 손가락으로 드래그를 '시작'하는 순간 0번 탭의 진짜 내용(\"내 목표 대회\", \"JTBC 가상대회\" 카드)이 잠깐 보였다가 다시 사라짐",
-    "이 현상이 의미하는 것: 0번 탭의 데이터·렌더링 자체는 처음부터 올바르게 그려져 있었음 — 문제는 'JS가 화면을 0번 탭 위치로 옮기라고 지시한 것'이 실제 화면에는 반영(페인트)되지 않고 있다가, 터치(드래그) 이벤트가 들어와야만 강제로 다시 그려지는 것으로 보임. 즉 지금까지 의심했던 '전환 타이밍 겹침'이나 '탭 높이' 쪽 추정과는 다른 각도로, 실기기 WebView가 JS만으로 바뀐 화면 변경을 놓치고 묵은 화면을 계속 보여주는 유형의 렌더링 버그에 더 가까움",
-    "조치: goToSlide()에서 가로 이동 값(transform)을 바꾼 직후, 그 요소의 레이아웃 속성(offsetHeight)을 한 번 강제로 읽어 브라우저가 변경을 놓치지 않고 다시 그리도록 함(널리 쓰이는 '강제 리플로우' 기법) — v2.50.4의 카드 기본 접힘 변경은 그대로 유지(원인 변수 중 하나로 계속 테스트)",
-    "이번에도 '고쳐짐'이 아니라 추정 단계입니다 — 특히 이 변경은 이전 두 번의 시도(will-change 제거, scrollTo 변경)와는 다른 종류의 원인(페인트 누락)을 겨냥한 것이라 가능성이 있다고 보지만, 실기기 확인 전까지는 확정할 수 없음",
-    "자체진단 51개 그대로 유지, 전부 통과 확인. 함수 개수 변동 없음(기존 변수 재사용)"]},
-  {v:"2.50.4",d:"2026-11-22",title:"테스트 빌드 — 탭 어긋남 증상, 원인을 '전환 타이밍'에서 '목표 대시보드가 길어진 것' 쪽으로 좁혀서 재시도(v2.50.3의 타이밍 변경은 되돌림)",items:[
-    "사용자가 확인해준 중요한 사실: v2.50.0(운동 다양성 코칭 카드 추가) 이전 버전에서는 이 증상이 전혀 없었음 — 즉 카드가 추가되어 목표 대시보드(0번 탭)가 눈에 띄게 길어진 시점과 증상이 시작된 시점이 정확히 겹침",
-    "이로써 '전환 타이밍(will-change, scrollTo, 형제 탭 접는 시점)'보다 '특정 탭 하나가 유독 길어진 것' 자체가 원인일 가능성이 더 높아짐 — 11개 탭이 하나의 가로 띠 안에 함께 있는 구조라, 그중 하나가 훨씬 길어지면 일부 기기 GPU의 화면 합성에서 문제가 생길 수 있음(직접 확인 필요, 여전히 추정)",
-    "원인 변수를 하나씩 확인하기 위해 v2.50.3에서 시도했던 '전환 중 모든 탭을 잠깐 펼쳐두기' 코드는 되돌리고(v2.50.2와 동일한 즉시 전환 방식으로 복귀), 이번엔 그 카드 자체를 건드림",
-    "조치: '운동 다양성 코칭' 카드를 기본은 접힌 상태(제목 줄만 보이고 눌러야 펼쳐짐)로 바꿈 — 목표 대시보드의 기본 높이가 카드 추가 이전과 비슷하게 짧아짐. 펼침 상태는 기억해뒀다가 다음에 다시 열 때도 유지됨",
-    "이번 빌드는 '고쳐짐'이 아니라 원인 격리용 진단 빌드입니다 — 목표 대시보드를 기본값(카드 접힌 채)으로 두고 평소처럼 탭을 넘나들어도 어긋남이 재현되지 않으면, 카드 높이가 원인이라는 쪽에 힘이 실립니다. 반대로 접어둔 상태에서도 여전히 재현되면 카드 높이는 원인이 아니라는 뜻이 됩니다",
-    "자체진단 51개 그대로 유지, 전부 통과 확인"]},
-  {v:"2.50.3",d:"2026-11-22",title:"테스트 빌드 — 탭을 콕 눌러 이동해도(스와이프 아님) '헤더는 새 탭, 내용은 다음 탭'으로 어긋나는 실기기 증상, 3차 시도(v2.50.2로도 재현 확인됨, 4번째 빌드에서 되돌림)",items:[
-    "사용자가 v2.50.2 설치 후 '점(dot)을 탭만 하고 3초 기다렸다가 스크린샷'으로 통제된 테스트를 해주심 — 그래도 어긋남이 그대로 재현됨. 이로써 (1) will-change 제거(v2.50.1), (2) scrollTo를 즉시 이동으로 바꾼 것(v2.50.2) 둘 다 원인이 아니었음이 확인됨. 또한 스와이프 동작 중/직후에 찍힌 화면이라서 생기는 촬영 타이밍 문제라는 가설도 함께 기각됨(탭만 했는데도 재현)",
-    "코드 확인 결과 goToSlide()는 헤더 텍스트(#swipe-current-tab-name)와 실제 보여줄 탭(가로 이동 transform)을 같은 함수 안에서 같은 index로 동시에 설정하고 있어, 이 둘이 서로 다른 값을 가리킬 논리적 경로가 코드상으로는 없음 — 즉 JS 로직 버그가 아니라 실기기 WebView의 화면 합성(렌더링) 쪽 문제로 추정",
-    "직접 확인 필요(새 추정): 가로 이동 애니메이션(0.35초, transform)이 시작되는 바로 그 순간에, 동시에 다른 10개 탭의 높이를 한꺼번에 0으로 접는 작업(.inactive-slide 토글)도 같이 일어나고 있었음 — '손가락으로 끄는 동안'에는 이미 모든 탭을 미리 펼쳐둔 채로 두고 손을 뗀 뒤에야 접는 방식으로 되어 있어 문제가 없어 보였던 점에 착안해, 탭을 콕 눌러 이동하는 경우도 동일하게 바꿈: 전환 시작 시 모든 탭의 높이 제한을 즉시 풀어두고(드래그 때처럼), 가로 이동 애니메이션이 끝날 시간(0.4초)이 지난 뒤에만 다른 탭들을 접도록 미룸 — 전환의 '시작 순간'에 가로 이동과 높이 재계산이 동시에 겹치는 상황 자체를 없애는 조치",
-    "자체진단 51번 추가 — 여러 탭으로 전환 직후 헤더 이름·대상 탭의 표시 여부·활성 점 상태가 즉시 서로 일치하는지 확인(5개 탭 대상). 다만 이 자동검사는 '전환 직후 즉시' 상태만 확인할 수 있고, 0.35초 애니메이션이 실기기에서 실제로 어떻게 끝나는지·그 사이 다른 탭이 늦게 접히는 동작 자체는 헤드리스 환경에서 확인이 불가능함 — 지금까지 두 번의 시도가 모두 실기기에서는 효과가 없었던 전례가 있으므로, 이번에도 '고쳐짐'이 아니라 실기기 재확인이 반드시 필요한 추정 단계임을 명확히 함"]},
-  {v:"2.50.2",d:"2026-11-22",title:"테스트 빌드 — 탭 전환 시 화면이 잘리거나 이전 탭 내용이 섞여 보이는 증상, 다른 원인으로 재시도(v2.50.1의 will-change 제거는 되돌림)",items:[
-    "v2.50.1(will-change:transform 제거)을 실기기에서 테스트한 결과: 고쳐지지 않고 오히려 '탭 이름/표시는 새로 누른 탭인데 실제 내용은 그 이전 탭의 내용이 한 단계씩 밀려 나오는' 더 복잡한 증상으로 바뀜 — will-change는 원인이 아니었다고 보고 되돌림",
-    "직접 확인 필요(새 추정): goToSlide() 맨 끝에서 탭을 바꿀 때마다 세로 스크롤을 맨 위로 되돌리는 코드가 behavior:\"smooth\"(애니메이션)로 되어 있었음 — 이게 동시에 일어나는 가로 탭 전환(0.35초)·이전 탭이 접히며 문서 높이가 바뀌는 것과 타이밍이 겹치면, 스크롤이 맨 위로 돌아가는 애니메이션이 덜 끝난 채로 화면이 보이면서 '빈 공간(검게 보임)'이나 '이전 위치에 남아있던 다른 탭 내용이 섞여 보이는' 증상이 생길 수 있음(이 파일의 다른 곳에 과거 똑같은 유형의 레이스를 고친 기록이 있어 같은 종류로 추정)",
-    "조치: behavior를 항상 \"auto\"(즉시 이동)로 변경 — 애니메이션 자체를 없애 레이스가 생길 틈을 제거함",
-    "자체진단 ㊿ 추가(긴 탭 맨 아래로 스크롤해둔 채로 다른 탭 전환 시 scrollY가 전환 직후 즉시 0인지 확인) — 50개 모두 통과. 다만 이것도 실제 기기 렌더링 타이밍 문제라 100% 확정은 아니며, 실기기에서 재현되는지 반드시 확인 필요"]},
-  {v:"2.50.1",d:"2026-11-22",title:"테스트 빌드 — 탭 전환 직후 화면 아래쪽이 검게 잘리는 실기기 증상에 대한 추정 원인 제거 시도(실기기 확인 전, '고쳐짐' 아님) — v2.50.2에서 되돌림",items:[
-    "사용자 신고: 탭이 움직이는 동안(스와이프 애니메이션 중)에는 화면이 정상으로 다 보이다가, 전환이 완전히 끝나면 화면 아래쪽이 까맣게 잘림 — 어느 탭에서나 동일 증상",
-    "직접 확인 필요(추정): 11개 탭을 한 줄로 늘어놓은 요소(.swipe-container)에 걸려있던 will-change:transform이 그 요소 전체를 하나의 GPU 레이어로 승격시키는데, v2.50.0에서 대시보드 탭에 '운동 다양성 코칭' 카드가 추가되며 그 탭의 콘텐츠가 전보다 길어졌음 — 레이어가 일정 크기를 넘으면 일부 기기 GPU에서 '전환이 끝난 뒤의 정적 렌더링'에서 레이어 일부가 검게 그려지지 않는 사례가 보고되어 있고, 이 증상(움직이는 동안엔 정상·멈추면 잘림)과 일치함",
-    "조치: will-change:transform 제거(전환 애니메이션 자체는 transition:transform으로 그대로 동작, 약간의 성능차만 있을 수 있음) — 원인이 맞다면 효과가 있어야 하지만, 다른 원인일 가능성도 있어 실기기에서 재현되는지 반드시 확인 필요",
-    "Playwright 자동 검증(자체진단 49개·탭 순회·데모 데이터)은 모두 통과했으나, 이 증상 자체는 GPU 렌더링 문제라 헤드리스 브라우저로는 애초에 재현도 검증도 안 됨 — 실기기 테스트로만 확인 가능"]},
-  {v:"2.50.0",d:"2026-11-22",title:"기능 추가 — 목표 대시보드 '운동 다양성 코칭' 카드(주간/월간, 훈련 유형별 훈련량·시간·횟수 + 코칭)",items:[
-    "요청: 주간/월간 운동을 인터벌·크루즈인터벌·템포/역치·패스트피니시·LSD·중장거리·회복주·기초주·파틀렉·힐리피트·스트라이드·초급자·기타(13종)로 나눠 훈련량·시간·횟수를 보여주고, 다양하게·즐겁게·지루하지 않게 훈련하도록 코칭",
-    "직접 확인 필요(가정): 지금까지는 완료된 운동 기록에 '훈련 유형'이 저장되어 있지 않았음(워크아웃 템플릿엔 분류가 있지만 실제 완료 기록과 연결되지 않았었음) — 어떻게 분류할지 사용자에게 먼저 확인한 뒤, '자동 추정 + 수동 선택 병행'으로 진행",
-    "운동 기록 저장 화면(수동 입력 + GPS/워크아웃 측정 후 저장 공통)에 '훈련 유형' 선택 항목 추가 — 직접 고르면 그 값을 그대로 저장(확정), 비워두면('자동') 대시보드에서 매번 추정",
-    "저장된 워크아웃으로 시작한 운동은 워크아웃에 이미 등록된 분류를 그대로 이어받아 저장 화면에 미리 채워짐(추정 아님, 확정) — 오늘의 계획으로 시작한 운동은 계획 문구(예: 'LSD 26km')에 들어있는 단어로 미리 채워짐",
-    "직접 고르지 않은 기록은 ①메모/제목의 키워드 → ②심박존+거리(기존 자동설계가 쓰는 LSD/중장거리/기초주 비율과 동일한 기준)로 추정해서 보여주며, 추정된 항목은 '(추정 N)'으로 표시해 구분",
-    "주의(직접 확인 필요): Z3~Z5 구간 안에서는 구조가 다른 유형들(크루즈인터벌·숏/롱/믹스드인터벌·힐리피트·패스트피니시·파틀렉·스트라이드)을 총거리·총시간 합계만으로는 구분할 수 없어, 키워드로 못 잡으면 Z3~4는 '템포/역치', Z5는 '인터벌'로 느슨하게 묶임 — 정확한 분류를 원하면 저장 시 직접 선택 권장",
-    "목표 대시보드에 새 카드 추가, 주간(기존 주간 탐색과 같은 주)/월간(이번 달 1일~오늘) 탭 전환, 유형별 km·시간·횟수 목록 + 코칭 문구(사용한 유형 수, 특정 유형 편중 여부, 기초주/인터벌/템포·역치/LSD/회복주 중 빠진 유형 제안) 표시",
-    "크로스트레이닝(걷기·사이클·수영 등)은 이 13종 분류 대상이 아니라서 집계에서 제외",
-    "자체진단 ㊾ 추가(분류 우선순위·크로스제외·주간월간 렌더링 무오류 확인) — 전체 48개→49개 모두 통과, 함수 개수 698→706(신규 함수 8개만큼 정확히 증가)"]},
-  {v:"2.49.0",d:"2026-11-22",title:"기능 추가 — 러닝 탭 맨 위 '바로시작' 버튼 2개(자유 달리기 / 워크아웃에서)",items:[
-    "요청: 운동시작 화면 맨 위에서 활동종류·모드 선택을 거치지 않고 바로 시작할 수 있는 버튼을 자유 달리기용 1개, 워크아웃 라이브러리용 1개(작은 버튼)로",
-    "'자유 달리기 바로시작': 활동종류=달리기, 모드=자유(목표 없음)로 설정값을 되돌린 뒤 곧바로 startRunSession() 흐름(GPS 예열→카운트다운)을 그대로 탐 — 새 로직 추가 없이 기존 시작 흐름 재사용",
-    "'워크아웃에서 바로시작': 모드만 '워크아웃'으로 바꾸고 설정 카드로 스크롤만 함 — 어떤 워크아웃을 할지는 직접 고르게 하고 바로 시작은 하지 않음(저장된 워크아웃이 없으면 안내만 띄움). 잘못된/오래된 워크아웃이 실수로 바로 시작되는 사고를 막기 위한 설계",
-    "자체진단 ㊽ 추가: 두 버튼의 동작(자유달리기=즉시 시작, 워크아웃=모드전환만·미시작)을 확인하고 기존 cancelRunStart()로 안전하게 정리"]},
   {v:"2.48.6",d:"2026-11-22",title:"버그수정 — 앱을 처음 열 때 인트로(온보딩) 화면이 바로 닫혀버리던 문제",items:[
     "사용자 신고: 처음 앱을 열면 인트로로 가야 하는데 바로 다음 화면(목표 대시보드)으로 넘어가버림",
     "원인: 부팅 시 첫 실행이면 showOnboarding()으로 인트로가 정상적으로 뜨지만, 0.3초 뒤 자동 실행되는 자체진단(runSelfTests)의 ㉙번 검사가 finishOnboarding()/skipOnboarding()을 호출해서 '정상 완료/건너뛰기 시 올바른 탭으로 이동하는지'를 확인하는데, 이 두 함수가 실제 인트로 화면과 같은 DOM 요소(오버레이)를 끄는 함수라서 — 자체진단이 끝난 뒤 localStorage 값은 원래대로 되돌려놨지만 화면(오버레이의 'active' 표시)은 복원하지 않아, 실제로 막 떠 있던 인트로가 자체진단에 의해 조용히 닫혀버렸던 것",
@@ -3891,92 +3814,6 @@ function runSelfTests(){
     return{pass:lenOk&&exactMultipleOk&&wavOk,
       detail:`트랙길이=${dur.toFixed(1)}s(목표 ${METRO_TRACK_LEN_SEC}s) 박자경계일치=${exactMultipleOk} WAV생성=${wavOk} — 단, 실기기 <audio> 루프 재시작 지연 자체는 Playwright로 검증 불가(직접 확인 필요)`};});
 
-  check("㊽ 러닝 탭 '바로시작' 버튼 — 자유달리기 바로시작(활동종류=달리기,모드=자유,목표없음으로 즉시 시작)과 워크아웃에서 바로시작(모드만 전환, 실제 시작은 사용자가 워크아웃 선택 후 START로 직접)(2026-11-22 추가, 2026-11-22 실기기 GPS 간섭 수정)",()=>{
-    // (2026-11-22, 결정적 발견) 사용자가 "v2.48.6까지는 정상, v2.49.0부터 화면이 꼬인다"고 확인해줌 — v2.48.6→v2.49.0의
-    // 유일한 실질 변화가 이 자체진단(㊽)이었음. 이 검사가 실제로 quickStartFreeRun()→startRunSession()을 거쳐
-    // 진짜 GPS 감시(navigator.geolocation 또는 Capacitor 네이티브 백그라운드GPS 플러그인)를 시작시킨 뒤 곧바로
-    // cancelRunStart()로 멈추는데, 특히 네이티브 플러그인 경로는 start()/stop()이 비동기(Promise)라 이 검사가
-    // 0.3초마다(앱을 열 때마다) 수 차례의 start/stop을 거의 동시에 겹쳐 호출하게 됨 — 실제 GPS 하드웨어·네이티브
-    // 브릿지에 레이스를 일으켜 "GPS 오류" 배지가 뜨거나(onPrewarmGpsErr) 화면이 꼬이는 실기기 증상과 시점이
-    // 정확히 겹침. 이 검사의 목적은 "버튼을 누르면 상태가 맞게 바뀌는지"이지 진짜 GPS 동작 확인이 아니므로,
-    // 검사하는 동안만 gpsWatchStart/gpsWatchStop을 진짜 하드웨어를 건드리지 않는 가짜 함수로 바꿔두고 끝나면
-    // 원래 함수로 되돌림(직접 확인 필요 — 추정이지만 v2.48.6→v2.49.0 사이 유일한 변화라 유력함)
-    const actSel=document.getElementById("run-acttype"),modeSel=document.getElementById("run-mode");
-    const savedActVal=actSel?actSel.value:null,savedModeVal=modeSel?modeSel.value:null;
-    const cadToggle=document.getElementById("run-cadence-sensor-toggle"),savedCadChecked=cadToggle?cadToggle.checked:null;
-    if(cadToggle)cadToggle.checked=false; // 케이던스 센서 권한 요청도 실제 하드웨어를 건드리므로 검사 중엔 꺼둠
-    const __origGpsWatchStart=gpsWatchStart,__origGpsWatchStop=gpsWatchStop;
-    gpsWatchStart=()=>({native:false,id:null,__selfTestFake:true});
-    gpsWatchStop=()=>{};
-    try{
-      quickStartFreeRun();
-      const freeOk=!!RUN&&RUN.mode==="free"&&RUN.steps===null&&RUN.actType==="run"&&
-        document.getElementById("run-setup-card").style.display==="none";
-      cancelRunStart(); // 자체진단이 실제로 시작시킨 가짜 세션(웨이크락 등) 정리 — 운동 시작/취소 때 쓰는 기존 함수 그대로 재사용(GPS는 위에서 가짜로 대체됨)
-      const savedWorkouts=DB.workouts;
-      DB.workouts=[{id:"wk_selftest",name:"자체진단용 워크아웃",steps:[{kind:"steady",tType:"time",val:10,zone:2}]}];
-      quickStartFromWorkoutLibrary(); // 아직 시작하지 않고 모드만 '워크아웃'으로 전환 + 선택 대기여야 함
-      const workoutModeOk=!!modeSel&&modeSel.value==="workout"&&!RUN; // RUN 미생성 = 아직 실제 시작 전(오작동 워크아웃 시작 방지 의도대로)
-      DB.workouts=savedWorkouts;
-      return{pass:freeOk&&workoutModeOk,
-        detail:`자유달리기 바로시작=${freeOk} 워크아웃모드전환(미시작)=${workoutModeOk}`};
-    }finally{
-      if(RUN)try{cancelRunStart();}catch(e){}
-      gpsWatchStart=__origGpsWatchStart;gpsWatchStop=__origGpsWatchStop;
-      // cancelRunStart()가 호출한 startPrewarmGps()가 (가짜 함수가 아직 걸려있던 동안) prewarmWatchId에 가짜 핸들을
-      // 남겨뒀을 수 있음 — 그대로 두면 "이미 예열 중"으로 착각해 이후 러닝 탭에 실제로 들어가도 진짜 GPS 예열이
-      // 영영 시작되지 않게 됨. 원래 함수로 되돌린 뒤 핸들만 비워둠(예열 자체는 기존 설계대로 러닝 탭에 들어갈 때
-      // prepareRunTab()이 알아서 다시 걸어줌 — 여기서 강제로 다시 켜면 러닝 탭이 아닌 다른 탭에 있을 때도
-      // GPS가 불필요하게 켜지는 새로운 문제가 생기므로 일부러 안 함)
-      prewarmWatchId=null;
-      if(actSel&&savedActVal!=null){actSel.value=savedActVal;onActTypeChange();}
-      if(modeSel&&savedModeVal!=null){modeSel.value=savedModeVal;onRunModeChange();}
-      if(cadToggle&&savedCadChecked!=null)cadToggle.checked=savedCadChecked;
-    }});
-
-  check("㊾ 운동 다양성 코칭 — 훈련 유형 분류 우선순위(직접선택>메모 키워드>심박존+거리 추정), 크로스트레이닝 제외, 주간/월간 집계 렌더링 무오류(2026-11-22 추가)",()=>{
-    const explicitOk=(()=>{const r=trainCatOf({type:"run",trainCat:"파틀렉",notes:"인터벌 느낌",zone:5,dist:10});return r.cat==="파틀렉"&&r.estimated===false;})();
-    const kwOk=(()=>{const r=trainCatOf({type:"run",notes:"오늘은 LSD 느낌으로",zone:2,dist:5});return r.cat==="LSD"&&r.estimated===true;})();
-    const zoneOk=(()=>{const r1=trainCatOf({type:"run",notes:"",zone:1,dist:5}),r5=trainCatOf({type:"run",notes:"",zone:5,dist:3});
-      return r1.cat==="회복주"&&r5.cat==="인터벌";})();
-    const crossOk=trainCatOf({type:"cross",notes:"",zone:"cross",dist:5}).cat===null;
-    const savedRange=diversityRange,savedSlide2=currentSlideIndex;
-    let renderOk=true;
-    try{goToSlide(0);
-      setDiversityRange("week");renderOk=renderOk&&!!document.getElementById("diversity-body").innerHTML;
-      setDiversityRange("month");renderOk=renderOk&&!!document.getElementById("diversity-body").innerHTML;
-    }catch(e){renderOk=false;}
-    finally{diversityRange=savedRange;goToSlide(savedSlide2);renderDiversityCard();}
-    return{pass:explicitOk&&kwOk&&zoneOk&&crossOk&&renderOk,
-      detail:`직접선택우선=${explicitOk} 키워드추정=${kwOk} 존기반추정=${zoneOk} 크로스제외=${crossOk} 렌더링무오류=${renderOk}`};});
-
-  check("㊿ 탭 전환 시 세로 스크롤이 애니메이션 없이 즉시 맨 위로 — 이전 탭에서 깊이 스크롤한 채로 전환해도 전환 직후 scrollY=0(실기기에서 보고된 '탭 전환 직후 화면 아래쪽이 검게 잘리거나 이전 탭 내용이 섞여보이는' 증상의 원인으로 추정되는 레이스 방지, 2026-11-22)",()=>{
-    const savedSlide3=currentSlideIndex,savedScrollY=window.scrollY;
-    try{
-      goToSlide(5);window.scrollTo(0,3000); // 긴 탭 맨 아래로 스크롤해둔 상태를 흉내
-      goToSlide(0);
-      const resetOk=window.scrollY===0; // behavior:"smooth"였다면 애니메이션 중이라 이 시점에 0이 아닐 수 있음 — "auto"로 바꿔 즉시 0이어야 함
-      goToSlide(3);window.scrollTo(0,2000);
-      goToSlide(7);
-      const resetOk2=window.scrollY===0;
-      return{pass:resetOk&&resetOk2,detail:`전환직후즉시리셋(대시보드)=${resetOk} 전환직후즉시리셋(예측탭)=${resetOk2}`};
-    }finally{goToSlide(savedSlide3);window.scrollTo(0,savedScrollY);}});
-
-  check("51. 탭 전환 직후 헤더·표시 상태 일관성(스와이프 아닌 '콕 탭' 이동 흉내) — 실기기에서 '헤더 이름은 새 탭인데 보이는 내용은 다음 탭'으로 어긋나는 제보가 있어, 다른 형제 탭들을 즉시 접지 않고 전환 애니메이션 뒤에 접도록 바꿈(2026-11-22, 3차 시도). 이 자동검사는 전환 직후 '즉시' 상태만 확인 가능하며, 0.35초 애니메이션이 실기기에서 실제로 어떻게 끝나는지·그 사이 형제 탭이 늦게 접히는 동작 자체는 여기서 확인 불가 — 실기기 재확인 필요",()=>{
-    const savedSlide4=currentSlideIndex;
-    try{
-      const results=[0,1,2,5,10].map(i=>{
-        goToSlide(i);
-        const headerOk=document.getElementById("swipe-current-tab-name").textContent===tabNames[i];
-        const slideEl=document.getElementById("slide-"+i);
-        const targetVisibleOk=!!slideEl&&!slideEl.classList.contains("inactive-slide");
-        const dotEl=document.getElementById("dot-"+i);
-        const dotOk=!!dotEl&&dotEl.classList.contains("active");
-        return{i,ok:headerOk&&targetVisibleOk&&dotOk};});
-      const allOk=results.every(r=>r.ok);
-      return{pass:allOk,detail:`탭별 헤더/표시/점 일치=${results.map(r=>`${r.i}:${r.ok}`).join(",")}`};
-    }finally{goToSlide(savedSlide4);}});
-
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
   if(__swipeContainer)__swipeContainer.style.transition=__savedTransition;
@@ -4059,45 +3896,6 @@ function raceDistM(r){return DIST_M[(r&&r.dist)||"FULL"]||42195;}
 function raceGoalSec(r){return (r&&r.targetSec)?r.targetSec:(TARGET_SEC[r&&r.target]||10800);}
 function raceGoalLabel(r){return `${fmtDur(raceGoalSec(r))} (${DIST_LABEL[(r&&r.dist)||"FULL"]})`;}
 function raceById(id){if(!id)return null;return(DB.races||[]).find(r=>r.id===id)||(DB.raceArchive||[]).find(r=>r.id===id)||null;}
-/* ===== 훈련 유형(인터벌·LSD·회복주 등 13종) 분류 — 운동 다양성 코칭용 (2026-11-22 추가) =====
-   완료된 기록에는 이 분류가 저장돼 있지 않아서(워크아웃 템플릿엔 cat이 있지만 실제 완료 기록과 연결되지 않았었음),
-   아래 우선순위로 정한다: ①사용자가 직접 고른 값(log.trainCat, 운동기록 모달에서 선택 — 확정)
-   →②메모/제목에 적힌 키워드(예: "LSD", "인터벌" — 추정이지만 사용자가 직접 적은 말이라 비교적 신뢰도 높음)
-   →③심박존+거리(기존 자동설계·autoTitle이 이미 쓰는 기준과 동일한 비율) 기반 추정(가장 느슨한 추정).
-   Z3~5 안에서는 구조가 다른 유형들(크루즈인터벌/숏·롱·믹스드인터벌/힐리피트/패스트피니시/파틀렉/스트라이드)을
-   합계 기록(총거리·총시간·평균심박) 하나만으로는 구분할 수 없어, ②에서 키워드로 못 잡으면 Z3~4는 "템포/역치",
-   Z5는 "인터벌"로만 느슨하게 묶는다(직접 확인 필요 — 자세한 구조는 기록 하나만 봐서는 알 수 없음). */
-const TRAIN_CATS=["인터벌","크루즈 인터벌","템포/역치","패스트 피니시","LSD","중장거리","회복주","기초주","파틀렉","힐 리피트","스트라이드","초급자","기타"];
-const TRAINCAT_KEYWORDS=[ // 구체적인 키워드부터 검사(오매칭 방지) — 메모/제목(운동 시작 시의 계획문구 포함)에 적힌 말 기준
-  {cat:"크루즈 인터벌",kw:["크루즈"]},
-  {cat:"패스트 피니시",kw:["패스트피니시","패스트 피니시","fast finish"]},
-  {cat:"힐 리피트",kw:["힐 리피트","힐리피트","언덕","hill"]},
-  {cat:"파틀렉",kw:["파틀렉","fartlek"]},
-  {cat:"스트라이드",kw:["스트라이드","stride"]},
-  {cat:"인터벌",kw:["인터벌","interval","vo2"]},
-  {cat:"템포/역치",kw:["템포","threshold","역치"]},
-  {cat:"LSD",kw:["lsd"]},
-  {cat:"중장거리",kw:["중장거리"]},
-  {cat:"회복주",kw:["회복"]},
-  {cat:"기초주",kw:["이지런","기초주","easy"]}];
-function keywordTrainCat(text){if(!text)return null;const t=(""+text).toLowerCase();
-  for(const k of TRAINCAT_KEYWORDS)if(k.kw.some(w=>t.includes(w.toLowerCase())))return k.cat;
-  return null;}
-function estimateTrainCatByZonePace(dist,zone){ // Zone 2 안에서는 거리 ÷ 기준 롱런(LR) 비율로 LSD/중장거리/기초주를 구분(기존 자동설계가 쓰는 비율: LSD≈LR, 중장거리≈LR*0.6, 기초주≈LR*0.42와 동일한 기준)
-  if(zone==null||dist==null)return null;
-  if(zone===1)return"회복주";
-  if(zone===2){const r=primaryRace(),pk=DIST_LR_PEAK[(r&&r.dist)||"FULL"]||32;
-    if(dist>=pk*0.8)return"LSD";if(dist>=pk*0.5)return"중장거리";return"기초주";}
-  if(zone===3||zone===4)return"템포/역치";
-  if(zone>=5)return"인터벌";
-  return null;}
-function trainCatOf(log){ // {cat, estimated} — cat은 null일 수 있음(크로스트레이닝, 또는 분류 불가)
-  if(log.type!=="run")return{cat:null,estimated:false}; // 13종 분류는 달리기 계열 기록에만 적용(크로스트레이닝 제외)
-  if(log.trainCat&&TRAIN_CATS.includes(log.trainCat))return{cat:log.trainCat,estimated:false};
-  const kw=keywordTrainCat((log.notes||"")+" "+(log.title||""));
-  if(kw)return{cat:kw,estimated:true};
-  const z=log.zone!=null?log.zone:zoneFromHR(log.avghr,calculatedZones);
-  return{cat:estimateTrainCatByZonePace(log.dist,z),estimated:true};}
 function planSourceLabel(raceId){if(!raceId)return null;const r=raceById(raceId);
   if(!r)return "출처 불명(이전 데이터)";
   const deleted=!(DB.races||[]).some(x=>x.id===raceId);
@@ -5790,71 +5588,11 @@ function renderDashboard(){
   const zt=calculatedZones[2]||{min:0,max:0};
   document.getElementById("today-plan-target").innerHTML=plans.length?`타깃 심박(Z2 기준): <span class="zone-badge z2">${zt.min} ~ ${zt.max} bpm</span>`:"";
   renderAdaptBanner();renderWeekHeatmap();
-  initWeatherCard();renderRunTip();renderNutrition();renderDiversityCard();
+  initWeatherCard();renderRunTip();renderNutrition();
 }
 function gauge(key,val,goal,unit){const pct=goal>0?Math.min(100,val/goal*100):0;
   document.getElementById(`gauge-${key}-txt`).textContent=`${val.toFixed(unit==="km"?1:0)} / ${goal} ${unit} (${pct.toFixed(0)}%)`;
   document.getElementById(`gauge-${key}-bar`).style.width=pct+"%";}
-/* ===== 운동 다양성 코칭 — 목표 대시보드, 주간/월간 중 고른 기간의 훈련 유형별 훈련량·시간·횟수 + 코칭 문구 (2026-11-22 추가) ===== */
-let diversityRange="week"; // "week" | "month" — 탭 전환값, 새로고침 시 "week"로 리셋(굳이 저장할 필요 없는 화면 상태)
-function setDiversityRange(r){diversityRange=r;renderDiversityCard();}
-// (2026-11-22) 이 카드가 추가된 뒤(v2.50.0)부터 목표 대시보드 탭이 길어졌고, 그 직후부터 실기기에서
-// "탭 전환 시 화면이 어긋나거나 잘린다"는 제보가 시작됨(그 전 버전에서는 없었다고 확인됨) — 정확한 인과관계는
-// 아직 "직접 확인 필요" 단계지만, 일단 원래 모습(짧은 대시보드)에 가깝게 기본은 접어두고 펼쳐야 보이도록 변경해
-// 원인 격리용 테스트를 겸함
-function diversityCardOpen(){return Store.get("diversityCardOpen")===true;}
-function toggleDiversityCard(){const open=!diversityCardOpen();Store.set("diversityCardOpen",open);
-  const content=document.getElementById("diversity-content");if(content)content.style.display=open?"":"none";
-  const chev=document.getElementById("diversity-chevron");if(chev)chev.className=`bi bi-chevron-${open?"up":"down"}`;
-  if(open)renderDiversityCard();}
-function diversityWindow(){ // 주간은 대시보드 주간 탐색(dashWeekMon/End)과 같은 주를 보도록 맞춤, 월간은 이번 달 1일~오늘
-  if(diversityRange==="month"){const first=TODAY.slice(0,8)+"01";return{s:first,e:TODAY,label:`${TODAY.slice(0,7)} 월간`};}
-  const mon=dashWeekMon(),sun=dashWeekEnd();return{s:mon,e:sun,label:`${mon.slice(5)} ~ ${sun.slice(5)} 주간`};}
-function trainCatBreakdown(s,e){ // {카테고리:{km,min,cnt,estimated}} — 날짜 범위[s,e] 안의 달리기 계열 기록만 집계(크로스트레이닝 제외)
-  const out={};TRAIN_CATS.forEach(c=>out[c]={km:0,min:0,cnt:0,estimated:0});
-  for(const date in DB.calendar){if(date<s||date>e)continue;
-    for(const l of dayLogs(date)){const{cat,estimated}=trainCatOf(l);if(!cat||!out[cat])continue;
-      out[cat].km+=(l.dist||0);out[cat].min+=(l.duration||0);out[cat].cnt++;if(estimated)out[cat].estimated++;}}
-  return out;}
-const DIVERSITY_CORE=["기초주","인터벌","템포/역치","LSD","회복주"]; // 대부분의 훈련 계획이 기본으로 삼는 다섯 유형 — 다양성 코칭의 기준점
-const DIVERSITY_SUGGEST={"기초주":"편안한 페이스로 뛰는 기초주를 늘리면 부상 위험을 줄이면서 기초 체력을 쌓을 수 있어요.",
-  "인터벌":"짧게 빠르게 반복하는 인터벌을 한 번 넣어보면 심장이 튼튼해지고 스피드가 늘어요.",
-  "템포/역치":"평소보다 조금 빡빡한 페이스로 꾸준히 달리는 템포런을 더해보면 '버티는 힘'이 좋아져요.",
-  "LSD":"느린 페이스로 오래 달리는 LSD를 넣으면 지구력의 기초가 단단해져요.",
-  "회복주":"아주 가볍게 뛰는 회복주를 끼워두면 다음 훈련을 더 가볍게 시작할 수 있어요."};
-function diversityCoachText(bd,label){
-  const used=TRAIN_CATS.filter(c=>bd[c].cnt>0);
-  const totalCnt=used.reduce((s,c)=>s+bd[c].cnt,0);
-  if(totalCnt===0)return`${label}에는 아직 기록된 달리기가 없습니다. 운동을 기록하면 어떤 훈련을 얼마나 다양하게 했는지 보여드릴게요.`;
-  const top=used.slice().sort((a,b)=>bd[b].cnt-bd[a].cnt)[0];
-  const topShare=Math.round(bd[top].cnt/totalCnt*100);
-  const missingCore=DIVERSITY_CORE.filter(c=>!used.includes(c));
-  const bits=[`${label} 동안 ${used.length}가지 유형으로 뛰었습니다(총 ${totalCnt}회).`];
-  if(used.length>=4)bits.push("여러 유형을 골고루 섞어서 뛰고 계시네요 — 몸에 다양한 자극을 주는 좋은 방향입니다.");
-  else if(used.length<=2)bits.push("한두 가지 유형에 치우쳐 있습니다 — 조금씩 다른 자극을 더하면 덜 지루하고, 부상 위험도 낮아집니다.");
-  if(topShare>=70&&used.length>1)bits.push(`특히 '${top}'이 ${topShare}%로 비중이 매우 높습니다.`);
-  if(missingCore.length){const pick=missingCore[0];bits.push(`아직 '${pick}' 유형이 없네요 — ${DIVERSITY_SUGGEST[pick]}`);}
-  bits.push("순서를 억지로 맞추기보다, 즐겁게 다양한 자극을 섞는 것 자체가 건강과 기록 향상에 모두 도움이 됩니다.");
-  return bits.join(" ");}
-function renderDiversityCard(){
-  const body=document.getElementById("diversity-body");if(!body)return;
-  const open=diversityCardOpen();
-  const content=document.getElementById("diversity-content");if(content)content.style.display=open?"":"none";
-  const chev=document.getElementById("diversity-chevron");if(chev)chev.className=`bi bi-chevron-${open?"up":"down"}`;
-  const wkBtn=document.getElementById("diversity-tab-week"),moBtn=document.getElementById("diversity-tab-month");
-  if(wkBtn)wkBtn.className=`btn btn-sm ${diversityRange==="week"?"btn-success":"btn-secondary"}`;
-  if(moBtn)moBtn.className=`btn btn-sm ${diversityRange==="month"?"btn-success":"btn-secondary"}`;
-  const{s,e,label}=diversityWindow();
-  const bd=trainCatBreakdown(s,e);
-  const used=TRAIN_CATS.filter(c=>bd[c].cnt>0).sort((a,b)=>bd[b].km-bd[a].km);
-  const rows=used.map(c=>{const r=bd[c];
-    return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-light)">
-      <div style="width:84px;font-size:12px;color:#e2e8f0;flex-shrink:0">${escapeHtml(c)}</div>
-      <div style="flex:1;font-size:11.5px;color:#94a3b8">${r.km.toFixed(1)}km · ${fmtDur(r.min*60)} · ${r.cnt}회${r.estimated?` <span style="color:#64748b">(추정 ${r.estimated})</span>`:""}</div>
-    </div>`;}).join("")||`<div style="font-size:12.5px;color:var(--text-secondary);padding:4px 0">기록된 달리기가 없습니다.</div>`;
-  body.innerHTML=`<div style="font-size:11px;color:#64748b;margin-bottom:8px">${escapeHtml(label)}</div>
-    ${rows}
-    <div style="margin-top:10px;background:#080e1a;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#e2e8f0;line-height:1.7"><i class="bi bi-chat-heart-fill" style="color:#f0abfc"></i> ${escapeHtml(diversityCoachText(bd,label))}</div>`;}
 function renderAdaptBanner(){const slot=document.getElementById("adapt-banner-slot");
   const eff=t=>{let d=0,dur=0;for(const date in DB.calendar){const dif=diffDays(TODAY,date);
     if(dif>=t&&dif<t+28)for(const l of dayLogs(date))if(l.type==="run"&&l.zone===2&&l.dist>0){d+=l.dist;dur+=l.duration;}}return d>0?dur/d:null;};
@@ -6657,7 +6395,6 @@ function previewZone(){
   const act=ACT_BY_ID[actId]||ACT_BY_ID.run;
   const dist=parseFloat(document.getElementById("m-log-dist").value)||0,dur=mmssToMin(document.getElementById("m-log-duration").value)||0;
   const el=document.getElementById("zone-preview");let pace=dist>0&&dur>0?` · 페이스 ${fmtPace(dur*60/dist)}/km`:"";
-  const tcg=document.getElementById("m-log-traincat-group");if(tcg)tcg.style.display=act.bucket==="cross"?"none":"block"; // 훈련 유형(13종)은 달리기 계열에만 적용
   if(act.bucket==="cross"){el.innerHTML=`<i class="bi ${act.icon}" style="color:#38bdf8"></i> ${act.label} → <span class="zone-badge z1">파란색 막대</span>${pace}`;return;}
   const z=zoneFromHR(hr,calculatedZones);
   el.innerHTML=`<i class="bi bi-heart-pulse" style="color:#ef4444"></i> 평균 ${hr}bpm → <span class="zone-badge ${ZONE_BADGE[z]}">${ZONE_NAME[z]}</span> (자동 판정)${pace}`;}
@@ -6666,7 +6403,6 @@ function editLog(key,id){const l=(DB.calendar[key].logs||[]).find(x=>x.id===id);
   document.getElementById("m-log-date").value=key;document.getElementById("m-log-time").value=l.time;document.getElementById("m-log-type").value=l.sport||(l.type==="run"?"run":"etc");
   document.getElementById("m-log-dist").value=l.dist;document.getElementById("m-log-duration").value=minToMMSS(l.duration);
   document.getElementById("m-log-avghr").value=l.avghr;document.getElementById("m-log-maxhr").value=l.maxhr;document.getElementById("m-log-notes").value=l.notes||"";
-  const tcEl0=document.getElementById("m-log-traincat");if(tcEl0)tcEl0.value=l.trainCat||"";
   document.getElementById("m-log-planref").value=(l.planRef==null?"":l.planRef);document.getElementById("m-log-rating").value=(l.rating==null?"":l.rating);
   populateShoeSelect();document.getElementById("m-log-shoe").value=l.shoeId||"";
   document.getElementById("m-log-watchcad").value=l.watchCadenceSpm||"";
@@ -6762,7 +6498,6 @@ function saveManualWorkoutLog(){
   const pr=document.getElementById("m-log-planref").value,rt=document.getElementById("m-log-rating").value;
   if(pr!=="")log.planRef=parseInt(pr);if(rt!=="")log.rating=parseInt(rt);
   const shoeId=(document.getElementById("m-log-shoe")||{}).value;if(shoeId)log.shoeId=shoeId;
-  const tc=(document.getElementById("m-log-traincat")||{}).value;if(tc&&act.bucket==="run")log.trainCat=tc; // 직접 고른 값만 저장(안 고르면 대시보드에서 매번 다시 추정)
   // GPS 경로는 용량이 커서 localStorage가 아닌 IndexedDB에 저장하고, 로그에는 있다는 표시만 남김
   if(pendingRoute&&pendingRoute.length>=2){log.hasRoute=true;log.routePts=pendingRoute.length;saveRouteData(log.id,pendingRoute);}
   pendingRoute=null;
@@ -8928,26 +8663,6 @@ function cadenceCoachText(avgSpm,avgPaceSec){ // 실측 평균 케이던스 vs �
   if(diff<=-8)return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)보다 낮습니다. 보폭을 줄이고 스텝을 더 빠르게 가져가 보세요.`;
   if(diff>=8)return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)보다 높습니다.`;
   return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)과 비슷한 수준입니다.`;}
-/* ===== 러닝 탭 맨 위 '바로시작' 버튼 (2026-11-22 추가) =====
-   활동종류·모드 선택 화면을 거치지 않고 한 번에 바로 시작하고 싶다는 요청 — 기존 설정 폼 값만
-   미리 채워 넣고 그 다음은 기존 startRunSession()의 GPS 예열·카운트다운 흐름을 그대로 탄다(로직 중복 없음). */
-function quickStartFreeRun(){ // 활동종류=달리기(로드), 모드=자유 달리기(목표 없음)로 되돌리고 즉시 시작
-  const actSel=document.getElementById("run-acttype");
-  if(actSel){actSel.value="run";onActTypeChange();}
-  const modeSel=document.getElementById("run-mode");
-  if(modeSel){modeSel.value="free";onRunModeChange();}
-  ["run-free-dist","run-free-time","run-free-pace"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  renderFreeTargetHint();
-  startRunSession();}
-function quickStartFromWorkoutLibrary(){ // 저장된 워크아웃이 있으면 모드를 '워크아웃'으로 바로 전환해 선택만 남김(어떤 워크아웃인지는 직접 고르게 함 — 잘못된 워크아웃이 시작되는 사고 방지)
-  if(!(DB.workouts||[]).length){showToast("저장된 워크아웃이 없습니다 — 워크아웃 탭에서 먼저 만들어주세요.");return;}
-  const actSel=document.getElementById("run-acttype");
-  if(actSel){actSel.value="run";onActTypeChange();}
-  const modeSel=document.getElementById("run-mode");
-  if(modeSel){modeSel.value="workout";onRunModeChange();}
-  const card=document.getElementById("run-setup-card");
-  if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
-  showToast("워크아웃을 선택하고 START를 눌러주세요.");}
 function startRunSession(){
   const cadenceWanted=CADENCE_SENSOR_SUPPORTED&&document.getElementById("run-cadence-sensor-toggle").checked;
   if(cadenceWanted){ // iOS는 이 권한 호출이 클릭 안에서 "시작"되기만 하면 되고 응답을 기다릴 필요는 없다 —
@@ -8959,20 +8674,18 @@ function startRunSession(){
   const actType=selectedActType||ACT_BY_ID.run;
   const isRun=actType.bucket==="run";
   if(actType.gps&&!navigator.geolocation){showToast("이 브라우저는 GPS를 지원하지 않습니다.");return;}
-  let mode="free",steps=null,title=actType.label,planIdx=null,refDist=null,refTimeSec=null,trainCat=null;
+  let mode="free",steps=null,title=actType.label,planIdx=null,refDist=null,refTimeSec=null;
   let trackOn=false,trackLane=null,trackLapDist=null,metroOn=false,metroBpm=null,metroSound=null;
   if(isRun){
     mode=document.getElementById("run-mode").value;
     if(mode==="free"){const fs=buildFreeRunStep();if(fs){steps=fs;title=fs[0].label;}}
     else if(mode==="plan"){const src=pendingRunPlan||{date:TODAY,idx:0,text:(dayPlans(TODAY)[0]||null),fromLog:false};
-      if(src.text){steps=planToSteps(src.text);title=src.text.replace(/\s*@[\d:]+\/km/g,"");planIdx=(!src.fromLog&&src.date===TODAY)?src.idx:null;
-        trainCat=keywordTrainCat(src.text);} // 계획 문구(예: "LSD 26km (Z2)")에 이미 훈련 유형 단어가 들어있어 바로 분류 가능
+      if(src.text){steps=planToSteps(src.text);title=src.text.replace(/\s*@[\d:]+\/km/g,"");planIdx=(!src.fromLog&&src.date===TODAY)?src.idx:null;}
       else{showToast("계획이 없어 자유 달리기로 시작합니다.");}
       pendingRunPlan=null;} // 사용 후 초기화 — 다음 진입 시 다시 오늘 계획이 기본값
     else if(mode==="workout"){const id=document.getElementById("run-workout-pick").value;
       const w=(DB.workouts||[]).find(x=>x.id===id);
-      if(!w){showToast("워크아웃을 선택하세요.");return;}steps=flattenSteps(w.steps);title=w.name;refDist=w.refDist||null;refTimeSec=w.refTimeSec||null;
-      trainCat=TRAIN_CATS.includes(w.cat)?w.cat:null;} // 워크아웃 라이브러리에 이미 등록된 분류를 그대로 이어받음(추정 아님, 확정)
+      if(!w){showToast("워크아웃을 선택하세요.");return;}steps=flattenSteps(w.steps);title=w.name;refDist=w.refDist||null;refTimeSec=w.refTimeSec||null;}
     trackOn=document.getElementById("run-track-toggle").checked;
     if(trackOn){trackLane=parseInt(document.getElementById("run-track-lane").value);trackLapDist=TRACK_LANE_DIST[trackLane-1];title=title+` (${trackLane}레인)`;}
     metroOn=document.getElementById("run-metro-toggle").checked;
@@ -8980,7 +8693,7 @@ function startRunSession(){
     metroSound=metroOn?document.getElementById("run-metro-sound").value:null;}
   const runShoeId=(document.getElementById("run-shoe-select")||{}).value||"";
   const noGpsRunMode=isRun&&!actType.gps; // 트레드밀 등 — 걸음수×보폭으로 거리 추정(센서 기반)
-  RUN={mode,title,steps,planIdx,refDist,refTimeSec,trainCat,stepI:0,stepStartT:0,stepStartD:0,
+  RUN={mode,title,steps,planIdx,refDist,refTimeSec,stepI:0,stepStartT:0,stepStartD:0,
     actType:actType.id,actGps:actType.gps,actUnit:actType.unit,
     voice:document.getElementById("run-voice").value,ann:parseFloat(document.getElementById("run-announce").value),
     startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,gapSec:0,
@@ -9409,9 +9122,6 @@ function finishRunSession(){if(!RUN)return;
   document.getElementById("m-log-type").value=RUN.actType||"run";
   document.getElementById("m-log-dist").value=km;document.getElementById("m-log-duration").value=minToMMSS(min);
   document.getElementById("m-log-avghr").value=Math.round((z.min+z.max)/2);document.getElementById("m-log-maxhr").value=z.max;
-  // 훈련 유형 — 달리기 계열에서만 적용(걷기·사이클 등은 13종 분류 대상 아님). 워크아웃/계획에서 이미 알고 있으면 그대로, 자유 달리기라면 방금 계산한 심박존+거리로 추정해 미리 채워둠(저장 전 직접 고쳐도 됨, 2026-11-22)
-  const tcEl=document.getElementById("m-log-traincat");
-  if(tcEl)tcEl.value=((ACT_BY_ID[RUN.actType]||ACT_BY_ID.run).bucket==="run")?(RUN.trainCat||estimateTrainCatByZonePace(km,estZone)||""):"";
   if(avgCadenceSpm)cadenceCoachTxt=cadenceCoachText(avgCadenceSpm,avgPaceSec);
   pendingSummary={km,min,avgPaceSec,bestPaceSec,elapsed:RUN.elapsed,avgCadenceSpm,cadenceMount:avgCadenceSpm?RUN.cadenceMount:null};
   const resultLine=`실측 ${km}km · ${fmtDur(RUN.elapsed)}${avgPaceSec?` · 평균 ${fmtPace(avgPaceSec)}/km`:""}${bestPaceSec?` · 최고 ${fmtPace(bestPaceSec)}/km(${BEST_PACE_WINDOW_M}m 기준)`:""}`;
@@ -10357,11 +10067,6 @@ function initDotsInteraction(){const g=document.getElementById("dots-group");if(
   document.addEventListener("mouseup",()=>{dotsDragging=false;});}
 function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const prevIndex=currentSlideIndex;currentSlideIndex=index;
   if(prevIndex===1&&index!==1&&!RUN)stopPrewarmGps(); // 러닝 탭을 벗어나고 세션도 시작 안 했으면 배터리 절약을 위해 예열 중단
-  // (2026-11-22) v2.50.1~v2.50.6에서 전환 애니메이션·리플로우 쪽을 여러 차례 건드려봤지만(will-change 제거,
-  // scrollTo 변경, 전환중 전체 펼침, 카드 기본 접힘, 강제 리플로우, 애니메이션 자체 제거) 전부 실기기에서 효과가
-  // 없었음 — 그러다 사용자가 "v2.48.6까지는 정상, v2.49.0부터 문제"라고 확인해줘서 원인을 완전히 다른 곳(이
-  // 함수가 아니라 ㊽ 자체진단이 매 실행마다 실제 GPS 하드웨어를 건드리던 것)에서 찾음. 그 진짜 원인을 고쳤으므로
-  // 여기 goToSlide()는 다시 v2.50.2와 동일한 가장 단순한 형태로 되돌림(불필요하게 건드린 부분을 남겨두지 않기 위함)
   document.getElementById("swipe-container").style.transform=`translateX(-${index*(100/totalSlides)}%)`;
   document.getElementById("swipe-current-tab-name").textContent=tabNames[index];
   for(let i=0;i<totalSlides;i++){const b=document.getElementById(`tabbtn-${i}`);if(b)b.classList.toggle("active",i===index);
@@ -10376,7 +10081,7 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
   else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){renderErrorReportToggle();populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();renderGearList();populateShoeSelect();onShoeCategoryChange();renderDynamicsCompare();renderDynSpeedChart();renderDynamicsPrefsUI();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
-  window.scrollTo({top:0,behavior:"auto"});} // (2026-11-22) 이전엔 일반 탭 전환때만 behavior:"smooth"(애니메이션)였는데, 가로 탭 전환(0.35초, transform)·이전 탭이 접히며 문서 높이가 바뀌는 것과 동시에 일어나면서, 세로 스크롤 애니메이션이 덜 끝난 상태로 화면이 보여 "이전 탭 내용이 섞여 보이거나 빈 공간이 보이는" 현상과 일치 — 즉시 이동(auto)으로 바꿔 레이스를 없앰(직접 확인 필요)
+  window.scrollTo({top:0,behavior:dotsDragging?"auto":"smooth"});}
 const viewport=document.getElementById("swipe-viewport"),container=document.getElementById("swipe-container");
 let dragStartX=0,dragStartY=0,dragging=false,decided=false,horizontal=false;
 function dragStart(x,y,e){if(e.target.closest(".modal-overlay,input,select,textarea,button,a,canvas"))return;dragStartX=x;dragStartY=y;dragging=true;decided=false;horizontal=false;}
