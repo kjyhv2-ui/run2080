@@ -345,10 +345,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <!-- SLIDE 1: 러닝 측정 -->
     <div class="tab-slide" id="slide-1">
       <div id="tab-toc-1"></div>
-      <div id="quick-start-row" style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn btn-sm btn-success" style="flex:1;padding:10px 6px;font-size:12.5px" onclick="quickStartFreeRun()"><i class="bi bi-lightning-charge-fill"></i> 자유 달리기 바로시작</button>
-        <button class="btn btn-sm btn-secondary" style="flex:1;padding:10px 6px;font-size:12.5px" onclick="quickStartFromWorkoutLibrary()"><i class="bi bi-collection-play-fill"></i> 워크아웃에서 바로시작</button>
-      </div>
       <div class="card" id="run-setup-card">
         <div class="card-header"><div class="card-title"><i class="bi bi-geo-alt-fill" style="color:#10b981"></i> 운동시작</div>
           <span class="zone-badge z1" id="gps-status">GPS 대기</span></div>
@@ -2568,7 +2564,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.51.2",APP_BUILD="2026-11-22";
+const APP_VERSION="2.51.1",APP_BUILD="2026-11-22";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2609,13 +2605,6 @@ function renderPremiumGate(){renderTrialBanner();} // 옛 이름 유지(호출�
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
-  {v:"2.51.2",d:"2026-11-22",title:"기능 재추가 — 러닝 탭 '바로시작' 버튼 2개(자체진단 방식을 바꿔 재설계)",items:[
-    "경위: v2.48.6(정상)에 이 버튼 기능만 추가한 v2.51.0을 실기기(갤럭시 S27, 크롬)에서 테스트한 결과 탭 전환 불일치 증상이 재현되어 v2.51.1에서 기능을 완전히 제거했음. 이번에 코드를 다시 세밀히 검토한 결과, 버튼·함수 자체(HTML, quickStartFreeRun, quickStartFromWorkoutLibrary)에는 의심스러운 부분이 없었지만, 이 기능과 같이 추가됐던 자체진단 ㊽(부팅 0.3초 후 자동 실행)이 유일하게 실제 startRunSession()을 자동으로 호출→곧바로 cancelRunStart()로 취소하는 테스트였음을 확인",
-    "의심 지점(직접 확인 필요 — 코드 검토로 가능성을 좁혔을 뿐 실기기로 100% 특정하진 못함): startRunSession()의 requestWakeLock()은 실제 navigator.wakeLock.request() 비동기 API를 그대로 호출하는데(이 함수는 GPS처럼 자체진단에서 가짜로 대체할 수 없었음), 자체진단이 시작하자마자 0ms만에 cancelRunStart()의 releaseWakeLock()을 불러버려서 '권한 요청이 끝나기 전에 취소'하는 경합이 생김 — 사람이 실제로 버튼을 눌렀다 취소할 때는 이 정도로 빠르게(같은 틱 안에) 취소하는 일이 없어 지금까지 아무도 겪지 않았을 가능성. 이 경합이 눈에 보이는 탭 전환 버그로 정확히 어떻게 이어지는지는 끝까지 증명하지 못했지만, '기능을 넣으면 재현되고 빼면 사라진다'는 실기기 확인 결과와, 이 자체진단만이 유일하게 매 부팅마다 실제 GPS 시작+취소 흐름 전체(웨이크락·GPS 예열 타이머·카운트다운 오버레이)를 자동으로 왕복시키는 코드라는 점이 겹쳐 가장 유력한 용의선으로 판단",
-    "재설계: 자체진단 ㊽을 startRunSession()을 실제로 호출하지 않는 방식으로 다시 작성 — startRunSession 자체를 임시로 가짜 함수(호출 여부만 기록)로 바꿔치기한 뒤, 두 버튼이 '그 직전까지의 준비 로직'(활동종류/모드 전환, 입력값 초기화, 호출 여부)만 맞는지 확인. 이렇게 하면 자체진단이 실제 GPS·웨이크락·오버레이·타이머를 단 한 번도 건드리지 않음",
-    "중요: 실제 사용자가 버튼을 누를 때 실행되는 코드 경로(quickStartFreeRun → startRunSession 그대로 호출)는 전혀 바뀌지 않았음 — v2.48.6의 기존 '시작' 버튼과 동일한 코드를 그대로 재사용하는 구조라, 자동 자체진단만 더 이상 이 경로를 매 부팅마다 왕복시키지 않게 된 것",
-    "직접 확인 필요(가장 중요): 이 버전을 실기기(갤럭시 S27, 크롬)에 배포해 탭 전환이 정상인지 재확인 — 정상이면 위 가설이 맞았다는 뜻이고, 그래도 재현되면 원인이 이 자체진단이 아니라 다른 곳(예: 버튼 HTML이 slide-1 레이아웃/높이에 주는 영향, 또는 전혀 다른 요인)에 있다는 뜻이므로 바로 알려주시면 다음 가설로 넘어감",
-    "직접 확인 필요(부차적): requestWakeLock()/cancelRunStart()의 웨이크락 경합 자체는 v2.48.6에도 이미 존재하던 코드라, 사람이 실제로 아주 빠르게 시작→취소를 반복하면 여전히 재현될 수 있음(이번 수정 범위 밖 — 필요하면 별도로 수정)"]},
   {v:"2.51.1",d:"2026-11-22",title:"기능 롤백 — 러닝 탭 '바로시작' 버튼 2개 제거(v2.51.0에서 추가했다가 실기기 재현으로 되돌림)",items:[
     "중요: v2.48.6(정상 확인됨) 기준에 '바로시작' 버튼 2개만 추가한 v2.51.0을 실기기(갤럭시 S27, 크롬)에 배포해 확인한 결과 — 탭 전환 시 헤더/내용 불일치(목표 대시보드 헤더인데 러닝 탭 내용이 보임) 증상이 다시 나타남 — 이는 애초에 사용자가 지목했던 v2.48.6→v2.49.0 전환 시점(이 버튼이 처음 추가된 버전)과 정확히 일치하는 재현으로, 이 기능(또는 이 기능이 건드리는 무언가)이 문제와 실제로 연관되어 있다는 가장 강한 증거",
     "사용자 지시로 이 기능 전체를 코드에서 제거(HTML 버튼 2개, quickStartFreeRun()/quickStartFromWorkoutLibrary() 함수 2개, 자체진단 ㊽ 전부 삭제) — v2.48.6 기능 범위로 되돌림",
@@ -3829,43 +3818,6 @@ function runSelfTests(){
     return{pass:lenOk&&exactMultipleOk&&wavOk,
       detail:`트랙길이=${dur.toFixed(1)}s(목표 ${METRO_TRACK_LEN_SEC}s) 박자경계일치=${exactMultipleOk} WAV생성=${wavOk} — 단, 실기기 <audio> 루프 재시작 지연 자체는 Playwright로 검증 불가(직접 확인 필요)`};});
 
-  check("㊽ 러닝 탭 '바로시작' 버튼 — 준비 로직만 검증(실제 GPS 예열·웨이크락·카운트다운은 자체진단 중 전혀 건드리지 않음, v2.51.2 재설계)",()=>{
-    // v2.51.0에서는 이 테스트가 실제 startRunSession()을 호출→곧바로 cancelRunStart()로 취소했는데,
-    // 그 사이 requestWakeLock()의 실제 navigator.wakeLock.request() 비동기 호출이 releaseWakeLock()보다 늦게 끝나는 경합(그리고
-    // beginGpsAcquire/countdownOverlay/GPS 예열 타이머가 맞물리는 구간)이 실기기에서만 재현되는 문제와 시간대가 겹쳐 있었음(직접 확인 필요 — 완전히
-    // 특정되진 않았으나, v2.48.6에 이 기능만 추가한 버전에서 실기기 탭 전환 불일치가 재현되고 기능을 빼면 사라짐을 확인함).
-    // 그래서 이 자체진단은 startRunSession() 자체를 부르지 않고 "그 직전까지의 준비 로직"만 확인하도록 재설계 — 실제 사용자가 버튼을 누를 때는
-    // 평소처럼 진짜 startRunSession()이 그대로 실행된다(코드 경로 자체는 안 바뀜, 자체진단 방식만 바뀜).
-    const actSel=document.getElementById("run-acttype"),modeSel=document.getElementById("run-mode");
-    const savedActVal=actSel?actSel.value:null,savedModeVal=modeSel?modeSel.value:null;
-    const savedFreeVals=["run-free-dist","run-free-time","run-free-pace"].map(id=>(document.getElementById(id)||{}).value);
-    const __origStartRunSession=startRunSession;
-    let srsCalled=false;
-    startRunSession=()=>{srsCalled=true;}; // 실제 GPS·웨이크락·오버레이 흐름은 전혀 타지 않도록 완전히 대체
-    try{
-      if(actSel){actSel.value="bike";} // 일부러 다른 값으로 흐트러뜨린 뒤
-      if(modeSel){modeSel.value="workout";}
-      ["run-free-dist","run-free-time","run-free-pace"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="12";});
-      quickStartFreeRun();
-      const freeOk=srsCalled&&actSel.value==="run"&&modeSel.value==="free"&&
-        ["run-free-dist","run-free-time","run-free-pace"].every(id=>(document.getElementById(id)||{value:""}).value==="");
-      srsCalled=false;
-      const savedWorkouts=DB.workouts;
-      DB.workouts=[];
-      quickStartFromWorkoutLibrary(); // 저장된 워크아웃 없을 때 — 모드 안 바뀌고 안내만
-      const emptyLibOk=!srsCalled&&modeSel.value==="free";
-      DB.workouts=[{id:"wk_selftest",name:"자체진단용 워크아웃",steps:[{kind:"steady",tType:"time",val:10,zone:2}]}];
-      quickStartFromWorkoutLibrary(); // 저장된 워크아웃 있을 때 — 모드만 전환, 시작은 호출 안 됨
-      const libOk=!srsCalled&&modeSel.value==="workout";
-      DB.workouts=savedWorkouts;
-      return{pass:freeOk&&emptyLibOk&&libOk,
-        detail:`자유달리기 준비(startRunSession 호출+필드 초기화)=${freeOk} 워크아웃없음(미전환)=${emptyLibOk} 워크아웃있음(전환만)=${libOk}`};
-    }finally{
-      startRunSession=__origStartRunSession; // 실제 함수 복원 — 실사용 시 버튼 동작은 그대로
-      if(actSel&&savedActVal!=null){actSel.value=savedActVal;onActTypeChange();}
-      if(modeSel&&savedModeVal!=null){modeSel.value=savedModeVal;onRunModeChange();}
-      ["run-free-dist","run-free-time","run-free-pace"].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=savedFreeVals[i]||"";});
-    }});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -8716,26 +8668,6 @@ function cadenceCoachText(avgSpm,avgPaceSec){ // 실측 평균 케이던스 vs �
   if(diff<=-8)return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)보다 낮습니다. 보폭을 줄이고 스텝을 더 빠르게 가져가 보세요.`;
   if(diff>=8)return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)보다 높습니다.`;
   return`실측 평균 ${avgSpm}spm — 추천(${rec.spm}spm)과 비슷한 수준입니다.`;}
-/* ===== 러닝 탭 맨 위 '바로시작' 버튼 (v2.51.2 — v2.48.6 기준 재구현) =====
-   활동종류·모드 선택 화면을 거치지 않고 한 번에 바로 시작하고 싶다는 요청 — 기존 설정 폼 값만
-   미리 채워 넣고 그 다음은 기존 startRunSession()의 GPS 예열·카운트다운 흐름을 그대로 탄다(로직 중복 없음). */
-function quickStartFreeRun(){ // 활동종류=달리기(로드), 모드=자유 달리기(목표 없음)로 되돌리고 즉시 시작
-  const actSel=document.getElementById("run-acttype");
-  if(actSel){actSel.value="run";onActTypeChange();}
-  const modeSel=document.getElementById("run-mode");
-  if(modeSel){modeSel.value="free";onRunModeChange();}
-  ["run-free-dist","run-free-time","run-free-pace"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  renderFreeTargetHint();
-  startRunSession();}
-function quickStartFromWorkoutLibrary(){ // 저장된 워크아웃이 있으면 모드를 '워크아웃'으로 바로 전환해 선택만 남김(어떤 워크아웃인지는 직접 고르게 함 — 잘못된 워크아웃이 시작되는 사고 방지)
-  if(!(DB.workouts||[]).length){showToast("저장된 워크아웃이 없습니다 — 워크아웃 탭에서 먼저 만들어주세요.");return;}
-  const actSel=document.getElementById("run-acttype");
-  if(actSel){actSel.value="run";onActTypeChange();}
-  const modeSel=document.getElementById("run-mode");
-  if(modeSel){modeSel.value="workout";onRunModeChange();}
-  const card=document.getElementById("run-setup-card");
-  if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
-  showToast("워크아웃을 선택하고 START를 눌러주세요.");}
 function startRunSession(){
   const cadenceWanted=CADENCE_SENSOR_SUPPORTED&&document.getElementById("run-cadence-sensor-toggle").checked;
   if(cadenceWanted){ // iOS는 이 권한 호출이 클릭 안에서 "시작"되기만 하면 되고 응답을 기다릴 필요는 없다 —
