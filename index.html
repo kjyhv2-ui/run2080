@@ -305,6 +305,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="card-header"><div class="card-title"><i class="bi bi-egg-fried" style="color:#6ee7b7"></i> 오늘의 영양 전략</div></div>
         <div id="nutrition-body"></div>
       </div>
+      <div class="card" id="diversity-card" style="margin-bottom:16px">
+        <div class="card-header"><div class="card-title"><i class="bi bi-shuffle" style="color:#a78bfa"></i> 운동 다양성 코칭</div></div>
+        <div style="display:flex;gap:6px;margin:4px 0 8px">
+          <button class="btn btn-sm" id="diversity-tab-week" onclick="setDiversityRange('week')">주간</button>
+          <button class="btn btn-sm" id="diversity-tab-month" onclick="setDiversityRange('month')">월간</button>
+        </div>
+        <div id="diversity-body"></div>
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px;padding:8px 10px;margin-bottom:10px">
         <button class="btn btn-sm btn-secondary" onclick="shiftDashWeek(-1)"><i class="bi bi-chevron-left"></i></button>
         <div style="text-align:center;flex:1">
@@ -1105,6 +1113,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <option value="jumprope">줄넘기</option><option value="yoga">요가/스트레칭</option><option value="etc">기타</option>
         </optgroup>
       </select>
+    </div>
+    <div class="form-group"><label>훈련 분류 (선택 — 비워두면 메모 내용으로 자동 추정)</label>
+      <select id="m-log-cat"><option value="">— 자동 추정 —</option><option>인터벌</option><option>크루즈 인터벌</option><option>템포/역치</option><option>패스트 피니시</option><option>LSD</option><option>중장거리</option><option>회복주</option><option>기초주</option><option>파틀렉</option><option>힐 리피트</option><option>스트라이드</option><option>초급자</option><option>기타</option></select>
     </div>
     <div class="grid-2col" style="gap:10px">
       <div class="form-group"><label>거리 (km)</label><input type="number" step="0.01" id="m-log-dist" value="10" oninput="previewZone()"></div>
@@ -2564,7 +2575,7 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.51.1",APP_BUILD="2026-11-22";
+const APP_VERSION="2.52.0",APP_BUILD="2026-11-22";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
    strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
    GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
@@ -2605,6 +2616,15 @@ function renderPremiumGate(){renderTrialBanner();} // 옛 이름 유지(호출�
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.52.0",d:"2026-11-22",title:"기능 추가 — 목표 대시보드에 '운동 다양성 코칭' 카드, (2) 온보딩 인트로 재발 신고 점검",items:[
+    "경위: '바로시작' 버튼 재설계(v2.51.2)도 실기기에서 같은 탭 전환 문제가 계속돼 그 기능 자체는 보류(포기)하고, 이번엔 (1) 온보딩 인트로가 또 건너뛰어진다는 신고 점검과 (2) 운동 다양성 코칭 카드를 새로 구현",
+    "(1) 온보딩 점검 결과(직접 확인 필요): Playwright로 '완전 첫 실행(localStorage 비어있음)' 및 '앱잠금(PIN) 걸린 상태에서 자체진단이 먼저 도는 경우'를 모두 재현해봤으나, 두 경우 모두 인트로가 정상적으로 뜨고 끝까지 유지됨(코드상 재현 안 됨) — 가장 유력한 설명은 같은 브라우저/기기로 이전에 이미 테스트(완료 또는 건너뛰기)를 했던 적이 있어 localStorage에 '온보딩 완료' 기록이 남아있는 경우(이 경우는 버그가 아니라 정상 동작). 시크릿창/사이트 데이터 삭제 후로 재확인 요청 — 그래도 재현되면 바로 알려주시면 재조사",
+    "(2) 운동 다양성 코칭 카드 — 요청하신 13개 분류(인터벌·크루즈 인터벌·템포/역치·패스트 피니시·LSD·중장거리·회복주·기초주·파틀렉·힐 리피트·스트라이드·초급자·기타)는 사실 워크아웃 만들기(wb-cat)에 이미 있던 분류 체계와 정확히 같음 — 다만 지금까지는 저장된 '워크아웃 템플릿'에만 분류가 있고, 실제로 뛴 뒤 저장되는 '기록(log)'에는 분류가 전혀 남지 않고 있었음(워크아웃으로 시작해도 이름만 남고 분류는 버려짐)",
+    "그래서 먼저 기록에 분류가 남도록 배관 작업: 워크아웃 라이브러리에서 시작/완료한 경우 그 워크아웃의 분류(w.cat)를 자동으로 기록에 propagate, 기록 추가/수정 모달에 '훈련 분류(선택)' 드롭다운을 새로 추가(비워두면 자동 추정)",
+    "과거 기록이나 분류를 안 고른 기록은 메모(notes) 텍스트에서 키워드로 최대한 추정(classifyLogCategory) — 예: '크루즈 인터벌'→크루즈 인터벌, 'LSD'→LSD, 아무 키워드도 안 맞으면 '기타'. 자유 달리기처럼 분류를 유추할 단서가 아예 없는 기록은 대부분 '기타'로 묶일 수밖에 없음(직접 확인 필요 — 완벽한 분류가 아니라 추정치)",
+    "목표 대시보드에 카드 추가 — 주간(최근 7일)/월간(최근 30일) 탭 전환, 13개 분류별 횟수·거리를 막대로 표시, 하단에 '아직 안 해본(또는 가장 적게 한) 훈련 방식'을 짚어주며 다양하게 섞으면 지루함도 줄고 부상 위험도 분산되고 전반적인 러닝 능력이 고르게 는다는 취지의 코칭 문구를 생성(diversityCoachText) — 교차훈련(자전거·수영 등)은 이 분류 체계와 성격이 달라 집계에서 제외",
+    "자체진단 ㊽ 추가: 분류 추정 로직(명시적 cat 우선, 메모 키워드 추정, 매치 없으면 기타)과 주간/월간 집계(날짜 범위 경계·횟수·거리 합산, 교차훈련 제외)가 정확한지 확인",
+    "직접 확인 필요: 실기기에서 이 버전도 탭 전환이 정상인지(이 기능은 바로시작 버튼과 무관하게 대시보드 탭에만 영향을 주므로 별개 확인 필요), 그리고 다양성 코칭 카드의 코칭 문구가 실제로 도움이 되는 톤인지"]},
   {v:"2.51.1",d:"2026-11-22",title:"기능 롤백 — 러닝 탭 '바로시작' 버튼 2개 제거(v2.51.0에서 추가했다가 실기기 재현으로 되돌림)",items:[
     "중요: v2.48.6(정상 확인됨) 기준에 '바로시작' 버튼 2개만 추가한 v2.51.0을 실기기(갤럭시 S27, 크롬)에 배포해 확인한 결과 — 탭 전환 시 헤더/내용 불일치(목표 대시보드 헤더인데 러닝 탭 내용이 보임) 증상이 다시 나타남 — 이는 애초에 사용자가 지목했던 v2.48.6→v2.49.0 전환 시점(이 버튼이 처음 추가된 버전)과 정확히 일치하는 재현으로, 이 기능(또는 이 기능이 건드리는 무언가)이 문제와 실제로 연관되어 있다는 가장 강한 증거",
     "사용자 지시로 이 기능 전체를 코드에서 제거(HTML 버튼 2개, quickStartFreeRun()/quickStartFromWorkoutLibrary() 함수 2개, 자체진단 ㊽ 전부 삭제) — v2.48.6 기능 범위로 되돌림",
@@ -3818,6 +3838,27 @@ function runSelfTests(){
     return{pass:lenOk&&exactMultipleOk&&wavOk,
       detail:`트랙길이=${dur.toFixed(1)}s(목표 ${METRO_TRACK_LEN_SEC}s) 박자경계일치=${exactMultipleOk} WAV생성=${wavOk} — 단, 실기기 <audio> 루프 재시작 지연 자체는 Playwright로 검증 불가(직접 확인 필요)`};});
 
+  check("㊽ 운동 다양성 코칭 — 분류 추정(명시적 cat 우선, 없으면 메모 키워드로 추정)과 주간/월간 집계(날짜 범위·횟수·거리)가 정확한지",()=>{
+    const savedCal=DB.calendar;
+    try{
+      const d0=TODAY,d3=addDays(TODAY,-3),d10=addDays(TODAY,-10),d40=addDays(TODAY,-40);
+      DB.calendar={
+        [d0]:{plans:[],logs:[{id:"t1",type:"run",dist:5,duration:30,cat:"인터벌",notes:"아무 메모"}]}, // 명시적 cat 우선
+        [d3]:{plans:[],logs:[{id:"t2",type:"run",dist:10,duration:60,notes:"오늘은 LSD 장거리주로 길게"}]}, // 메모로 추정(LSD)
+        [d10]:{plans:[],logs:[{id:"t3",type:"run",dist:8,duration:45,notes:"그냥 달림"},{id:"t4",type:"cross",sport:"bike",dist:20,duration:40,notes:"자전거"}]}, // 추정 불가→기타, 교차훈련은 제외돼야 함
+        [d40]:{plans:[],logs:[{id:"t5",type:"run",dist:12,duration:70,cat:"템포/역치",notes:""}]}}; // 40일 전 — 주간·월간 모두에서 제외돼야 함
+      const classOk=classifyLogCategory(DB.calendar[d0].logs[0])==="인터벌"&&
+        classifyLogCategory(DB.calendar[d3].logs[0])==="LSD"&&
+        classifyLogCategory(DB.calendar[d10].logs[0])==="기타";
+      const week=diversityStats(7); // d0,d3 포함(10일전은 7일 범위 밖)
+      const weekOk=week.totalCount===2&&week.stats["인터벌"].count===1&&week.stats["LSD"].count===1&&
+        Math.abs(week.totalKm-15)<0.001&&week.stats["템포/역치"].count===0; // 40일전 제외 확인
+      const month=diversityStats(30); // d0,d3,d10 포함(40일전은 30일 범위 밖), 자전거(cross)는 제외
+      const monthOk=month.totalCount===3&&month.stats["기타"].count===1&&month.stats["인터벌"].count===1&&
+        month.stats["LSD"].count===1&&Math.abs(month.totalKm-23)<0.001&&month.stats["템포/역치"].count===0;
+      return{pass:classOk&&weekOk&&monthOk,
+        detail:`분류추정=${classOk} 주간집계=${weekOk}(${JSON.stringify({c:week.totalCount,km:week.totalKm})}) 월간집계=${monthOk}(${JSON.stringify({c:month.totalCount,km:month.totalKm})})`};
+    }finally{DB.calendar=savedCal;}});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -5593,7 +5634,7 @@ function renderDashboard(){
   const zt=calculatedZones[2]||{min:0,max:0};
   document.getElementById("today-plan-target").innerHTML=plans.length?`타깃 심박(Z2 기준): <span class="zone-badge z2">${zt.min} ~ ${zt.max} bpm</span>`:"";
   renderAdaptBanner();renderWeekHeatmap();
-  initWeatherCard();renderRunTip();renderNutrition();
+  initWeatherCard();renderRunTip();renderNutrition();renderDiversityCard();
 }
 function gauge(key,val,goal,unit){const pct=goal>0?Math.min(100,val/goal*100):0;
   document.getElementById(`gauge-${key}-txt`).textContent=`${val.toFixed(unit==="km"?1:0)} / ${goal} ${unit} (${pct.toFixed(0)}%)`;
@@ -6375,6 +6416,7 @@ function logPlanResult(date,i){const planStr=dayPlans(date)[i];if(planStr==null)
     document.getElementById("m-log-dist").value=existing.dist;document.getElementById("m-log-duration").value=minToMMSS(existing.duration);
     document.getElementById("m-log-avghr").value=existing.avghr;document.getElementById("m-log-maxhr").value=existing.maxhr;
     document.getElementById("m-log-notes").value=existing.notes||"";document.getElementById("m-log-rating").value=(existing.rating==null?"":existing.rating);
+    document.getElementById("m-log-cat").value=existing.cat||"";
     populateShoeSelect();document.getElementById("m-log-shoe").value="";
     previewZone();document.getElementById("manualLogModal").classList.add("active");return;}
   const p=parsePlan(planStr);let zone=p.zone||2,km=p.km||10;
@@ -6387,11 +6429,13 @@ function logPlanResult(date,i){const planStr=dayPlans(date)[i];if(planStr==null)
   document.getElementById("m-log-duration").value=minToMMSS(dur);document.getElementById("m-log-avghr").value=mid;
   document.getElementById("m-log-maxhr").value=z.max;document.getElementById("m-log-rating").value="4";
   document.getElementById("m-log-notes").value=planStr.replace(/\s*@[\d:]+\/km/g,"").replace(/\s*\(Z\d\)/g,"").replace(/🏆\s*/,"").trim();
+  document.getElementById("m-log-cat").value="";
   populateShoeSelect();document.getElementById("m-log-shoe").value="";
   previewZone();document.getElementById("manualLogModal").classList.add("active");}
 
 /* ===== 운동 기록 모달 ===== */
 function openManualLogModal(){document.getElementById("m-log-editid").value="";document.getElementById("m-log-planref").value="";document.getElementById("m-log-rating").value="";document.getElementById("log-modal-title").textContent="운동 결과 기록";
+  document.getElementById("m-log-cat").value="";
   document.getElementById("m-log-date").value=selectedDate||TODAY;populateShoeSelect();document.getElementById("m-log-shoe").value="";previewZone();document.getElementById("manualLogModal").classList.add("active");}
 function openManualLogModalForDate(){openManualLogModal();document.getElementById("m-log-date").value=selectedDate;}
 function closeManualLogModal(){document.getElementById("manualLogModal").classList.remove("active");}
@@ -6406,6 +6450,7 @@ function previewZone(){
 function editLog(key,id){const l=(DB.calendar[key].logs||[]).find(x=>x.id===id);if(!l)return;
   document.getElementById("m-log-editid").value=key+"|"+id;document.getElementById("log-modal-title").textContent="기록 수정";
   document.getElementById("m-log-date").value=key;document.getElementById("m-log-time").value=l.time;document.getElementById("m-log-type").value=l.sport||(l.type==="run"?"run":"etc");
+  document.getElementById("m-log-cat").value=l.cat||"";
   document.getElementById("m-log-dist").value=l.dist;document.getElementById("m-log-duration").value=minToMMSS(l.duration);
   document.getElementById("m-log-avghr").value=l.avghr;document.getElementById("m-log-maxhr").value=l.maxhr;document.getElementById("m-log-notes").value=l.notes||"";
   document.getElementById("m-log-planref").value=(l.planRef==null?"":l.planRef);document.getElementById("m-log-rating").value=(l.rating==null?"":l.rating);
@@ -6499,6 +6544,7 @@ function saveManualWorkoutLog(){
     dist:parseFloat(document.getElementById("m-log-dist").value)||0,duration:mmssToMin(document.getElementById("m-log-duration").value)||0,
     avghr:parseInt(document.getElementById("m-log-avghr").value)||0,maxhr:parseInt(document.getElementById("m-log-maxhr").value)||0,
     notes:document.getElementById("m-log-notes").value};
+  const catSel=(document.getElementById("m-log-cat")||{}).value;if(catSel)log.cat=catSel; // 비워두면 저장 안 함 — renderDiversityCard가 notes로 자동 추정
   const edit=document.getElementById("m-log-editid").value;
   const pr=document.getElementById("m-log-planref").value,rt=document.getElementById("m-log-rating").value;
   if(pr!=="")log.planRef=parseInt(pr);if(rt!=="")log.rating=parseInt(rt);
@@ -7565,6 +7611,53 @@ function renderWorkoutList(){const c=document.getElementById("workout-list");if(
    현재 프로필 실력에 맞게 항상 최신 기록으로 재계산됨) — scale(수준)은 지속시간·반복횟수 같은 "양"만 조절한다. */
 const GOAL_POOLS={endurance:["easy","lsd","tempo","recovery","strides"],speed:["shortint","longint","tempo","strides","fartlek"],
   injury:["easy","recovery","strides","lsd"],balanced:["easy","tempo","shortint","longint","lsd","recovery","strides","hill","fartlek"]};
+/* ===== 운동 다양성 코칭 — 주간/월간으로 실제 훈련 종류가 얼마나 다양했는지 집계(2026-11-22 추가) =====
+   DB.workouts(저장된 워크아웃)에는 분류(w.cat)가 있지만, 실제로 수행하고 저장된 기록(log)에는 지금까지 분류가 남지 않았음
+   (워크아웃으로 시작해도 이름만 기록되고 분류는 버려짐) — 그래서 1) 워크아웃/기록 모달에서 분류를 log.cat으로 직접 남기도록 하고,
+   2) 과거 기록이나 분류를 비워둔 경우엔 메모(notes) 텍스트에서 키워드로 최대한 추정한다(완벽한 분류는 아님 — 직접 확인 필요). */
+const DIVERSITY_CATS=["인터벌","크루즈 인터벌","템포/역치","패스트 피니시","LSD","중장거리","회복주","기초주","파틀렉","힐 리피트","스트라이드","초급자","기타"];
+function classifyLogCategory(log){
+  if(log.cat&&DIVERSITY_CATS.includes(log.cat))return log.cat;
+  const text=log.notes||"";
+  const patterns=[["크루즈 인터벌",/크루즈\s*인터벌/],["패스트 피니시",/패스트\s*피니시/],["힐 리피트",/힐\s*리피트/],
+    ["템포/역치",/템포|역치/],["LSD",/\bLSD\b/i],["중장거리",/중장거리/],["회복주",/회복주|회복조깅|회복런/],
+    ["기초주",/기초주|이지런/],["파틀렉",/파틀렉/],["스트라이드",/스트라이드/],["초급자",/초급자/],["인터벌",/인터벌/]];
+  for(const[cat,re]of patterns)if(re.test(text))return cat;
+  return"기타";}
+function diversityStats(rangeDays){ // rangeDays: 7=이번 주(월~오늘), 아니면 최근 rangeDays일(오늘 포함)
+  const stats={};DIVERSITY_CATS.forEach(c=>stats[c]={count:0,km:0,min:0});
+  let totalCount=0,totalKm=0;
+  for(const date in DB.calendar){
+    const dif=diffDays(TODAY,date);if(dif<0||dif>=rangeDays)continue;
+    for(const log of dayLogs(date)){
+      if(log.type!=="run")continue; // 교차훈련(자전거·수영 등)은 '러닝 다양성'과 별개라 제외
+      const cat=classifyLogCategory(log);
+      stats[cat].count++;stats[cat].km+=(log.dist||0);stats[cat].min+=(log.duration||0);totalCount++;totalKm+=(log.dist||0);}}
+  return{stats,totalCount,totalKm,rangeDays};}
+let diversityRange="week"; // "week" | "month" — 카드 상단 탭 상태(Store에 저장하지 않음 — 매번 이번 주부터 보는 게 자연스러움)
+function setDiversityRange(r){diversityRange=r;renderDiversityCard();}
+function diversityCoachText(stats,totalCount,rangeLabel){
+  if(totalCount===0)return`${rangeLabel} 동안 기록된 러닝이 없습니다. 어떤 방식이든 좋으니 가볍게 한 번 나가보는 건 어떨까요?`;
+  const RUN_FOCUS_CATS=["인터벌","크루즈 인터벌","템포/역치","LSD","중장거리","회복주","기초주"]; // 코칭 멘트에서 우선 언급할 핵심 축(스트라이드·초급자·기타는 보조 요소라 제외)
+  const untried=RUN_FOCUS_CATS.filter(c=>stats[c].count===0);
+  const tried=DIVERSITY_CATS.filter(c=>stats[c].count>0);
+  if(untried.length===0)return`${rangeLabel} 동안 ${tried.length}가지 훈련을 고루 섞어서 뛰었습니다 — 다양성 면에서 아주 좋은 흐름입니다. 이 패턴을 계속 유지해 보세요.`;
+  const pick=untried.slice(0,2).join(", ");
+  return`${rangeLabel} 동안 ${tried.length}가지 방식으로 뛰었는데, <strong>${pick}</strong>${untried.length>1?" 같은 훈련은":"은"} 아직 없었습니다. 같은 루틴만 반복하면 몸도 마음도 지루해지기 쉽고, 특정 에너지 시스템만 자극받아 전반적인 러닝 능력이 고르게 늘기 어렵습니다. 다음 한 번은 ${pick}을(를) 가볍게 섞어보면, 지루함도 줄이고 부상 위험도 분산시키면서 더 즐겁게 달릴 수 있습니다.`;}
+function renderDiversityCard(){
+  const slot=document.getElementById("diversity-body");if(!slot)return;
+  const rangeDays=diversityRange==="week"?7:30,rangeLabel=diversityRange==="week"?"최근 7일":"최근 30일";
+  document.getElementById("diversity-tab-week").className="btn btn-sm "+(diversityRange==="week"?"btn-success":"btn-secondary");
+  document.getElementById("diversity-tab-month").className="btn btn-sm "+(diversityRange==="month"?"btn-success":"btn-secondary");
+  const{stats,totalCount,totalKm}=diversityStats(rangeDays);
+  const maxCount=Math.max(1,...DIVERSITY_CATS.map(c=>stats[c].count));
+  const rows=DIVERSITY_CATS.map(c=>{const s=stats[c],pct=Math.round(s.count/maxCount*100);
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <div style="width:66px;flex-shrink:0;font-size:11.5px;color:${s.count?"#e2e8f0":"#475569"}">${c}</div>
+      <div style="flex:1;background:#1e293b;border-radius:4px;height:14px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${s.count?"#38bdf8":"transparent"}"></div></div>
+      <div style="width:84px;flex-shrink:0;text-align:right;font-size:11px;color:#94a3b8">${s.count?`${s.count}회 · ${s.km.toFixed(1)}km`:"—"}</div></div>`;}).join("");
+  slot.innerHTML=`<div style="font-size:12px;color:#94a3b8;margin-bottom:8px">${rangeLabel} 러닝 ${totalCount}회 · ${totalKm.toFixed(1)}km</div>`+rows+
+    `<div style="margin-top:10px;padding:10px 12px;background:#080e1a;border-radius:8px;font-size:12.5px;color:#cbd5e1;line-height:1.6">${diversityCoachText(stats,totalCount,rangeLabel)}</div>`;}
 const AUTO_DESIGN_CAT_LABEL={easy:"기초주",recovery:"회복주",lsd:"LSD",tempo:"템포/역치",shortint:"인터벌",longint:"인터벌",strides:"스트라이드",hill:"힐 리피트",fartlek:"파틀렉"};
 const AUTO_DESIGN_NAME={easy:"이지런",recovery:"회복조깅",lsd:"LSD 장거리주",tempo:"템포/역치런",shortint:"숏 인터벌",longint:"롱 인터벌",strides:"기초주+스트라이드",hill:"힐 리피트",fartlek:"파틀렉"};
 function autoDesignScale(level){const idx=RUNNER_TYPES.findIndex(t=>t.id===level);return 0.55+0.13*(idx<0?3:idx);} // 입문 .55 ~ 엘리트 1.33
@@ -7650,6 +7743,7 @@ function logWorkoutResult(id){const w=(DB.workouts||[]).find(x=>x.id===id);if(!w
   document.getElementById("m-log-type").value="run";document.getElementById("m-log-dist").value=Math.round(t.km*10)/10;
   document.getElementById("m-log-duration").value=minToMMSS(t.min);document.getElementById("m-log-avghr").value=mid;
   document.getElementById("m-log-maxhr").value=z.max;document.getElementById("m-log-notes").value=w.name;
+  document.getElementById("m-log-cat").value=w.cat||"";
   document.getElementById("m-log-planref").value="";document.getElementById("m-log-rating").value="";
   populateShoeSelect();document.getElementById("m-log-shoe").value="";
   previewZone();closeRunModal();document.getElementById("manualLogModal").classList.add("active");}
@@ -8679,7 +8773,7 @@ function startRunSession(){
   const actType=selectedActType||ACT_BY_ID.run;
   const isRun=actType.bucket==="run";
   if(actType.gps&&!navigator.geolocation){showToast("이 브라우저는 GPS를 지원하지 않습니다.");return;}
-  let mode="free",steps=null,title=actType.label,planIdx=null,refDist=null,refTimeSec=null;
+  let mode="free",steps=null,title=actType.label,planIdx=null,refDist=null,refTimeSec=null,runCat=null;
   let trackOn=false,trackLane=null,trackLapDist=null,metroOn=false,metroBpm=null,metroSound=null;
   if(isRun){
     mode=document.getElementById("run-mode").value;
@@ -8690,7 +8784,7 @@ function startRunSession(){
       pendingRunPlan=null;} // 사용 후 초기화 — 다음 진입 시 다시 오늘 계획이 기본값
     else if(mode==="workout"){const id=document.getElementById("run-workout-pick").value;
       const w=(DB.workouts||[]).find(x=>x.id===id);
-      if(!w){showToast("워크아웃을 선택하세요.");return;}steps=flattenSteps(w.steps);title=w.name;refDist=w.refDist||null;refTimeSec=w.refTimeSec||null;}
+      if(!w){showToast("워크아웃을 선택하세요.");return;}steps=flattenSteps(w.steps);title=w.name;refDist=w.refDist||null;refTimeSec=w.refTimeSec||null;runCat=w.cat||null;}
     trackOn=document.getElementById("run-track-toggle").checked;
     if(trackOn){trackLane=parseInt(document.getElementById("run-track-lane").value);trackLapDist=TRACK_LANE_DIST[trackLane-1];title=title+` (${trackLane}레인)`;}
     metroOn=document.getElementById("run-metro-toggle").checked;
@@ -8698,7 +8792,7 @@ function startRunSession(){
     metroSound=metroOn?document.getElementById("run-metro-sound").value:null;}
   const runShoeId=(document.getElementById("run-shoe-select")||{}).value||"";
   const noGpsRunMode=isRun&&!actType.gps; // 트레드밀 등 — 걸음수×보폭으로 거리 추정(센서 기반)
-  RUN={mode,title,steps,planIdx,refDist,refTimeSec,stepI:0,stepStartT:0,stepStartD:0,
+  RUN={mode,title,steps,planIdx,refDist,refTimeSec,runCat,stepI:0,stepStartT:0,stepStartD:0,
     actType:actType.id,actGps:actType.gps,actUnit:actType.unit,
     voice:document.getElementById("run-voice").value,ann:parseFloat(document.getElementById("run-announce").value),
     startTs:0,elapsed:0,paused:false,active:false,dist:0,pts:[],laps:[],lastLapD:0,lastAnnD:0,prev:null,lastCoach:0,acc:actType.gps?prewarmBestAcc:null,bestAcc:actType.gps?prewarmBestAcc:null,accEMA:actType.gps?prewarmBestAcc:null,gapSec:0,
@@ -9125,6 +9219,7 @@ function finishRunSession(){if(!RUN)return;
   document.getElementById("m-log-date").value=TODAY;
   document.getElementById("m-log-time").value=new Date(RUN.startTs).toTimeString().slice(0,5);
   document.getElementById("m-log-type").value=RUN.actType||"run";
+  document.getElementById("m-log-cat").value=RUN.runCat||"";
   document.getElementById("m-log-dist").value=km;document.getElementById("m-log-duration").value=minToMMSS(min);
   document.getElementById("m-log-avghr").value=Math.round((z.min+z.max)/2);document.getElementById("m-log-maxhr").value=z.max;
   if(avgCadenceSpm)cadenceCoachTxt=cadenceCoachText(avgCadenceSpm,avgPaceSec);
