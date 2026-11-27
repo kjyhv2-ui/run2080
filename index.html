@@ -124,22 +124,22 @@ header{background:rgba(10,14,23,.95);backdrop-filter:blur(12px);border-bottom:1p
 .cal-nav-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px;flex-wrap:wrap;gap:8px}
 .cal-month-title{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .cal-arrow-btn{background:none;border:none;color:#38bdf8;font-size:20px;cursor:pointer;padding:4px 8px}
-.garmin-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:#0d121c;padding:4px;border-radius:10px;border:1px solid var(--border)}
-.garmin-day-header{text-align:center;font-size:12px;font-weight:700;color:#64748b;padding:6px 0}
-.garmin-cell{background:#171d28;min-height:92px;border-radius:4px;padding:4px 4px 6px;display:flex;flex-direction:column;position:relative;cursor:pointer;transition:background .15s;border:1px solid transparent}
-.garmin-cell:hover{background:#222b3a;border-color:#38bdf8}
-.garmin-cell.other-month{background:#0f141d;opacity:.4}
-.garmin-cell.today{border:1.5px solid #007aff!important;background:#1a2333}
-.garmin-cell.selected{border:1.5px solid #38bdf8!important}
-.garmin-cell-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.garmin-date-num{font-size:12px;font-weight:700;color:#94a3b8;line-height:1}
-.garmin-cell.today .garmin-date-num{color:#38bdf8;font-weight:800}
-.garmin-bars-container{display:flex;flex-direction:column;gap:2.5px;flex:1}
-.garmin-bar{height:5.5px;border-radius:2px;width:100%}
+.mcal-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:#0d121c;padding:4px;border-radius:10px;border:1px solid var(--border)}
+.mcal-day-header{text-align:center;font-size:12px;font-weight:700;color:#64748b;padding:6px 0}
+.mcal-cell{background:#171d28;min-height:92px;border-radius:4px;padding:4px 4px 6px;display:flex;flex-direction:column;position:relative;cursor:pointer;transition:background .15s;border:1px solid transparent}
+.mcal-cell:hover{background:#222b3a;border-color:#38bdf8}
+.mcal-cell.other-month{background:#0f141d;opacity:.4}
+.mcal-cell.today{border:1.5px solid #007aff!important;background:#1a2333}
+.mcal-cell.selected{border:1.5px solid #38bdf8!important}
+.mcal-cell-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.mcal-date-num{font-size:12px;font-weight:700;color:#94a3b8;line-height:1}
+.mcal-cell.today .mcal-date-num{color:#38bdf8;font-weight:800}
+.mcal-bars-container{display:flex;flex-direction:column;gap:2.5px;flex:1}
+.mcal-bar{height:5.5px;border-radius:2px;width:100%}
 .bar-plan{background:var(--stripe-plan)}
 .bar-green{background:var(--z2)}.bar-orange{background:var(--z4)}.bar-red{background:var(--z5)}
 .bar-blue{background:var(--cross)}.bar-gray{background:var(--z1)}.bar-gold{background:var(--z3)}
-.garmin-more-count{font-size:10px;font-weight:800;color:#38bdf8;text-align:right;margin-top:2px;line-height:1}
+.mcal-more-count{font-size:10px;font-weight:800;color:#38bdf8;text-align:right;margin-top:2px;line-height:1}
 .card{background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;scroll-margin-top:75px}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--border-light);padding-bottom:8px;flex-wrap:wrap;gap:6px}
 .card-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--text-primary)}
@@ -341,11 +341,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <div class="card-header"><div class="card-title"><i class="bi bi-lightning-charge-fill" style="color:var(--accent-gold)"></i> 오늘 처방 훈련</div><button class="btn btn-sm btn-secondary" onclick="openManualLogModal()"><i class="bi bi-plus-circle"></i> 결과 입력</button></div>
           <h3 id="today-plan-title" style="font-size:16px;font-weight:800;color:#fff">—</h3>
           <p id="today-plan-target" style="font-size:12.5px;color:var(--text-secondary);margin-top:6px"></p>
+          <div id="today-coaching-box" style="margin-top:10px"></div>
           <div style="margin-top:14px;display:flex;gap:8px">
-            <button class="btn btn-sm btn-success" style="flex:1" onclick="pushTodayToGarmin()"><i class="bi bi-cloud-upload"></i> 가민 Push</button>
+            <button class="btn btn-sm btn-success" style="flex:1" onclick="dashboardAddPlan()"><i class="bi bi-calendar-plus"></i> 계획 추가</button>
             <button class="btn btn-sm btn-secondary" style="flex:1" onclick="goToSlide(3)"><i class="bi bi-calendar3"></i> 캘린더</button>
           </div>
-          <div class="term" id="today-push-term" style="margin-top:12px;min-height:auto;display:none"></div>
         </div>
       </div>
     </div>
@@ -569,7 +569,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <button class="btn btn-sm btn-success" onclick="openManualLogModal()"><i class="bi bi-plus-lg"></i> 운동 기록</button>
         </div>
       </div>
-      <div class="garmin-month-grid" id="garmin-month-grid"></div>
+      <div class="mcal-month-grid" id="mcal-month-grid"></div>
       <div class="card" id="sec-3-0" style="margin-top:14px">
         <div class="card-header"><div class="card-title" id="selected-day-title"><i class="bi bi-calendar-check-fill"></i> 상세</div><button class="btn btn-sm btn-secondary" onclick="openManualLogModalForDate()"><i class="bi bi-plus"></i> 이 날짜에 추가</button></div>
         <div id="selected-day-logs-container"></div>
@@ -615,7 +615,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="grid-2col">
         <div class="card" id="sec-4-1">
           <div class="card-header"><div class="card-title"><i class="bi bi-link-45deg"></i> 외부 기기 데이터 가져오기</div></div>
-          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">Garmin·Coros·Apple Watch 등에서 뛴 운동을 이 앱에 가져옵니다. Garmin Connect 웹사이트(또는 앱)의 운동 상세 화면 → <strong>내보내기(Export) → GPX 또는 TCX</strong>로 파일을 받은 뒤 아래에 올려주세요.</div>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">다른 GPS 러닝워치에서 뛴 운동을 이 앱에 가져옵니다. 시계 제조사의 웹사이트(또는 앱)에서 해당 운동 상세 화면 → <strong>내보내기(Export) → GPX 또는 TCX</strong>로 파일을 받은 뒤 아래에 올려주세요.</div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-card);border-radius:8px;margin-bottom:10px">
             <div><strong>GPX / TCX 파일 가져오기</strong><div style="font-size:12px;color:var(--text-secondary)">실제 거리·시간·심박·경로를 그대로 읽어옵니다</div></div>
             <input type="file" id="fit-upload" accept=".gpx,.tcx,.xml" style="display:none" onchange="importActivityFile(event)">
@@ -634,19 +634,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           </ol>
           <div class="form-group"><label>카카오맵 JavaScript 키</label><input type="text" id="kakao-js-key" placeholder="예: 1a2b3c4d5e6f..." oninput="saveKakaoJsKey(this.value)"></div>
           <div id="kakao-map-status" style="font-size:11.5px;color:#64748b"></div>
-        </div>
-        <div class="card" id="sec-4-1b" data-feature="strava">
-          <div class="card-header"><div class="card-title"><i class="bi bi-cloud-arrow-down"></i> Strava 연동 (준비 중)</div></div>
-          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;line-height:1.7">Garmin 앱에서 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 활동을 가져올 수 있습니다. 사용하려면 아래 절차가 필요합니다:</div>
-          <ol style="font-size:11.5px;color:#94a3b8;line-height:1.9;padding-left:18px;margin-bottom:10px">
-            <li><a href="https://www.strava.com/settings/api" target="_blank" style="color:#38bdf8">strava.com/settings/api</a>에서 내 앱 등록 (Strava 유료 구독 필요)</li>
-            <li>발급받은 <strong>Client ID</strong>를 아래에 입력</li>
-            <li><strong>Client Secret</strong>은 Vercel 프로젝트의 환경 변수(STRAVA_CLIENT_SECRET)로 등록 — 절대 이 화면에 직접 입력하지 않습니다</li>
-            <li>아래 "Strava로 연결하기"로 인증</li>
-          </ol>
-          <div class="form-group"><label>Strava Client ID</label><input type="text" id="strava-client-id" placeholder="예: 123456" oninput="saveStravaClientId(this.value)"></div>
-          <button class="btn btn-sm" style="width:100%" onclick="connectStrava()"><i class="bi bi-strava"></i> Strava로 연결하기</button>
-          <div id="strava-status" style="font-size:11.5px;color:#64748b;margin-top:8px"></div>
         </div>
         <div class="card" id="sec-4-2">
           <div class="card-header"><div class="card-title"><i class="bi bi-cpu"></i> 가져오기 로그</div></div>
@@ -681,6 +668,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
         <div id="rep-list"></div>
       </div>
+      <div class="card" id="sec-5-economy" style="border:1px solid #1e3a5f">
+        <div class="card-header"><div class="card-title"><i class="bi bi-lightning-charge-fill" style="color:#38bdf8"></i> 러닝 이코노미 — 복합 효율 리포트</div>
+          <button class="btn btn-sm btn-secondary" onclick="openMetricHelp('economy')"><i class="bi bi-question-circle"></i></button></div>
+        <div id="economy-body"></div>
+      </div>
       <div class="cal-nav-bar" style="margin-bottom:8px">
         <div class="cal-month-title" style="font-size:15px"><i class="bi bi-graph-up-arrow" style="color:#38bdf8"></i> 실측 데이터 분석</div>
         <select id="ana-window" style="width:auto" onchange="onAnaWindowChange()">
@@ -705,7 +697,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title"><i class="bi bi-bar-chart-steps"></i> 훈련부하 포커스 (최근 4주)</div></div>
-        <div style="font-size:11px;color:#64748b;margin-bottom:10px">무산소·고강도유산소·저강도유산소로 나눠, 최근 12주 평균 대비 지금 얼마나 뛰고 있는지 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"와 같은 방식입니다.</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:10px">무산소·고강도유산소·저강도유산소로 나눠, 최근 12주 평균 대비 지금 얼마나 뛰고 있는지 보여줍니다. 일부 GPS 러닝워치의 훈련부하 분석 기능과 같은 방식입니다.</div>
         <div id="loadFocusChart"></div>
       </div>
       <div class="card" id="sec-5-progression">
@@ -952,7 +944,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.7">GPS 시계 같은 장비를 등록해두면 구매일과 그날부터의 경과일수를 보여줍니다.</div>
         <div id="gear-list"></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-          <input type="text" id="gear-new-name" placeholder="장비 이름 (예: 포러너 265)" style="flex:2;min-width:120px">
+          <input type="text" id="gear-new-name" placeholder="장비 이름 (예: GPS 러닝워치)" style="flex:2;min-width:120px">
           <select id="gear-new-type" style="flex:1;min-width:90px"><option value="watch">시계</option><option value="etc">기타</option></select>
         </div>
         <div style="margin-top:6px"><label style="font-size:10.5px;color:#64748b">구매일(선택, 기본 오늘) — 이 날부터 경과일수가 계산됩니다</label><input type="date" id="gear-new-purchase" style="width:100%"></div>
@@ -1587,17 +1579,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div style="margin-bottom:10px"><strong style="color:#fff">워크아웃 자동설계</strong> — '운동 입력(연동 & 워크아웃)' 탭 '새 워크아웃 설계' 옆 '자동설계' 버튼에서 수준(기본값은 프로필에 등록한 러너 유형)·갯수·목표(균형/지구력/속도/부상방지)·거리 선호를 고르면 이지런·LSD·템포·인터벌·회복주·스트라이드·힐·파틀렉 등 다양한 워크아웃을 한 번에 만들어 줍니다. 만들어진 워크아웃은 고정 페이스가 아니라 기존 워크아웃과 똑같이 그때그때의 PR·목표기록을 기준으로 페이스가 계산되므로, 항상 현재 내 실력에 맞춰 갱신됩니다. 입문·초급 수준은 롱 인터벌·힐 리피트처럼 부담이 큰 유형을 자동으로 제외합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">자체진단</strong> — 설정 → 자체진단에서 핵심 기능의 배선(HTML 버튼이 실제 존재하는 함수를 가리키는지, 과거 있었던 버그 패턴이 재발하지 않았는지, 핵심 계산이 예외 없이 도는지)을 자동으로 점검합니다. 앱을 열 때마다 조용히 한 번 실행되어 문제가 있으면 개발자 콘솔에 기록되고, 이 화면에서 직접 실행해 눈으로 결과를 볼 수도 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">추천 케이던스 계산기</strong> — 설정의 메트로놈 기본값과 러닝 탭의 "추천 케이던스로 설정하기" 두 곳에 있으며, 같은 입력(운동목표·거리조건·기준페이스)과 같은 계산을 씁니다. 기준 페이스를 비우면 러닝 탭은 목표페이스 → 내 기록, 설정은 내 기록 순으로 자동으로 채웁니다. 페이스별 일반적인 케이던스 범위를 기준으로 키·러너 수준(프로필)·거리·목표를 보정하고, 계산 과정을 화면에 그대로 보여줍니다. 부상방지 목표는 연구(Heiderscheit 외 2011)에 따라 평소 대비 +5%로 계산합니다. VDOT처럼 검증된 회귀식이 있는 건 아니라 추정치이며 개인차가 큽니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">훈련부하 포커스</strong> — 통계 탭에서 무산소·고강도유산소·저강도유산소로 나눠 최근 4주 누적 TRIMP를 보여줍니다. 가민 등 GPS워치의 "Training Load Focus"를 참고했습니다. "적정범위"는 개인화된 학습 모델이 없어, 최근 12주 평균을 4주 단위로 환산한 값의 80~120%로 근사합니다(ACWR과 같은 원리).</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">훈련부하 포커스</strong> — 통계 탭에서 무산소·고강도유산소·저강도유산소로 나눠 최근 4주 누적 TRIMP를 보여줍니다. 일부 GPS 러닝워치의 훈련부하 분석 기능을 참고했습니다. "적정범위"는 개인화된 학습 모델이 없어, 최근 12주 평균을 4주 단위로 환산한 값의 80~120%로 근사합니다(ACWR과 같은 원리).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 알림</strong> — 대시보드의 "오늘의 운동 알림"뿐 아니라, 캘린더 다이어리에서 어떤 날짜의 계획이든(휴식 포함) 시각을 정하고 알림을 켤 수 있습니다. 설정한 시간 전(기본 1시간)에 운동 종류를 알려줍니다. 서버가 없는 구조라 <strong>브라우저(앱)가 열려있는 동안에만</strong> 정확히 동작하며, 몇 시간씩 완전히 닫아두면 못 울릴 수 있습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">캘린더의 Run/START 버튼</strong> — 계획이 달리기 계열이면 "Run", 그 외 활동(걷기 등, 그리고 "휴식 (원하면 자전거·수영...)"처럼 휴식에 곁들인 제안 활동)이면 "START"로 표시되어 러닝 탭의 표기와 통일됩니다. "대회 당일"처럼 실제로는 러닝인 계획은 계속 "Run"으로 정확히 구분됩니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">GPS 거리측정 정확도 개선</strong> — 화면이 꺼지면 GPS 정확도가 흔히 30~55m대로 떨어지는데, 예전엔 이런 신호를 통째로 버려 화면꺼짐 구간의 거리가 크게 덜 잡히는 문제가 있었습니다(가민 실측 대비 확인됨). 이제는 완전히 못 쓸 신호(60m 초과)만 거르고, 나머지는 정확도에 따라 위치를 스무딩해서 노이즈는 억제하면서 실제 이동은 반영합니다. 합성 트랙 경로로 반복검증한 결과 평균 97% 정확도를 확인했습니다(예전 로직은 같은 조건에서 0%).</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">GPS 거리측정 정확도 개선</strong> — 화면이 꺼지면 GPS 정확도가 흔히 30~55m대로 떨어지는데, 예전엔 이런 신호를 통째로 버려 화면꺼짐 구간의 거리가 크게 덜 잡히는 문제가 있었습니다(실제 GPS 워치 실측 대비 확인됨). 이제는 완전히 못 쓸 신호(60m 초과)만 거르고, 나머지는 정확도에 따라 위치를 스무딩해서 노이즈는 억제하면서 실제 이동은 반영합니다. 합성 트랙 경로로 반복검증한 결과 평균 97% 정확도를 확인했습니다(예전 로직은 같은 조건에서 0%).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">날씨(수기입력)</strong> — v2.44.0부터 오늘의 러닝 환경은 자동조회 대신 수기입력 방식입니다. 기온·체감온도·습도·풍속·하늘상태를 직접 입력하면, 기존과 동일한 규칙기반 러닝 조언을 보여줍니다. 위치 권한이나 외부 API 호출이 필요하지 않습니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">지도(카카오맵)</strong> — 러닝 기록의 경로 지도가 이제 카카오맵을 우선 사용합니다(설정 → 지도(카카오맵)에서 JavaScript 키 등록). 키가 없거나 로드에 실패하면 자동으로 OpenStreetMap(Leaflet)으로 대체되어, 어느 쪽이든 지도가 항상 표시됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">앱 잠금</strong> — 이 기기에서 앱을 열 때 비밀번호를 물어보게 할 수 있습니다(설정 → 앱 잠금). 비밀번호는 평문이 아니라 해시로 저장됩니다. 여러 기기에서 같은 계정으로 접속하는 "로그인"은 아니며, 서버 없이 이 기기·이 브라우저에서만 동작하는 잠금입니다. 비밀번호는 숫자 4자리이며, 10회 연속으로 틀리면 10분간 재시도할 수 없습니다(새로고침해도 대기시간은 유지됨). 비밀번호를 잊으면 복구할 방법이 없으니 주의해주세요.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">운동 이어서 진행 (복구)</strong> — 앱이 강제 종료되는 등으로 운동 기록이 중단되면, 다음에 앱을 열 때 자동으로 발견해 "이어서 진행 / 여기까지만 기록 저장 / 삭제" 중 고를 수 있게 안내합니다. 진행 중인 운동은 5초마다 자동으로 저장되어, 최악의 경우에도 5초 안쪽의 기록만 손실됩니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">활동 종류별 러닝 탭</strong> — 러닝 시작 전 "활동 종류"를 먼저 고릅니다. 달리기·트랙러닝·트레일러닝은 기존처럼 모드·존·메트로놈까지 전체 메뉴가 나오고, 걷기·등산·사이클(야외)은 GPS로 거리와 시간을 함께 재는 간소화 메뉴, 수영·헬스·줄넘기·요가 등은 GPS 없이 시간만 재는 메뉴로 자동 전환됩니다.</div>
-        <div style="margin-bottom:10px"><strong style="color:#fff">외부 기기 데이터 가져오기 (GPX/TCX)</strong> — Garmin·Coros 등에서 내보낸 GPX 또는 TCX 파일을 실제로 읽어 거리·시간·심박·GPS 경로를 그대로 가져옵니다. 자동 동기화가 아니라 직접 파일을 받아 올리는 방식이며, 활동의 실제 날짜와 시각을 파일에서 읽어 그 날짜의 캘린더에 기록합니다.</div>
-        <div style="margin-bottom:10px" data-feature="strava"><strong style="color:#fff">Strava 연동</strong> — Garmin의 "Strava로 자동 전송"을 켜두면, 이 기능으로 Strava에 쌓인 러닝 기록을 가져올 수 있습니다. Client Secret은 절대 이 화면에 입력하지 않고 서버(Vercel 환경 변수)에만 보관되며, 배포하지 않은 상태(파일을 직접 연 경우)에서는 이 기능이 동작하지 않는다는 안내가 뜹니다.</div>
+        <div style="margin-bottom:10px"><strong style="color:#fff">외부 기기 데이터 가져오기 (GPX/TCX)</strong> — GPS 러닝워치에서 내보낸 GPX 또는 TCX 파일을 실제로 읽어 거리·시간·심박·GPS 경로를 그대로 가져옵니다. 자동 동기화가 아니라 직접 파일을 받아 올리는 방식이며, 활동의 실제 날짜와 시각을 파일에서 읽어 그 날짜의 캘린더에 기록합니다.</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">종목별 커스텀 템플릿 & 텍스트로 계획 가져오기</strong> — 커스텀 템플릿을 만들 때 "적용 종목"(5K·10K·하프·풀·울트라)을 지정해두면, 그 종목의 대회를 주 목표로 설정할 때 자동으로 추천됩니다(⭐ 표시와 함께 "내 10K용"처럼 표기). 또한 가지고 계신 계획을 "월: 인터벌 5x1km" 같은 텍스트로 붙여넣으면, 요일과 훈련 종류를 자동으로 인식해 해당 단계에 반영합니다. 어떤 커스텀 템플릿이든 실제 페이스·거리는 등록된 PR과 준비도에 맞춰 자동으로 미세조정됩니다(기본 제공 템플릿과 동일한 방식).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">다양성 추구형 템플릿 & 휴식일 크로스트레이닝 제안</strong> — 기록 향상을 위한 정규 훈련(인터벌·템포·장거리)은 그대로 유지하면서, 트레일 러닝과 크로스트레이닝(자전거·수영)을 곁들여 지루하지 않게 구성한 템플릿입니다. 또한 모든 템플릿의 휴식일에는 "원하면 가벼운 자전거·수영·스트레칭 20~30분"이라는 선택지가 함께 표시됩니다(강제가 아니라 제안이며, 대회 직전 마지막 주는 회복을 위해 순수 휴식으로 유지됩니다).</div>
         <div style="margin-bottom:10px"><strong style="color:#fff">신발 마일리지 추적</strong> — 설정에서 신발을 등록하고(교체 기준 km 지정, 기본 700km) 운동 기록에 연결하면, 그 신발로 뛴 모든 거리가 자동으로 누적됩니다. 진행률이 80%를 넘으면 "교체 시기 임박", 100%를 넘으면 "교체 권장!"으로 표시됩니다. 신발을 삭제해도 이미 기록된 운동 자체의 거리는 지워지지 않고 신발 연결만 해제됩니다.</div>
@@ -2575,20 +2566,15 @@ const Store=(()=>{let mem={},ok=false;try{const k="__pp_test";localStorage.setIt
 const SKEY="pacepulse_db_v3";
 /* ===== 버전 관리 =====
    규칙: 큰 개편 → 2.0.0 / 중간 기능 추가 → 2.1.0 / 작은 수정·버그픽스 → 2.0.1 */
-const APP_VERSION="2.52.0",APP_BUILD="2026-11-22";
+const APP_VERSION="2.54.1",APP_BUILD="2026-11-25";
 /* ===== 기능 스위치 — 출시 범위에서 뺀 기능은 코드는 남겨두고 화면에서만 숨긴다(다시 켜려면 true) =====
-   strava: 첫 출시 제외(2026-09-24 결정). 서버 비밀키 미설정·API 앱 연결인원 기본 1명(심사 필요) 문제로 보류.
-   GPX/TCX 파일 가져오기는 그대로 제공되므로 가민 등 외부 기록은 계속 옮길 수 있다.
    premiumGating: 수익화 모델(2026-11-15 확정) — 2주 무료체험 → 체험 종료 후 "구매(광고 없이 영구 이용)" 또는
      "광고 보며 계속 이용"(이 경우도 앱 기능은 전부 그대로 사용 가능, 어떤 기능도 잠기지 않음) 중 선택.
      옛 모델(고급분석 카드 잠금+리워드 광고 24시간 해제)은 폐기 — 이제는 기능을 잠그지 않고 광고 노출 여부만 다르다.
      코드는 완성돼 있지만 Google Play 결제(Billing) 연동 및 Google AdSense/Ad 심사·승인 전까지는 반드시 false로 둔다
      (결제·광고가 실제로 동작하지 않는 상태로 노출되면 사용자 기만이 됨).
      켤 때는 purchaseApp()의 TODO 부분에 Google Play Billing 연동을, renderAdSlot()의 TODO 부분에 실제 광고 SDK 연동을 먼저 넣을 것. */
-const FEATURES={strava:false,premiumGating:false,weatherAuto:false};
-// weatherAuto:false(2026-11-14 결정) — 외부 날씨 API 자동조회(위치기반 서버 API 호출)는 보류.
-// 사용자가 직접 확인한 값을 수기로 입력하는 방식으로 전환. 자동조회 코드(loadRunWeather)는
-// 삭제하지 않고 보존 — weatherAuto를 true로 되돌리면 다시 활성화됨(Strava 숨김 처리와 같은 패턴).
+const FEATURES={premiumGating:false};
 const TRIAL_DAYS=14;
 function trialDaysLeft(){ // 최초 설치일(DB.trialStart) 기준 무료체험 잔여일(음수면 만료)
   if(!DB.trialStart)return TRIAL_DAYS;
@@ -2616,6 +2602,48 @@ function renderPremiumGate(){renderTrialBanner();} // 옛 이름 유지(호출�
 function applyFeatureFlags(){Object.keys(FEATURES).forEach(k=>{if(!FEATURES[k])document.querySelectorAll(`[data-feature="${k}"]`).forEach(el=>el.remove());});}
 applyFeatureFlags();
 const CHANGELOG=[
+  {v:"2.54.1",d:"2026-11-25",title:"긴급 수정 — 안드로이드 네이티브 앱, 화면꺼짐 중 GPS 거리가 거의 기록되지 않던 버그",items:[
+    "실기기 테스트에서 발견: 측정 시작 직후 화면을 끄고 30분을 달렸는데(가민 동시 측정 4.88km·30:15) RUN2080에는 0.03km·30:42로 기록됨 — 설치된 안드로이드 앱(Capacitor)에서 재현",
+    "원인 확인: @capgo/background-geolocation 플러그인 공식 문서에 '실시간 JS 콜백은 WebView가 살아있는 동안에만 호출된다'고 명시되어 있음 — 화면이 꺼지면 WebView가 멈춰 콜백이 사실상 오지 않고, 그 결과 거리를 누적하는 onGpsPoint()가 거의 호출되지 않았던 것",
+    "수정: bg.start() 옵션에 locationLog:true 추가 — 네이티브 쪽이 화면꺼짐과 무관하게 모든 수신 위치를 별도로 계속 기록하게 함. 새 함수 pollNativeLocationLog()가 화면이 켜지는 시점(visibilitychange→tickRun)과 매초(tickRun)마다 이 로그를 읽어와 기존 거리 계산 알고리즘(onGpsPoint, 스무딩·속도필터·신호두절 보간 그대로 재사용)에 순서대로 통과시켜 거리를 사후 복원함",
+    "실시간 콜백으로 이미 처리된 구간(화면이 켜져 있던 동안)과 겹치지 않도록 RUN.lastSeenTs(마지막으로 처리한 위치의 timestamp) 기준으로 중복을 걸러냄 — 화면 켜짐 구간은 그대로, 꺼짐 구간만 로그로 보완",
+    "측정 시작마다(gpsWatchStart) bg.clearLocationLog()로 이전 실행(예열 단계 포함)의 로그를 먼저 비워, 이번 측정과 무관한 과거 기록이 섞이지 않게 함. 종료 버튼(finishRunSession)을 누르면 서비스를 끄기(bg.stop) 전에 먼저 로그를 한 번 더 읽어 마지막 구간까지 반영",
+    "자체진단 (51) 추가 — 로그 재생이 거리에 반영되는지, 같은 로그로 다시 호출해도 중복 집계되지 않는지(idempotent) 확인. ㊺도 locationLog:true·clearLocationLog 호출 검증 추가. 빈 데이터·데모 데이터 자체진단 51/51 통과, 탭 11개 순회 예외 0, 페이지 오류 0",
+    "직접 확인 필요: 이번 수정은 Playwright로 pollNativeLocationLog()의 로직(로그 반영·중복방지)만 검증했고, 실제 안드로이드 기기에서 화면을 끄고 달렸을 때 이번에는 정확히 기록되는지는 실기기 재테스트로 확인 필요 — 다음 실행 시 가민과 다시 비교해 주시면 확실해집니다. 또한 locationLog를 쓰려면 플러그인 버전이 8.5.0 이상이어야 하는데, 현재 package.json의 ^8.6.5는 조건을 만족하지만 실제 설치된 버전은 npm install 재실행 후 확인 필요"]},
+  {v:"2.54.0",d:"2026-11-22",title:"기능 추가 — '오늘 처방 훈련' 카드에 피드백·강도 조정 제안 추가",items:[
+    "요청: 금일 기준 전일·전전일(연속 강도·피로 신호)과 이번 주 전체 이행률을 함께 보고, 오늘 계획을 구체적으로 조정 제안하며, 제안을 그대로 또는 수정해서 다이어리에 한 번에 등록할 수 있게 할 것",
+    "오늘 이미 계획이 있으면: ①급성:만성 부하비(ACWR)가 1.5 초과, ②전일·전전일 모두 강도 높은 훈련을 소화하고 오늘도 고강도 계획, ③최근 자기평가가 낮게(힘듦·미흡) 기록됨 — 이 중 하나라도 해당하면 '강도 완화'를 제안(회복조깅/이지런으로 대체). 반대로 ACWR이 안정구간(0.8~1.3)이고 이번 주(어제까지) 평균 완성률 90% 이상, 최근 미실시가 없고 오늘 계획도 이미 쉬운 날이면 '소폭 강화'(스트라이드 추가)를 제안. 그 외엔 '계획 유지 권장'",
+    "제안 워크아웃 문구는 기존 '계획 추가' 모달과 동일한 생성기(slotText, 현재 준비도·목표 페이스 기반)로 만들어 신뢰할 수 있는 형태로 구체적으로 제시",
+    "'제안대로 등록' — 기존 계획을 지우지 않고 오늘 계획에 별도 항목으로 추가(2026-11-22 확인된 요구사항). '수정해서 등록' — 기존 '계획 추가' 모달을 열어 제안 문구를 미리 선택해두고, 거리·시간·페이스를 직접 수정한 뒤 등록 가능",
+    "오늘 계획이 아예 없는 날은 조정할 대상이 없으므로 제안 없이 전일·전전일·이번 주 이행률 피드백 문구만 표시(계획 추가는 기존 버튼으로 가능)",
+    "구현 중 확인된 점: 이번 주 평균 완성률 계산에 '오늘'까지 포함하면 아직 뛰기 전인 오늘이 항상 0%로 잡혀 평균이 왜곡됨 — 어제까지만 집계하도록 범위를 바로잡음",
+    "자체진단 ㊿ 추가 — 전일·전전일 연속 고강도 시 완화 제안이 생성되는지, '제안대로 등록'이 기존 계획을 지우지 않고 별도 항목으로 추가하는지 확인. 빈 데이터·데모 데이터 자체진단 50/50 통과, 탭 11개 순회 예외 0, 페이지 오류 0"]},
+  {v:"2.53.3",d:"2026-11-22",title:"대시보드 '오늘 처방 훈련' 카드의 '워치로 전송' 버튼을 실제 동작하는 '계획 추가'로 교체",items:[
+    "요청: '워치로 전송' 버튼이 실제로는 어떤 기기와도 연동되지 않고 가짜 전송 로그만 보여주는 눈속임 기능이라는 지적 — 이 앱은 블루투스 기기 연동을 지원하지 않아 실제 워치 전송 기능을 완성할 수 없으므로, 대신 이미 있는 '계획 추가' 기능(캘린더 탭의 openAddPlanModal)으로 오늘 날짜에 바로 일정을 넣을 수 있게 변경",
+    "가짜 전송 로그를 출력하던 pushTodayToWatch() 함수와 그 출력 영역(#today-push-term)을 삭제하고, dashboardAddPlan() 함수로 교체 — 클릭 시 selectedDate를 오늘 날짜로 강제 고정한 뒤 기존 계획 추가 모달을 열어 실제로 DB.calendar에 저장되는 일정을 추가함(기존 계획이 있어도 추가로 등록 가능)",
+    "회귀 검사: 다른 탭(캘린더 등)에서 selectedDate가 오늘이 아닌 날짜로 남아있던 상태에서 버튼을 눌러도 항상 오늘 날짜로 모달이 열리는지 확인 — 빈 데이터·데모 데이터 자체진단 49/49 통과, 탭 11개 순회 예외 0, 페이지 오류 0"]},
+  {v:"2.53.2",d:"2026-11-22",title:"날씨 자동조회 코드 완전 삭제 — 수기입력만 남김, 관련 서버 함수·정책 문서 정리",items:[
+    "날씨 카드는 이미 수기입력으로 전환돼 있었고(v2.44.0), 자동조회 코드(loadRunWeather)는 쓰지 않기로 결정된 채 기능 스위치로만 숨겨두고 있었음 — Strava와 같은 방식으로 이번에 코드에서 완전히 삭제(기능 스위치 FEATURES.weatherAuto도 제거)",
+    "더 이상 호출되지 않는 서버 함수 api/weather.js, api/strava.js 삭제(둘 다 클라이언트에서 호출하는 코드가 이미 없어진 상태)",
+    "개인정보처리방침·이용약관·건강 안전 면책 고지에 남아있던 '날씨 조회 시 위치좌표를 서버로 전송'이라는 문구를 삭제 — 실제로는 더 이상 해당하지 않는 내용이었음(날씨는 사용자가 직접 입력, 위치정보는 러닝 GPS 측정에만 쓰이고 기기에만 저장됨)",
+    "라이선스 페이지의 '날씨: 기상청 공공데이터' 출처 표기도 더 이상 쓰지 않는 데이터 출처이므로 삭제",
+    "회귀 검사: 자체진단 ㊶(날씨 수기입력 검증)이 더 이상 존재하지 않는 FEATURES.weatherAuto를 참조하지 않도록 수정 — 빈 데이터·데모 데이터 자체진단 49/49 통과, 탭 11개 순회 예외 0, 페이지 오류 0"]},
+  {v:"2.53.1",d:"2026-11-22",title:"상품화 대비 — 타사 브랜드명 전면 제거, 미사용 외부 연동 기능 삭제, 라이선스 목록 보완",items:[
+    "화면 문구·도움말·코드 주석·변경내역 전체에 남아있던 타사 제조사 브랜드명·고유 기능명 표기를 전부 제거하고 일반 표현(예: 'GPS 러닝워치', '일부 GPS 워치')으로 교체 — 계산식·벤치마크 수치 등 설명 내용 자체는 그대로 유지",
+    "내부 CSS 클래스명·DOM id에 남아있던 브랜드 연상 표기(대시보드 미니 캘린더 위젯)도 중립적인 이름으로 변경 — 화면에는 드러나지 않지만 코드 전반의 상표 노출을 없애기 위함",
+    "출시 전부터 쓰이지 않고 화면에서만 숨겨뒀던 외부 활동 공유 서비스 연동 기능(OAuth 인증·토큰 갱신·활동 가져오기)을 코드에서 완전히 삭제 — 관련 HTML·자체진단 로직·기능 스위치도 함께 정리(GPX/TCX 파일 가져오기는 영향 없음)",
+    "오픈소스 라이선스 목록(licenses.html)에 빠져 있던 안드로이드 앱의 백그라운드 위치 플러그인(@capgo/background-geolocation, MPL-2.0)을 추가",
+    "회귀 검사: 기능 삭제로 더 이상 존재하지 않는 함수를 호출하던 코드(부팅 시퀀스 등)가 남아있지 않은지 확인 — 빈 데이터·데모 데이터 자체진단 49/49 통과, 탭 11개 순회 예외 0, 페이지 오류 0"]},
+  {v:"2.53.0",d:"2026-11-22",title:"기능 추가 — 통계 & 이행 리포트 탭에 '러닝 이코노미' 복합 효율 리포트",items:[
+    "요청: 일부 GPS 워치의 '러닝 경제성(Running Economy)'을 통계이행 리포트 탭에 넣되, 단일 점수 하나로 끝나는 그 방식보다 훨씬 더 분석적이고 다양한 각도에서 해설해 주는, 독자적인 구성으로 만들 것",
+    "워치의 러닝 경제성은 비공개 알고리즘과 전용 센서(심박·속도 융합)를 쓰는데, 이 앱은 그 알고리즘을 재현할 수 없음(추측으로 같은 값을 만들어내지 않음) — 대신 이미 이 앱에 쌓인 데이터만으로 계산 가능한 세 갈래를 투명하게 나눠 보여주는 구조로 설계",
+    "① 유산소 효율: 대시보드 '유산소 효율 향상 감지' 배너(zone2·28일 고정 비교)의 로직을 일반화 — 사용자가 가장 많이 뛰는 심박존을 자동으로 찾아, 그 존에서 최근 4주 평균 페이스를 이전 4주와 비교(aerobicEfficiencyTrend/aerobicEfficiencyScore). 각 구간 표본 3회 미만이면 추측 대신 '데이터 부족'으로 표시",
+    "② 러닝 다이나믹스 효율: 설정 탭 '속도별 다이나믹스 그래프'에 이미 있는 참고 기준대(케이던스 164~183spm, 진폭율 6.1~8.6%, 공개 벤치마크 출처 동일)를 재사용해 최근 평균의 기준대 내 위치를 0~100점으로 환산(scoreAtLeast/scoreLowerBetter) — 케이던스는 기준대 이상이면 만점(상회해도 감점 없음), 진폭율은 낮을수록 만점",
+    "③ VDOT: 기존 bestVDOT() 현재값을 참고로 함께 표시 — PR은 경신 시 과거 값이 남지 않는 데이터 구조(DB.records는 거리별 최신 1건만 보관) 때문에 'VDOT 추세' 차트는 만들 수 없다고 판단, 추세가 아닌 현재 수준 참고치로만 제공하고 복합 점수에는 포함하지 않음(직접 확인 필요 — 추세를 원하면 추후 PR 이력을 별도로 쌓는 구조 변경이 필요)",
+    "복합 점수(0~100)는 ①·② 중 계산 가능한 것들의 단순 평균, 둘 다 없으면 점수를 내지 않음. ①의 추세는 최근 12주 주간 평균 페이스 꺾은선 차트로도 시각화(zoneWeeklyPaceTrend)",
+    "economyCoachText()가 각 지표별로 왜 그런지·무엇을 바꾸면 좋은지를 따로 설명 — 등급 하나로 끝나는 워치 방식과 가장 차별화되는 부분. '해설' 버튼(metricHelpContent 'economy')에 계산 근거·워치 방식과의 차이·한계를 상세히 공개",
+    "자체진단 ㊾ 추가: 동일 Zone 페이스 추세·다이나믹스 기준대 점수·VDOT 참고값·복합점수(평균)가 합성 데이터로 정확히 계산되는지 확인",
+    "직접 확인 필요: 점수 산정의 민감도 계수(유산소 효율 점수화 시 ×8)는 임상적으로 검증된 값이 아닌 이 앱의 임의 설정값 — 실제 사용자 데이터로 점수 분포가 합리적인지 추가 관찰 필요. 실기기에서 새 카드 추가로 통계 탭 렌더링/탭 전환에 문제가 없는지도 확인 필요"]},
   {v:"2.52.0",d:"2026-11-22",title:"기능 추가 — 목표 대시보드에 '운동 다양성 코칭' 카드, (2) 온보딩 인트로 재발 신고 점검",items:[
     "경위: '바로시작' 버튼 재설계(v2.51.2)도 실기기에서 같은 탭 전환 문제가 계속돼 그 기능 자체는 보류(포기)하고, 이번엔 (1) 온보딩 인트로가 또 건너뛰어진다는 신고 점검과 (2) 운동 다양성 코칭 카드를 새로 구현",
     "(1) 온보딩 점검 결과(직접 확인 필요): Playwright로 '완전 첫 실행(localStorage 비어있음)' 및 '앱잠금(PIN) 걸린 상태에서 자체진단이 먼저 도는 경우'를 모두 재현해봤으나, 두 경우 모두 인트로가 정상적으로 뜨고 끝까지 유지됨(코드상 재현 안 됨) — 가장 유력한 설명은 같은 브라우저/기기로 이전에 이미 테스트(완료 또는 건너뛰기)를 했던 적이 있어 localStorage에 '온보딩 완료' 기록이 남아있는 경우(이 경우는 버그가 아니라 정상 동작). 시크릿창/사이트 데이터 삭제 후로 재확인 요청 — 그래도 재현되면 바로 알려주시면 재조사",
@@ -2711,11 +2739,11 @@ const CHANGELOG=[
   {v:"2.43.2",d:"2026-10-02",title:"소요시간 입력 mm:ss 형식 변경 + 저장 시 예상 심박수를 실제 평균 페이스 기준으로 수정 + GPS 거리 과다누적 완화",items:[
     "운동 기록 저장 모달의 '소요 시간' 입력란을 분(소수) 직접입력(예: 0.2)에서 분:초(mm:ss, 예: 0:12) 형식으로 변경 — 60:00처럼 익숙한 시간 표기로 보고 입력할 수 있음. 기존처럼 콜론 없이 숫자만 입력하면 '분' 단위로 그대로 해석되어 이전 방식과도 호환됨. DB에 저장되는 값(분 단위 소수)은 기존과 동일해 통계·엑셀 내보내기 등 다른 기능에는 영향 없음",
     "계획/워크아웃 러닝을 측정 종료 후 저장할 때 자동으로 채워지던 '평균/최대 심박수'가 지금까지는 항상 '계획한 목표존(Z2)'을 고정으로 보여주고 있었던 문제 수정 — 이제는 실제로 달린 평균 페이스를 기준·목표기록 페이스표와 비교해 가장 가까운 강도존을 역산하고, 그 존의 심박수 범위로 채움(계획보다 느리게/빠르게 달렸으면 그만큼 다른 존으로 표시됨). 이 앱은 심박 센서 연동을 지원하지 않는다는 점과 실측값이 있으면 직접 수정하라는 안내를 저장 메모에 함께 추가. '계획 결과 기록'(러닝 없이 직접 완료 체크)처럼 애초에 실제 데이터가 없는 수동 입력 경로는 기존처럼 계획값을 기본값으로 유지(실측이 없으므로)",
-    "사용자가 실제 기기(가민 등)와 비교해 제보한 사례 검토 — 걷기/정지가 섞인 조깅 구간에서 GPS 거리가 시계 대비 더 많이 누적되는 경향을 확인. 원인으로 보이는 '정지 중 GPS 흔들림 판정 기준(최소 이동속도)'이 신호 정확도와 무관하게 고정값(0.3m/s)이었던 부분을 신호가 나쁠수록(정확도 ±35m 초과) 기준을 0.5~0.8m/s로 높이도록 완화 — 신호 양호 시(±20m 이내)는 기존과 동일하게 동작해 평소 정확도에는 영향 없음. 실기기 비교 1건에 근거한 조정이라 추가 실측으로 계속 검증 필요",
+    "사용자가 실측 GPS 워치와 비교해 제보한 사례 검토 — 걷기/정지가 섞인 조깅 구간에서 GPS 거리가 시계 대비 더 많이 누적되는 경향을 확인. 원인으로 보이는 '정지 중 GPS 흔들림 판정 기준(최소 이동속도)'이 신호 정확도와 무관하게 고정값(0.3m/s)이었던 부분을 신호가 나쁠수록(정확도 ±35m 초과) 기준을 0.5~0.8m/s로 높이도록 완화 — 신호 양호 시(±20m 이내)는 기존과 동일하게 동작해 평소 정확도에는 영향 없음. 실기기 비교 1건에 근거한 조정이라 추가 실측으로 계속 검증 필요",
     "회귀 검사 추가: 자체진단 ㊲ 소요시간 mm:ss 왕복 변환, ㊳ 저장 시 예상 심박수가 고정 Z2가 아니라 실제 페이스로 역산되는지, ㊴ GPS 최소 이동속도가 신호 정확도에 따라 올바르게 높아지는지 확인"
   ]},
-  {v:"2.43.1",d:"2026-10-01",title:"유료 출시 대비 — 해설 문구의 타사 브랜드명(가민·Firstbeat·Training Effect 등) 전면 일반화",items:[
-    "v2.43.0에서 추가한 운동결과 지표(유산소/무산소효과)·속도별 다이나믹스 그래프 해설에 쓰인 '가민(Garmin)', 'Firstbeat', 'Training Effect' 같은 타사 브랜드명·상표 문구를 모두 '일부 GPS 러닝워치 제품', 'GPS 러닝워치 제조사' 같은 일반 표현으로 교체 — 계산식·벤치마크 수치(케이던스 164~183spm, 진폭율 6.1~8.6% 등 공개 자료 기준)와 설명 내용 자체는 그대로 유지하고 브랜드 표기만 일반화",
+  {v:"2.43.1",d:"2026-10-01",title:"유료 출시 대비 — 해설 문구의 타사 브랜드명·고유 기능명 전면 일반화",items:[
+    "v2.43.0에서 추가한 운동결과 지표(유산소/무산소효과)·속도별 다이나믹스 그래프 해설에 쓰인 타사 브랜드명·상표 문구를 모두 '일부 GPS 러닝워치 제품', 'GPS 러닝워치 제조사' 같은 일반 표현으로 교체 — 계산식·벤치마크 수치(케이던스 164~183spm, 진폭율 6.1~8.6% 등 공개 자료 기준)와 설명 내용 자체는 그대로 유지하고 브랜드 표기만 일반화",
     "앱이 참고한 개념·공식·벤치마크 수치는 전부 공개된 학술논문(Margaria 외 1963 등)이나 제조사가 자사 매뉴얼에 공개해둔 자료이며, 이 앱이 계산하는 값은 그 알고리즘을 재현한 것이 아니라 TRIMP·강도존만으로 만든 독자적 근사치라는 점은 기존과 동일하게 명시",
     "유료 출시를 앞두고 상표권 관련 리스크를 낮추기 위한 조치 — 기능·계산 로직 변경은 없어 자체진단 36개 전부 기존과 동일하게 통과"
   ]},
@@ -2799,7 +2827,7 @@ const CHANGELOG=[
     "위치별로 걸음 감지 튜닝값을 다르게 적용 — 허리 중앙은 신체 중심의 상하 충격이 그대로 전달돼 신호가 또렷하므로 문턱값·평활 계수를 더 민감하게, 손에 들 때는 팔 스윙 노이즈를 고려해 기존 기본값 그대로 유지(코드에 실험실 측정이 아닌 경험적 출발값임을 주석으로 명시)",
     "케이던스 자동 보정(옵트인) 기능도 착용 위치별로 표본을 분리해 따로 계산 — 손에 들 때와 허리 벨트일 때 오차 패턴이 다르므로 위치를 섞지 않고 각각 워치실측÷폰추정 비율을 누적. 위치 정보가 없는 과거 기록은 '손에 들고'로 간주해 호환",
     "설정 탭 '러닝 다이나믹스 비교' 카드에 보정계수 표시를 위치별 2줄로 분리",
-    "지표 해설에 '폰 케이던스, 어디에 고정해야 정확할까' 섹션 추가 — 손/팔밴드·주머니/허리벨트 오차 차이, 가민 970 수준 ms 단위 정확도(지면접촉시간·좌우 밸런스)에는 풋팟(Stryd)·흉부스트랩(HRM-Pro Plus) 같은 전용 센서가 필요하다는 한계를 안내(이 앱은 블루투스 기기 연동 미지원)",
+    "지표 해설에 '폰 케이던스, 어디에 고정해야 정확할까' 섹션 추가 — 손/팔밴드·주머니/허리벨트 오차 차이, 고급 GPS 워치 수준 ms 단위 정확도(지면접촉시간·좌우 밸런스)에는 풋팟형·흉부스트랩형 같은 전용 센서가 필요하다는 한계를 안내(이 앱은 블루투스 기기 연동 미지원)",
     "회귀 검사 추가: 자체진단 ㉓ hand/belt 프로필 구조, 위치별 보정 표본 분리, 위치정보 없는 과거기록의 hand 처리, onCadenceMotion의 profile-없는 기존 state 폴백 안전성 확인"
   ]},
   {v:"2.36.0",d:"2026-09-29",title:"러닝 다이나믹스(지면접촉시간·보폭·진폭·진폭율) 추가 + 폰 케이던스 보정",items:[
@@ -2900,19 +2928,19 @@ const CHANGELOG=[
     "프로필 미입력 상태 도입 — 설정의 나이·성별·러너유형·심박 칸이 비어 있고 '선택하세요' 표시. 입력 전에는 중립 기본값으로 계산만 하고, 나이·성별이 드러나는 BQ·에이지그레이딩은 '입력하면 표시' 안내로 대체",
     "데이터 초기화(프로필·전체 삭제)도 같은 미입력 상태로 돌아가도록 통일(예전엔 35세·남성·동호인으로 채워졌음)",
     "이미 쓰던 기기의 기존 데이터는 그대로 유지됨 — 이 변경은 처음 설치하거나 전체 초기화한 경우에만 적용"]},
-  {v:"2.24.0",d:"2026-09-24",title:"출시 준비 — 약관·개인정보처리방침, 오류 수집, Strava 숨김",items:[
+  {v:"2.24.0",d:"2026-09-24",title:"출시 준비 — 약관·개인정보처리방침, 오류 수집, 외부 서비스 연동 숨김",items:[
     "개인정보처리방침·이용약관·건강 및 안전 면책·오픈소스 라이선스 페이지 추가(privacy.html 등) — 설정 → 약관·개인정보·라이선스에서 열람, 구글플레이 제출용 주소로도 사용",
     "오류 수집 추가 — 실사용 중 스크립트 오류가 나면 앱 버전·오류 내용·브라우저 종류만 서버로 전송(운동 기록·위치·심박은 보내지 않음). 같은 오류는 1회, 한 번 실행에 최대 5건. 설정에서 끌 수 있음",
     "앱을 열 때 자체진단이 실패하면 그 결과도 오류 기록으로 전송 — 사용자 기기에서 깨진 배포를 조기에 발견",
-    "Strava 연동을 첫 출시에서 제외 — 화면·목차·안내문에서 숨기고 인증 콜백도 동작하지 않게 함(코드는 기능 스위치로 보존, GPX/TCX 가져오기는 그대로)",
+    "외부 활동 공유 서비스 연동을 첫 출시에서 제외 — 화면·목차·안내문에서 숨기고 인증 콜백도 동작하지 않게 함(코드는 기능 스위치로 보존, GPX/TCX 가져오기는 그대로)",
     "자체진단 2개 항목 추가(⑪ 숨긴 기능이 화면에 남지 않았는지, ⑫ 오류 수집기·약관 링크 존재) — 총 12개"]},
   {v:"2.23.1",d:"2026-09-23",title:"Vercel 배포 안정화 — 서비스 워커·날씨 시각 계산 정리",items:[
-    "서비스 워커가 우리 도메인의 정적 파일만 캐시하도록 좁힘 — /api(날씨·Strava·대회일정)와 카카오맵 등 외부 요청은 캐시하지 않음(Strava 토큰이 든 요청이 기기 캐시에 남지 않음)",
+    "서비스 워커가 우리 도메인의 정적 파일만 캐시하도록 좁힘 — /api(날씨·외부 활동 연동·대회일정)와 카카오맵 등 외부 요청은 캐시하지 않음(인증 토큰이 든 요청이 기기 캐시에 남지 않음)",
     "정상 응답(200)만 캐시 — 배포가 일시적으로 깨져 404가 나도 오프라인용 앱 화면이 404로 덮어써지지 않음",
     "오프라인일 때 API·이미지 요청에 앱 화면(HTML)이 잘못 돌아가던 동작 제거",
     "날씨 서버 함수의 기상청 발표시각 계산을 서버 시간대와 무관하게 수정(로컬 KST 환경에서 18시간 어긋나던 문제, 실서버(UTC)는 원래 정상)"]},
   {v:"2.23.0",d:"2026-09-22",title:"[긴급수정] 화면꺼짐 중 GPS 거리 대폭 누락 문제 해결",items:[
-    "[긴급수정] 실측 확인된 버그 — 화면을 끄고 달리면 가민 대비 거리가 크게 덜 잡히던 문제(예: 가민 0.28km vs 앱 0.15km) 해결",
+    "[긴급수정] 실측 확인된 버그 — 화면을 끄고 달리면 실측 GPS 워치 대비 거리가 크게 덜 잡히던 문제(예: 실측 0.28km vs 앱 0.15km) 해결",
     "원인: 화면꺼짐 중 GPS 정확도가 30~55m대로 떨어지는 게 흔한데, 예전엔 정확도 30m 초과 신호를 통째로 폐기(기준점도 안 갱신)해서 그 구간 전체가 누락됐음",
     "완전히 못 쓸 신호(60m 초과)만 거르도록 완화하고, 그 안에서는 정확도가 나쁠수록 위치를 더 많이 평균내는 스무딩(EMA)으로 노이즈를 억제 — 단순히 문턱만 낮추면 이번엔 노이즈가 거리에 그대로 쌓여 과다측정되는 걸 확인하고 스무딩을 추가로 도입",
     "합성 트랙 경로(둘레 245.5m)로 15개 랜덤 시드 반복검증 — 평균 97.7%(85~107%) 정확도 확인(예전 로직은 동일 조건에서 0%)",
@@ -2942,7 +2970,7 @@ const CHANGELOG=[
     "고장을 일부러 주입한 테스트로 이 진단 도구 자체가 실제로 문제를 잡아내는 것까지 확인 — 검증 과정에서 진단 로직 자체의 버그(핸들러 검사 정규식 오탐)도 하나 발견해 수정"]},
   {v:"2.18.0",d:"2026-09-20",title:"케이던스 추천, 훈련부하 포커스, 운동 알림 추가",items:[
     "메트로놈 기본값 설정에 케이던스 추천 계산기 통합 — 목표·거리조건·페이스로 계산, 키·수준은 프로필에서 자동 반영",
-    "통계 탭에 가민식 '훈련부하 포커스' 추가 — 무산소·고강도유산소·저강도유산소별 최근 4주 누적과 적정범위(최근 12주 평균 기준) 표시",
+    "통계 탭에 '훈련부하 포커스' 추가 — 무산소·고강도유산소·저강도유산소별 최근 4주 누적과 적정범위(최근 12주 평균 기준) 표시",
     "운동 알림 기능 추가 — 대시보드에서 오늘 계획별 시각·알림을 설정하면, 지정 시간 전(기본 1시간, 직접 입력 가능)에 운동 종류를 알려주는 브라우저 알림 발송",
     "인터벌 생성(반복 세트)은 기존에 이미 구현되어 있었음을 확인"]},
   {v:"2.17.0",d:"2026-09-19",title:"운동 중 뒤로가기로 앱이 빠져나가는 문제 해결, 아이콘 배경 복원",items:[
@@ -2958,7 +2986,7 @@ const CHANGELOG=[
     "설정 → 앱 잠금에서 이 기기의 이 브라우저에 비밀번호 잠금을 설정할 수 있게 됨",
     "비밀번호는 SHA-256 해시로만 저장(평문 저장 안 함)",
     "여러 기기 동기화가 되는 진짜 로그인은 아님 — 서버 없이 로컬에서만 동작하는 접근 차단용 잠금",
-    "잠긴 상태에서는 온보딩·Strava 콜백·운동 복구 등 나머지 부팅 동작이 잠금 해제 후로 순연됨"]},
+    "잠긴 상태에서는 온보딩·외부 서비스 인증 콜백·운동 복구 등 나머지 부팅 동작이 잠금 해제 후로 순연됨"]},
   {v:"2.15.0",d:"2026-09-19",title:"UI 문구 정리, 새 아이콘, 관리자 전용 변경내역",items:[
     "대시보드 '내 목표 대회' 카드를 누르면 대회 주기화 설계 탭으로 바로 이동",
     "'나의 러닝 인생' → '나의 러닝 스토리'로 변경",
@@ -2979,12 +3007,12 @@ const CHANGELOG=[
     "런타임에 JS로 만들던 매니페스트를 실제 정적 manifest.json 파일로 교체 — TWA 빌드 도구(Bubblewrap 등)가 인식 가능",
     "서비스 워커 추가 — 오프라인에서도 앱이 열리는 것을 실제 네트워크 차단 테스트로 확인",
     "앱 정보에 로고 디자인의 의미 설명 추가"]},
-  {v:"2.12.0",d:"2026-09-08",title:"진짜 웨어러블 연동 — GPX/TCX 가져오기 & Strava 준비",items:[
+  {v:"2.12.0",d:"2026-09-08",title:"진짜 웨어러블 연동 — GPX/TCX 가져오기 & 외부 서비스 연동 준비",items:[
     "이전 '웨어러블 연동' 화면이 실제로는 아무 데이터도 읽지 않고 무작위 숫자를 생성하던 목업이었음을 확인하고 전면 교체",
     "GPX/TCX 파일을 실제로 파싱해 거리·시간·심박·GPS 경로를 정확히 가져오는 기능 구현 — 활동의 실제 날짜로 캘린더에 기록",
-    "Strava 연동 준비 — OAuth 인증, 토큰 자동 갱신, 활동 가져오기(중복 방지)까지 클라이언트 로직 완성",
-    "Client Secret은 서버(Vercel 환경 변수)에만 보관하는 구조로 설계, api/strava.js 서버 함수 추가",
-    "구글 폴리라인 디코더로 Strava의 경로 데이터도 지도에 표시 가능"]},
+    "외부 활동 공유 서비스 연동 준비 — OAuth 인증, 토큰 자동 갱신, 활동 가져오기(중복 방지)까지 클라이언트 로직 완성",
+    "Client Secret은 서버(Vercel 환경 변수)에만 보관하는 구조로 설계, 서버 함수 추가",
+    "구글 폴리라인 디코더로 외부 서비스의 경로 데이터도 지도에 표시 가능"]},
   {v:"2.11.0",d:"2026-09-08",title:"종목별 커스텀 템플릿 & 텍스트로 계획 가져오기",items:[
     "커스텀 템플릿에 '적용 종목'(5K·10K·하프·풀·울트라) 태그 추가 — 그 종목의 대회를 목표로 설정하면 자동으로 추천됨",
     "가지고 있는 계획을 텍스트로 붙여넣으면 요일·훈련 종류를 자동 인식해 반영(예: '화: 인터벌 5x1km')",
@@ -3292,9 +3320,8 @@ function runSelfTests(){
   check("⑧ TRIMP/케이던스 등 핵심 상수 배열이 비어있지 않음",()=>({pass:ACTIVITY_TYPES.length>0&&RUNNER_TYPES.length>0&&CHANGELOG.length>0}));
   check("⑨ 자동저장 관련 함수 존재(운동 데이터 유실 방지 체계)",()=>({pass:typeof saveRunSnapshot==="function"&&typeof checkRunRecovery==="function"&&typeof armRunBackGuard==="function"}));
   check("⑩ APP_VERSION 형식이 유효(x.y.z)",()=>({pass:/^\d+\.\d+\.\d+$/.test(APP_VERSION)}));
-  check("⑪ 기능 스위치로 끈 기능(Strava 등)이 화면에 남아있지 않음",()=>{const left=Object.keys(FEATURES).filter(k=>!FEATURES[k]&&document.querySelector(`[data-feature="${k}"]`));
-    const tocLeak=!FEATURES.strava&&(TAB_SECTIONS[4]||[]).some(x=>x.id==="sec-4-1b");
-    return{pass:!left.length&&!tocLeak,detail:left.length?"남아있음: "+left.join(", "):tocLeak?"목차에 Strava 남음":""};});
+  check("⑪ 기능 스위치로 끈 기능이 화면에 남아있지 않음",()=>{const left=Object.keys(FEATURES).filter(k=>!FEATURES[k]&&document.querySelector(`[data-feature="${k}"]`));
+    return{pass:!left.length,detail:left.length?"남아있음: "+left.join(", "):""};});
   check("⑬ 미입력 프로필(출시 첫 실행 상태)에서도 심박존·TRIMP가 숫자로 계산됨",()=>{const bp=blankProfile(),z=computeZones(bp),t=trimp(40,140,bp);
     const ok=bp.unset===true&&[1,2,3,4,5].every(i=>Number.isFinite(z[i].min)&&Number.isFinite(z[i].max))&&Number.isFinite(t);
     return{pass:ok,detail:ok?"":"NaN 발생"};});
@@ -3724,7 +3751,7 @@ function runSelfTests(){
       const stillDetects=cadenceState.totalSteps>10;
       return{pass:noFalseSteps&&stillDetects,detail:`미세진동 오검출 걸음수=${jitterSteps} 실제걸음 재검출=${stillDetects?"정상("+cadenceState.totalSteps+"걸음)":"과도하게 둔감해짐"}`};
     }finally{Date.now=realNow;RUN=savedRun;cadenceState=savedState;}});
-  check("㊶ 날씨 수기입력 — 저장한 값이 DB에 반영되고 범위밖 입력은 거부됨(FEATURES.weatherAuto=false 전제)",()=>{
+  check("㊶ 날씨 수기입력 — 저장한 값이 DB에 반영되고 범위밖 입력은 거부됨",()=>{
     const savedMW=DB.manualWeather;
     try{
       DB.manualWeather={date:"",t:null,at:null,rh:null,wind:null,code:0};
@@ -3734,8 +3761,8 @@ function runSelfTests(){
       const invalidRejected=(80<-40||80>50); // 기온 80도처럼 비정상값은 거부돼야 함
       DB.manualWeather={date:TODAY,t:25,at:25,rh:60,wind:10,code:0};save();
       const roundTrip=DB.manualWeather.t===25&&DB.manualWeather.date===TODAY;
-      return{pass:validOk&&invalidRejected&&roundTrip&&FEATURES.weatherAuto===false,
-        detail:`정상값 통과=${validOk} 비정상값 거부규칙=${invalidRejected} 저장후 재조회=${roundTrip} weatherAuto=${FEATURES.weatherAuto}`};
+      return{pass:validOk&&invalidRejected&&roundTrip,
+        detail:`정상값 통과=${validOk} 비정상값 거부규칙=${invalidRejected} 저장후 재조회=${roundTrip}`};
     }finally{DB.manualWeather=savedMW;}});
   check("㊷ GPS 신호끊김(화면꺼짐 등) 시간 누적 — 두절 구간을 거친 뒤 RUN.gapSec에 반영되고, 비중이 크면 추정치 고지 조건이 성립함",()=>{
     const savedRun=RUN;
@@ -3800,17 +3827,18 @@ function runSelfTests(){
       const webH=gpsWatchStart(()=>{},()=>{},{enableHighAccuracy:true});
       const webOk=webH&&webH.native===false&&webH.id!=null;
       if(webH)navigator.geolocation.clearWatch(webH.id);
-      const calls={start:null,stop:0,points:[],errs:[]};
+      const calls={start:null,stop:0,clearLog:0,points:[],errs:[]};
       const syncVoid={catch:()=>syncVoid,then:f=>{f();return syncVoid;}}; // runSelfTests는 동기 함수라 진짜 Promise의 마이크로태스크를 기다릴 수 없음 —
       window.Capacitor={isNativePlatform:()=>true,Plugins:{BackgroundGeolocation:{       // gpsWatchStart가 start() 전에 거는 stop().catch().then() 체인을 테스트에서만 동기적으로 즉시 실행되게 함(2026-11-22)
         start:(opts,cb)=>{calls.start=opts;window.__st_cb=cb;return Promise.resolve();},
-        stop:()=>{calls.stop++;return syncVoid;}}}};
+        stop:()=>{calls.stop++;return syncVoid;},
+        clearLocationLog:()=>{calls.clearLog++;return syncVoid;}}}};
       const nativeH=gpsWatchStart(pos=>calls.points.push(pos),err=>calls.errs.push(err),{});
       window.__st_cb({latitude:37.1,longitude:127.1,accuracy:8,speed:2.5,time:1},undefined);
       window.__st_cb(undefined,{message:"denied",code:"PERMISSION_DENIED"});
       gpsWatchStop(nativeH);
       delete window.__st_cb;
-      const nativeOk=nativeH&&nativeH.native===true&&!!calls.start&&calls.start.distanceFilter===0&&calls.start.networkFallback===true&&
+      const nativeOk=nativeH&&nativeH.native===true&&!!calls.start&&calls.start.distanceFilter===0&&calls.start.networkFallback===true&&calls.start.locationLog===true&&calls.clearLog===1&&
         calls.points.length===1&&calls.points[0].coords.latitude===37.1&&calls.points[0].coords.accuracy===8&&
         calls.errs[0]&&calls.errs[0].code===1&&calls.stop===2; // 1회=start() 전 선제 정리(ALREADY_STARTED 방지, 2026-11-22), 2회=gpsWatchStop() 명시 호출
       return{pass:webOk&&nativeOk,detail:`웹경로유지=${webOk} 네이티브분기=${nativeOk}`};
@@ -3859,6 +3887,67 @@ function runSelfTests(){
       return{pass:classOk&&weekOk&&monthOk,
         detail:`분류추정=${classOk} 주간집계=${weekOk}(${JSON.stringify({c:week.totalCount,km:week.totalKm})}) 월간집계=${monthOk}(${JSON.stringify({c:month.totalCount,km:month.totalKm})})`};
     }finally{DB.calendar=savedCal;}});
+
+  check("㊾ 러닝 이코노미 — 유산소 효율(동일 Zone 페이스 추세)·러닝 다이나믹스 효율(기준대)·VDOT 참고값이 올바로 계산되고, 복합점수가 둘의 평균인지",()=>{
+    const savedCal=DB.calendar,savedRec=DB.records,savedZones=calculatedZones;
+    try{
+      calculatedZones={1:{min:0,max:119},2:{min:120,max:139},3:{min:140,max:159},4:{min:160,max:174},5:{min:175,max:220}};
+      const mk=(durMin)=>({id:uid(),type:"run",sport:"run",dist:5,duration:durMin,avghr:130,maxhr:170,watchCadenceSpm:170,vertRatio:7.0,notes:""});
+      DB.calendar={};
+      [0,1,2].forEach(k=>{DB.calendar[addDays(TODAY,-k)]={plans:[],logs:[mk(25)]};}); // 최근 4주: 5km/25분=5:00/km
+      [30,31,32].forEach(k=>{DB.calendar[addDays(TODAY,-k)]={plans:[],logs:[mk(26)]};}); // 이전 4주: 5km/26분=5:12/km(더 느림)
+      DB.records={10000:{sec:2400,date:TODAY,note:"",src:"manual"}}; // 10K 40:00 — VDOT 참고값
+      const idx=economyIndex();
+      const aeroOk=idx.aero.score!=null&&idx.aero.t.zone===2&&idx.aero.pctFaster>3&&idx.aero.pctFaster<5;
+      const dynOk=idx.dyn.score!=null&&idx.dyn.cad.avg===170&&idx.dyn.vr.avg===7;
+      const vdotOk=idx.vdot!=null&&idx.vdot>45&&idx.vdot<55&&idx.vdot===bestVDOT();
+      const overallOk=idx.overall===Math.round((idx.aero.score+idx.dyn.score)/2);
+      return{pass:aeroOk&&dynOk&&vdotOk&&overallOk,
+        detail:`유산소=${aeroOk}(점수${idx.aero.score},${idx.aero.pctFaster!=null?idx.aero.pctFaster.toFixed(2):"-"}%) 다이나믹스=${dynOk}(점수${idx.dyn.score}) VDOT=${vdotOk}(${idx.vdot!=null?idx.vdot.toFixed(1):"-"}) 복합=${overallOk}(${idx.overall})`};
+    }finally{DB.calendar=savedCal;DB.records=savedRec;calculatedZones=savedZones;}});
+  check("㊿ 오늘 처방 훈련 피드백·제안 — 전일·전전일 연속 고강도 시 강도 완화를 제안하고, '제안대로 등록'이 기존 계획을 지우지 않고 별도 항목으로 추가하는지",()=>{
+    const savedCal=DB.calendar;
+    try{
+      const y1=addDays(TODAY,-1),y2=addDays(TODAY,-2);
+      DB.calendar={};
+      DB.calendar[y2]={plans:["LT 템포 6km (Z4)"],logs:[{id:uid(),type:"run",dist:6,duration:30,zone:4,avghr:170,maxhr:180}]};
+      DB.calendar[y1]={plans:["VO2max 1km×5 (Z5)"],logs:[{id:uid(),type:"run",dist:6,duration:28,zone:5,avghr:175,maxhr:185}]};
+      DB.calendar[TODAY]={plans:["LT 템포 6km (Z4)"],logs:[]};
+      renderTodayCoaching();
+      const suggested=todaySuggestionText;
+      const genOk=!!suggested&&/회복|이지런/.test(suggested);
+      const countBefore=dayPlans(TODAY).length;
+      registerSuggestedPlan();
+      const countAfter=dayPlans(TODAY).length;
+      const kept=dayPlans(TODAY)[0]==="LT 템포 6km (Z4)"; // 기존 계획이 지워지지 않고 그대로 남아있는지
+      const added=countAfter===countBefore+1&&dayPlans(TODAY)[1]===suggested;
+      return{pass:genOk&&kept&&added,
+        detail:`제안생성=${genOk}(${suggested}) 기존계획유지=${kept} 별도추가=${added}(${countBefore}→${countAfter})`};
+    }finally{DB.calendar=savedCal;save();todaySuggestionText=null;}}); // registerSuggestedPlan이 save()를 호출하므로, 복원 후 반드시 다시 save()해 실제 저장소도 원복
+
+  check("(51) 네이티브 위치 로그 재생 — 화면꺼짐으로 실시간 콜백이 끊겨도 pollNativeLocationLog()가 locationLog 기록을 거리에 반영하고, 중복 호출해도 거리가 두 번 더해지지 않는지(2026-11-25, 4.88km 실측이 0.03km로 기록된 실기기 버그 수정)",()=>{
+    const savedCap=window.Capacitor,savedRun=RUN;
+    try{
+      const sync=val=>({then:f=>sync(f(val)),catch:()=>sync(undefined)}); // 테스트 전용 동기 Promise 모사(진짜 then의 마이크로태스크를 기다릴 수 없어서)
+      const entries=[
+        {id:1,latitude:37.5,longitude:127.00000,accuracy:8,speed:null,time:1000},
+        {id:2,latitude:37.5,longitude:127.00004,accuracy:8,speed:null,time:2000},
+        {id:3,latitude:37.5,longitude:127.00008,accuracy:8,speed:null,time:3000},
+        {id:4,latitude:37.5,longitude:127.00012,accuracy:8,speed:null,time:4000}];
+      window.Capacitor={isNativePlatform:()=>true,Plugins:{BackgroundGeolocation:{getLocationLog:()=>sync({entries})}}};
+      RUN={active:true,paused:false,dist:0,pts:[],laps:[],recent:[],allSegs:[],overSpeedCount:0,gapSec:0,elapsed:4,startTs:Date.now()-4000};
+      pollNativeLocationLog();
+      const distAfter1=RUN.dist,cursorOk=RUN.logCursor===4;
+      const firstPollOk=distAfter1>1&&distAfter1<20; // 4개 신호 중 3구간 이동(원시 거리 약 3.5m×3≈10.5m) — EMA 스무딩 반영해도 10m 안팎이어야 정상
+      pollNativeLocationLog(); // 같은 로그로 재호출 — 이미 처리한 시각(lastSeenTs) 이하라 더 더해지면 안 됨
+      const noDupOk=RUN.dist===distAfter1;
+      // 빈 로그(새로 추가된 항목 없음)일 때는 당연히 변화 없어야 함
+      window.Capacitor.Plugins.BackgroundGeolocation.getLocationLog=()=>sync({entries:[]});
+      pollNativeLocationLog();
+      const emptyOk=RUN.dist===distAfter1;
+      return{pass:cursorOk&&firstPollOk&&noDupOk&&emptyOk,
+        detail:`최초반영=${firstPollOk}(${distAfter1.toFixed(2)}m) 커서=${cursorOk} 중복방지=${noDupOk} 빈로그무변화=${emptyOk}`};
+    }finally{if(savedCap===undefined)delete window.Capacitor;else window.Capacitor=savedCap;RUN=savedRun;}});
 
   if(__selfTestSavedSlide!=null&&typeof goToSlide==="function")goToSlide(__selfTestSavedSlide); // 원래 탭으로 조용히 복귀
   window.scrollTo(__selfTestSavedScrollX,__selfTestSavedScrollY); // goToSlide 자체가 맨 위로 스크롤시키므로 원래 스크롤 위치도 복원
@@ -5136,7 +5225,7 @@ function metricHelpContent(key){
       H("진폭율 · 수직비율 (Vertical Ratio)")+W(`진폭을 보폭으로 나눈 비율(%)로, 보폭과 무관하게 "위아래 움직임이 앞으로 가는 움직임에 비해 얼마나 큰지"를 봅니다. 같은 진폭이라도 보폭이 길면 비율은 낮아지므로, 진폭 하나만 보는 것보다 균형 잡힌 지표입니다. 훈련이 쌓이면서 이 값이 꾸준히 낮아지는 추세라면 주법 효율이 좋아지고 있다는 신호로 볼 수 있습니다.`)+
       H("어떻게 활용하면 좋을까")+W(`매번 정확한 절대값을 맞히는 것보다, <strong>같은 페이스대에서 내 평소 평균과 비교</strong>하는 게 실전적입니다. 설정 탭의 '러닝 다이나믹스 비교'에서 최근 기록과 개인 평균을 함께 볼 수 있고, 기록 저장 시 자동으로 평소 대비 코칭 문구도 받아볼 수 있습니다(설정에서 켜기).`)+
       H("폰 케이던스, 어디에 고정해야 정확할까")+W(`같은 폰이라도 <strong>착용 위치</strong>에 따라 실측 케이던스 추정 오차가 크게 달라집니다. 손에 쥐고 흔들면 팔 스윙 각도가 걸음 신호에 섞여 오차가 커지고, 팔밴드나 바지 주머니도 옷감이 펄럭이거나 팔이 따로 움직여 노이즈가 있습니다. <strong>허리 벨트 등으로 몸통 중심(골반·허리)에 밀착</strong>시키면 신체 중심의 상하 충격이 센서에 그대로 전달돼 가장 안정적입니다. 러닝 탭에서 착용 위치를 선택하면 그에 맞춰 걸음 감지 민감도를 다르게 적용하고, 위치별로 따로 보정계수를 계산합니다(설정 탭 '러닝 다이나믹스 비교'에서 확인).`)+
-      H("그래도 한계는 있습니다")+W(`이 튜닝은 실험실 측정이 아닌 경험적 출발값이며, 폰 가속도계만으로는 가민 970 같은 GPS 워치 수준의 ms 단위 지면접촉시간·좌우 밸런스 정확도에는 도달할 수 없습니다. 그 수준을 원한다면 신발용 풋팟(Stryd 등)이나 흉부 스트랩(HRM-Pro Plus) 같은 전용 센서가 필요합니다 — 이 앱은 현재 블루투스 기기 연동은 지원하지 않습니다. 가장 현실적인 절충안은 착용 위치를 고정하고, 가끔 워치 실측값을 함께 입력해 앱의 보정 기능으로 오차를 계속 줄여나가는 것입니다.`)};}
+      H("그래도 한계는 있습니다")+W(`이 튜닝은 실험실 측정이 아닌 경험적 출발값이며, 폰 가속도계만으로는 고급 GPS 워치 수준의 ms 단위 지면접촉시간·좌우 밸런스 정확도에는 도달할 수 없습니다. 그 수준을 원한다면 신발용 풋팟형이나 흉부 스트랩형 같은 전용 센서가 필요합니다 — 이 앱은 현재 블루투스 기기 연동은 지원하지 않습니다. 가장 현실적인 절충안은 착용 위치를 고정하고, 가끔 워치 실측값을 함께 입력해 앱의 보정 기능으로 오차를 계속 줄여나가는 것입니다.`)};}
 
   if(key==="sessionMetrics"){
     return{title:"운동결과 지표(칼로리·유산소효과·무산소효과·운동부하)",html:
@@ -5162,6 +5251,16 @@ function metricHelpContent(key){
       H("기준대(점선)는 무엇인가")+W(`속도별 그래프와 같은 기준대입니다 — 케이던스 164~183spm, 진폭율 6.1~8.6%(둘 다 공개된 벤치마크 참고, 위 '속도별 다이나믹스 그래프' 해설 참고). 보폭은 개인차가 커서 기준대를 표시하지 않습니다.`)+
       H("추세 문구는 어떻게 계산하나")+W(`주별 평균값에 <strong>단순 선형회귀</strong>를 적용해 "1주마다 평균적으로 얼마나 변하는지"를 계산합니다. 데이터가 있는 주가 3주 미만이면 아직 추세를 계산하지 않습니다. 진폭율은 낮아지는 추세일수록, 케이던스는 기준대 안에서 안정적일수록 주법 효율이 좋아지고 있다는 신호로 볼 수 있습니다.`)+
       H("한계")+W(`이 앱은 실험실 검증 기기가 아니며, 표본이 적은 주에는 값이 크게 흔들릴 수 있습니다. 여러 주에 걸친 큰 방향성만 참고하세요.`)};}
+
+  if(key==="economy"){
+    return{title:"러닝 이코노미 — 복합 효율 리포트",html:
+      box(`<strong style="color:#f59e0b">⚠️ 이 앱의 자체 추정치</strong> — GPS 러닝워치의 "러닝 경제성/Running Economy"는 보통 심박·속도·VO2 추정을 섞은 비공개 단일 점수로 나옵니다. 이 앱에는 그 알고리즘이나 전용 센서가 없어 똑같은 값을 낼 수 없습니다. 대신 <strong>이미 기록된 데이터를 여러 각도로 투명하게 쪼개 보여주는</strong> 방식을 택했습니다.`)+
+      H("① 유산소 효율 — 같은 강도에서 페이스가 빨라지는가")+W(`가장 많이 뛴 심박존(Zone)을 자동으로 찾아, 그 존에서 뛴 거리·시간만으로 <strong>최근 4주 평균 페이스</strong>와 <strong>그 이전 4주 평균 페이스</strong>를 비교합니다. 같은 노력(심박존)으로 더 빨리 달릴 수 있게 됐다면 유산소 효율이 좋아진 것으로 봅니다. 대시보드의 "유산소 효율 향상 감지" 배너(Zone2·28일 고정 비교)를 모든 강도대로 확장한 버전입니다. 최근·이전 각 구간에 같은 존 기록이 3회 이상 있어야 계산됩니다.`)+
+      H("② 러닝 다이나믹스 효율 — 주법이 기준대 안에 있는가")+W(`설정 탭 '러닝 다이나믹스 비교'에서 쓰는 것과 같은 참고 기준대(케이던스 164~183spm, 진폭율 6.1~8.6%, 둘 다 공개 벤치마크 참고)를 그대로 가져와, 최근 기록 평균이 기준대 안에 있는지로 0~100점을 매깁니다. 케이던스는 기준대 이상이면 만점(더 높다고 감점하지 않음), 진폭율은 낮을수록 좋다고 보는 지표라 기준대 이하일 때 만점입니다. 기록 저장 시 입력한 값이 3회 이상 쌓여야 계산됩니다.`)+
+      H("③ VDOT — 심폐지구력의 현재값")+W(`개인기록(PR)에서 환산한 VDOT(Jack Daniels 지표)입니다. ①·②가 "추세(시간에 따른 변화)"를 보는 것과 달리, VDOT는 PR 경신 시 과거 기록이 남지 않는 구조상 <strong>현재값만</strong> 참고로 보여줍니다 — 복합 점수에는 포함하지 않습니다.`)+
+      H("복합 점수는 어떻게 나오나")+W(`①·② 중 계산 가능한 점수들의 단순 평균입니다. 둘 다 계산되지 않으면 점수를 내지 않습니다(추측으로 점수를 만들지 않습니다).`)+
+      H("GPS 워치 '러닝 경제성'과 다른 점")+W(`워치 쪽은 단일 점수·단일 등급표 중심입니다. 이 리포트는 <strong>무엇이 좋아졌는지, 어느 지표가 기준에서 벗어났는지, 왜 그런지</strong>를 각 항목별로 풀어서 보여주도록 구성했습니다 — 등급보다 다음에 무엇을 바꾸면 좋을지에 초점을 둡니다.`)+
+      H("한계")+W(`이 앱은 VO2 측정 장비가 아니라 기록된 페이스·심박·다이나믹스 데이터로 추정한 근사치입니다. 더위·피로·노면·바람 같은 외부 요인은 반영하지 않으니, 점수 변화는 추세로만 참고하고 단기 변동에 일희일비하지 않는 걸 권장합니다.`)};}
   return{title:"지표 해설",html:W("설명을 준비 중입니다.")};}
 function openMetricHelp(key){const c=metricHelpContent(key);
   document.getElementById("metric-help-title").innerHTML=`<i class="bi bi-compass"></i> ${c.title}`;
@@ -5530,7 +5629,7 @@ async function tryUnlockApp(){
     document.getElementById("applock-pw-input").value="";
     if(err)err.style.display="none";
     if(shouldShowOnboarding())showOnboarding(); // 잠금 때문에 미뤄뒀던 나머지 부팅 동작을 이제 진행
-    handleStravaCallback();checkRunRecovery();startNotifyChecker();
+    checkRunRecovery();startNotifyChecker();
   }else{
     DB.appLock.failCount=(DB.appLock.failCount||0)+1;
     document.getElementById("applock-pw-input").value="";
@@ -5633,6 +5732,7 @@ function renderDashboard(){
   const plans=dayPlans(TODAY);document.getElementById("today-plan-title").textContent=plans.length?plans[0]:"오늘 계획 없음 — 자동 배치 또는 계획 추가";
   const zt=calculatedZones[2]||{min:0,max:0};
   document.getElementById("today-plan-target").innerHTML=plans.length?`타깃 심박(Z2 기준): <span class="zone-badge z2">${zt.min} ~ ${zt.max} bpm</span>`:"";
+  renderTodayCoaching();
   renderAdaptBanner();renderWeekHeatmap();
   initWeatherCard();renderRunTip();renderNutrition();renderDiversityCard();
 }
@@ -5646,10 +5746,85 @@ function renderAdaptBanner(){const slot=document.getElementById("adapt-banner-sl
   if(recent&&prev&&recent<prev*0.985){const gain=((prev-recent)/prev*100).toFixed(1);
     slot.innerHTML=`<div class="adapt-banner"><div style="font-size:12.5px"><i class="bi bi-graph-up-arrow" style="color:#6ee7b7"></i> <strong>유산소 효율 향상 감지:</strong> 동일 Zone 2 심박에서 페이스가 최근 4주간 약 ${gain}% 빨라졌습니다. 목표 페이스 상향을 검토해 보세요.</div><button class="btn btn-sm btn-success" style="flex-shrink:0" onclick="showToast('설정에서 LTHR을 갱신하면 존이 재조정됩니다.');dismissBanner('adapt-banner-slot')">확인</button></div>`;
   }else slot.innerHTML="";}
-function pushTodayToGarmin(){const term=document.getElementById("today-push-term");term.style.display="block";
-  const plans=dayPlans(TODAY),w=plans.length?plans[0]:"이지런 40분",z2=calculatedZones[2]||{};
-  term.textContent=`[Garmin Connect] 세션 전송 중...\n> 워크아웃: ${w}\n> 타깃존: Zone 2 (${z2.min}-${z2.max}bpm)\n[OK] Forerunner 동기화 완료 ✓`;
-  showToast("오늘 처방 훈련을 가민 워치로 전송했습니다.");}
+function dashboardAddPlan(){ // 대시보드 '오늘 처방 훈련' 카드에서 오늘 날짜로 계획 추가 모달을 바로 염(기존 계획이 있어도 추가 가능)
+  selectedDate=TODAY;openAddPlanModal();}
+/* ===== 오늘 처방 훈련 피드백·조정 제안 (v2.54.0) =====
+   금일 기준 전일·전전일의 계획 이행 상태(연속 고강도·피로 신호)와 이번 주(월~오늘) 평균 완성률을
+   보고, 오늘 이미 계획이 있으면 그 계획을 완화/유지/강화 중 하나로 조정 제안한다. 제안 워크아웃은
+   '계획 추가' 모달과 같은 생성기(slotText)로 만들어 문구가 신뢰할 수 있는 형태가 되도록 함.
+   등록은 기존 계획을 덮어쓰지 않고 별도 항목으로 추가(2026-11-22 결정). */
+let todaySuggestionText=null;
+function dayStatusLabel(date,label){ // 전일/전전일처럼 과거 특정일의 계획 이행 상태를 한 줄 요약
+  const ps=dayPlans(date);
+  if(!ps.length){const lg=dayLogs(date);return`${label}: ${lg.length?"계획 없이 자율 훈련":"기록 없음"}`;}
+  const p=parsePlan(ps[0]);
+  if(p.rest)return`${label}: 휴식일`;
+  return`${label}: ${planDayStatus(date,ps[0]).txt}`;}
+function renderTodayCoaching(){
+  const box=document.getElementById("today-coaching-box");if(!box)return;
+  todaySuggestionText=null;
+  const y1=addDays(TODAY,-1),y2=addDays(TODAY,-2);
+  const mon=mondayOf(TODAY);
+  let compSum=0,compN=0;
+  for(let d=mon;d<TODAY;d=addDays(d,1)){ // 오늘은 아직 뛰기 전이라 완성률이 항상 0%로 잡혀 평균을 왜곡하므로 어제까지만 집계
+    const ps=dayPlans(d);if(!ps.length)continue;
+    const p=parsePlan(ps[0]);if(p.rest)continue;
+    const cp=completionPct(d,ps[0]);if(cp!=null){compSum+=cp;compN++;}}
+  const avgComp=compN?Math.round(compSum/compN):null;
+  const acute=sumWindow(addDays(TODAY,-6),TODAY).tr,chronic=sumWindow(addDays(TODAY,-27),TODAY).tr/4,acwr=chronic>0?acute/chronic:0;
+  const zoneOf=date=>{const ps=dayPlans(date);if(ps.length){const p=parsePlan(ps[0]);if(p.zone)return p.zone;}return dominantZone(dayLogs(date));};
+  const consecHard=(zoneOf(y1)||0)>=4&&(zoneOf(y2)||0)>=3;
+  const ratingsRecent=[y1,y2].flatMap(d=>dayLogs(d).map(l=>l.rating).filter(r=>r!=null));
+  const lowRating=ratingsRecent.length>0&&(ratingsRecent.reduce((a,b)=>a+b,0)/ratingsRecent.length)<=2.2;
+  const missedRecent=[y1,y2].some(d=>{const ps=dayPlans(d);return ps.length&&!/휴식|대회 당일/.test(ps[0])&&planDayStatus(d,ps[0]).txt==="미실시";});
+  const feedback=`${dayStatusLabel(y2,"전전일")} · ${dayStatusLabel(y1,"전일")}${avgComp!=null?` · 이번 주 평균 완성률 ${avgComp}%`:""}`;
+  const todays=dayPlans(TODAY);
+  if(!todays.length){box.innerHTML=`<div style="font-size:11.5px;color:#94a3b8">${feedback}</div>`;return;}
+  const tp=parsePlan(todays[0]);
+  if(tp.rest){box.innerHTML=`<div style="font-size:11.5px;color:#94a3b8">${feedback}</div>`;return;}
+  const tpHard=(tp.zone||0)>=3;
+  let action="유지",reasons=[];
+  if(acwr>1.5){action="완화";reasons.push("최근 급성:만성 부하비(ACWR)가 1.5를 넘어 과부하 위험 구간입니다.");}
+  if(consecHard&&tpHard){action="완화";reasons.push("전일·전전일 모두 강도 높은 훈련을 소화해 회복 시간이 부족합니다.");}
+  if(lowRating){action="완화";reasons.push("최근 자기평가가 낮게(힘듦·미흡) 기록됐습니다.");}
+  if(action==="유지"&&acwr>=0.8&&acwr<=1.3&&(avgComp==null||avgComp>=90)&&!missedRecent&&!tpHard){
+    action="강화";reasons.push("최근 부하·이행률이 안정적이라 소폭 늘려볼 여지가 있습니다.");}
+  if(!reasons.length)reasons.push("특별한 피로·이탈 신호가 없어 오늘 계획을 그대로 진행해도 좋습니다.");
+  const rd=enduranceReadiness(),LR=Math.max(8,Math.round(rd.LRmax||14));
+  const pc=pacesFromMP(currentMPace()!=null?currentMPace():goalMPace(primaryRace()));
+  const ctx={LR,pc,dist:(primaryRace()||{}).dist||"FULL",gpace:goalMPace(primaryRace()),block:"build",readiness:rd.r};
+  let suggestedText=todays[0];
+  if(action==="완화")suggestedText=slotText({code:tpHard?"recovery":"easy"},ctx);
+  else if(action==="강화")suggestedText=slotText({code:"strides"},ctx);
+  const badgeColor=action==="완화"?"#f59e0b":action==="강화"?"#10b981":"#38bdf8";
+  const badgeText=action==="완화"?"⚠ 강도 완화 제안":action==="강화"?"💪 소폭 강화 제안":"✓ 계획 유지 권장";
+  let actionsHTML="";
+  if(action!=="유지"){
+    todaySuggestionText=suggestedText;
+    actionsHTML=`<div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-sm btn-success" style="flex:1" onclick="registerSuggestedPlan()"><i class="bi bi-check2-circle"></i> 제안대로 등록</button>
+      <button class="btn btn-sm btn-secondary" style="flex:1" onclick="editSuggestedPlan()"><i class="bi bi-pencil-square"></i> 수정해서 등록</button>
+    </div>`;}
+  box.innerHTML=`<div style="background:#0d1420;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:6px">${escapeHtml(feedback)}</div>
+    <div style="font-size:12.5px;color:#e2e8f0"><strong style="color:${badgeColor}">${badgeText}</strong><br>${reasons.map(r=>"· "+escapeHtml(r)).join("<br>")}</div>
+    ${action!=="유지"?`<div style="margin-top:8px;font-size:13px;font-weight:700;color:#fff">제안: ${escapeHtml(suggestedText)}</div>`:""}
+    ${actionsHTML}</div>`;}
+function registerSuggestedPlan(){ // 제안 워크아웃을 오늘 계획에 별도 항목으로 추가(기존 계획은 덮어쓰지 않음, 2026-11-22 결정)
+  if(!todaySuggestionText)return;
+  if(!DB.calendar[TODAY])DB.calendar[TODAY]={plans:[],logs:[]};
+  if(!DB.calendar[TODAY].plans)DB.calendar[TODAY].plans=[];
+  DB.calendar[TODAY].plans.push(todaySuggestionText);
+  if(DB.calendar[TODAY].planSrc)DB.calendar[TODAY].planSrc.push(null);
+  save();refreshAll();showToast("제안한 훈련을 오늘 계획에 추가했습니다.");}
+function editSuggestedPlan(){ // 제안 문구를 '계획 추가' 모달에 미리 채워 넣어, 거리·시간·페이스를 수정한 뒤 등록할 수 있게 함
+  if(!todaySuggestionText)return;
+  const text=todaySuggestionText;
+  selectedDate=TODAY;openAddPlanModal();
+  const sel=document.getElementById("m-plan-workout");
+  if(sel){if(![...sel.options].some(o=>o.value===text)){
+      const opt=document.createElement("option");opt.value=text;opt.textContent=text;sel.insertBefore(opt,sel.firstChild);}
+    sel.value=text;onPlanWorkoutChange();}}
 
 /* ===== 오늘의 러닝 환경(날씨) — Open-Meteo(무료·API키불필요, 비상업용) ===== */
 const WMO_MAP={0:["맑음","☀️"],1:["대체로 맑음","🌤️"],2:["약간 흐림","⛅"],3:["흐림","☁️"],
@@ -5680,32 +5855,15 @@ function renderWeatherBody(d){
       <div style="font-size:12.5px;color:#94a3b8">${label} · 습도 ${d.rh}% · 풍속 ${Math.round(d.wind)}km/h</div></div>
     </div>
     <div style="background:#080e1a;border-radius:6px;padding:9px 12px;font-size:12.5px;color:#6ee7b7;line-height:1.6"><i class="bi bi-info-circle"></i> ${weatherRunAdvice(d.t,d.rh,d.at,d.wind,d.code)}</div>`;}
-function loadRunWeather(manual){
-  // 기상청 단기예보 공공데이터(공공누리 제1유형 — 출처표시 조건으로 상업적 이용 허용)를
-  // Vercel 서버리스 함수(api/weather.js)를 거쳐 조회한다. 클라이언트에서 기상청 API를
-  // 직접 호출하면 CORS로 막히는 경우가 많아 프록시가 필요하다.
-  const body=document.getElementById("weather-body");if(!body)return;
-  if(!navigator.geolocation){body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">이 브라우저는 위치 기능을 지원하지 않습니다.</div>`;return;}
-  if(manual)body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">불러오는 중…</div>`;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const{latitude:lat,longitude:lon}=pos.coords;
-    fetch(`./api/weather?lat=${lat}&lon=${lon}`).then(r=>r.json()).then(j=>{
-      if(j.error||j.temperature_2m==null){body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">날씨 정보를 불러오지 못했습니다${j.error?` (${escHtml(j.error)})`:""}.</div>`;return;}
-      renderWeatherBody({t:j.temperature_2m,rh:j.relative_humidity_2m,at:j.apparent_temperature,wind:j.wind_speed_10m,code:j.weather_code});
-    }).catch(()=>{body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">날씨 정보를 불러오지 못했습니다(네트워크 확인, file://로 직접 열면 API가 동작하지 않습니다).</div>`;});
-  },()=>{body.innerHTML=`<div style="font-size:12.5px;color:var(--text-secondary)">위치 권한이 필요합니다. 브라우저 설정에서 위치 접근을 허용해주세요.</div>`;},
-  {enableHighAccuracy:false,maximumAge:600000,timeout:15000});}
 /* ===== 오늘의 러닝 환경(날씨) 수기입력 모드 (v2.44.0, 2026-11-14) =====
-   FEATURES.weatherAuto=false일 때 사용. 위치기반 자동조회(loadRunWeather) 대신,
-   사용자가 직접 확인한 값을 입력받아 기존 weatherRunAdvice/renderWeatherBody
-   (알고리즘은 그대로)에 넘긴다. 입력값은 DB.manualWeather에 오늘 날짜로 저장. */
+   위치기반 자동조회는 쓰지 않기로 결정(v2.53.2, 자동조회 코드 삭제) — 사용자가 직접 확인한 값을
+   입력받아 기존 weatherRunAdvice/renderWeatherBody(알고리즘은 그대로)에 넘긴다.
+   입력값은 DB.manualWeather에 오늘 날짜로 저장. */
 const MANUAL_WEATHER_CODES=[[0,"맑음"],[3,"흐림"],[63,"비"],[73,"눈"],[95,"뇌우"]];
 function initWeatherCard(){
-  if(FEATURES.weatherAuto){loadRunWeather(false);return;}
   if(DB.manualWeather&&DB.manualWeather.date===TODAY&&DB.manualWeather.t!=null)renderWeatherBody(DB.manualWeather);
   else renderWeatherManualForm();}
 function weatherCardRefresh(){
-  if(FEATURES.weatherAuto){loadRunWeather(true);return;}
   renderWeatherManualForm();}
 function renderWeatherManualForm(){
   const body=document.getElementById("weather-body");if(!body)return;
@@ -6143,21 +6301,21 @@ function addNewRunTip(){const v=document.getElementById("runtip-new-ta").value.t
 /* ===== 캘린더 ===== */
 function renderCalendar(){
   const y=viewYear,m=viewMonth;document.getElementById("cal-month-display").textContent=`${y}년 ${m}월`;
-  const grid=document.getElementById("garmin-month-grid"),names=["월","화","수","목","금","토","일"];
-  let html=names.map(d=>`<div class="garmin-day-header">${d}</div>`).join("");
+  const grid=document.getElementById("mcal-month-grid"),names=["월","화","수","목","금","토","일"];
+  let html=names.map(d=>`<div class="mcal-day-header">${d}</div>`).join("");
   const lead=firstWeekdayMon(y,m),dim=daysInMonth(y,m),prevDim=daysInMonth(m===1?y-1:y,m===1?12:m-1);
-  for(let i=lead-1;i>=0;i--)html+=`<div class="garmin-cell other-month"><div class="garmin-cell-top"><span class="garmin-date-num">${prevDim-i}</span></div></div>`;
+  for(let i=lead-1;i>=0;i--)html+=`<div class="mcal-cell other-month"><div class="mcal-cell-top"><span class="mcal-date-num">${prevDim-i}</span></div></div>`;
   for(let day=1;day<=dim;day++){const key=`${y}-${pad(m)}-${pad(day)}`,isToday=key===TODAY,isSel=key===selectedDate;
     const plans=dayPlans(key),logs=dayLogs(key);
     const dc=DB.calendar[key]||{},hasDiary=!!((dc.diary||"").trim())||!!(dc.vitals&&Object.keys(dc.vitals).length);let bars="";
-    if(plans.length)bars+=`<div class="garmin-bar bar-plan"></div>`;
-    logs.slice(0,4).forEach(l=>bars+=`<div class="garmin-bar bar-${l.color}"></div>`);
-    const total=plans.length+logs.length,more=total>3?`<div class="garmin-more-count">+${total-3}</div>`:"";
-    html+=`<div class="garmin-cell ${isToday?'today':''} ${isSel&&!isToday?'selected':''}" onclick="selectDate('${key}')">
-      <div class="garmin-cell-top"><span class="garmin-date-num">${day}</span><span style="display:flex;gap:2px">${plans.length?'<i class="bi bi-flag-fill" style="font-size:9px;color:#38bdf8"></i>':''}${hasDiary?'<i class="bi bi-journal-text" style="font-size:9px;color:#a78bfa"></i>':''}</span></div>
-      <div class="garmin-bars-container">${bars}</div>${more}</div>`;}
+    if(plans.length)bars+=`<div class="mcal-bar bar-plan"></div>`;
+    logs.slice(0,4).forEach(l=>bars+=`<div class="mcal-bar bar-${l.color}"></div>`);
+    const total=plans.length+logs.length,more=total>3?`<div class="mcal-more-count">+${total-3}</div>`:"";
+    html+=`<div class="mcal-cell ${isToday?'today':''} ${isSel&&!isToday?'selected':''}" onclick="selectDate('${key}')">
+      <div class="mcal-cell-top"><span class="mcal-date-num">${day}</span><span style="display:flex;gap:2px">${plans.length?'<i class="bi bi-flag-fill" style="font-size:9px;color:#38bdf8"></i>':''}${hasDiary?'<i class="bi bi-journal-text" style="font-size:9px;color:#a78bfa"></i>':''}</span></div>
+      <div class="mcal-bars-container">${bars}</div>${more}</div>`;}
   const trail=(7-((lead+dim)%7))%7;
-  for(let d=1;d<=trail;d++)html+=`<div class="garmin-cell other-month"><div class="garmin-cell-top"><span class="garmin-date-num">${d}</span></div></div>`;
+  for(let d=1;d<=trail;d++)html+=`<div class="mcal-cell other-month"><div class="mcal-cell-top"><span class="mcal-date-num">${d}</span></div></div>`;
   grid.innerHTML=html;renderSelectedDay(selectedDate);renderWeeklyJournal();
 }
 function selectDate(key){selectedDate=key;renderCalendar();}
@@ -6184,7 +6342,7 @@ function toggleJournalWeek(monday){if(expandedWeeks.has(monday))expandedWeeks.de
 function loadMoreJournalWeeks(){weeklyJournalShown+=12;renderWeeklyJournal();}
 function jumpToJournalDate(d){const dt=parseYMD(d);viewYear=dt.getFullYear();viewMonth=dt.getMonth()+1;
   selectedDate=d;renderCalendar();
-  const grid=document.getElementById("garmin-month-grid");
+  const grid=document.getElementById("mcal-month-grid");
   if(grid)window.scrollTo({top:grid.getBoundingClientRect().top+window.scrollY-8,behavior:"smooth"});}
 function renderWeeklyJournal(){const list=document.getElementById("weekly-journal-list");if(!list)return;
   const weeks=collectJournalWeeks();
@@ -6681,10 +6839,10 @@ function dominantZone(logs){const t={};let best=null,bmax=0;for(const l of logs)
 let repOffset=0,anaOffset=0; // 0=최근, 1=한 기간 이전...
 function onRepWindowChange(){repOffset=0;renderComplianceReport();}
 function shiftRepWindow(dir){const n=repOffset+(dir<0?1:-1);if(n<0)return;repOffset=n;renderComplianceReport();}
-/* ===== 훈련부하 포커스 (가민식) =====
-   가민 등 GPS 워치의 "Training Load Focus"를 참고한 시각화. 존별 TRIMP를 무산소(Z4~5)/
+/* ===== 훈련부하 포커스 =====
+   일부 GPS 워치의 훈련부하 분석 기능을 참고한 시각화. 존별 TRIMP를 무산소(Z4~5)/
    고강도유산소(Z3)/저강도유산소(Z1~2) 3개로 나눠 최근 4주 누적을 보여주고, "적정범위"는
-   가민처럼 기기 내부에 학습된 개인 피트니스 모델이 없으므로, 최근 12주 평균을 4주 단위로
+   그런 기기처럼 기기 내부에 학습된 개인 피트니스 모델이 없으므로, 최근 12주 평균을 4주 단위로
    환산한 값의 80~120%로 근사한다(이미 있는 ACWR의 급성:만성 비율과 같은 원리). */
 function loadFocusCatOf(zone){return zone>=4?"anaerobic":zone===3?"highAerobic":"lowAerobic";}
 function loadFocusCompute(){
@@ -8508,8 +8666,11 @@ function gpsWatchStart(onPoint,onErr,opts){
       // 직전 실행에서 남아있던 포그라운드 서비스가 있으면 먼저 정리 — 안 하면 다음 start()가
       // "Service already started" 에러로 실패함(2026-11-22 실기기 테스트에서 실제 발견된 증상).
       // stop()은 정리할 서비스가 없어도 에러 없이(혹은 무해한 에러로) 끝나므로 결과 상관없이 바로 start() 진행.
+      // clearLocationLog()도 함께 정리 — 이전 실행(예열 단계 포함)의 기록이 이번 측정의 afterId:0 조회에
+      // 섞여 들어오지 않도록(2026-11-25, pollNativeLocationLog 추가와 함께).
       bg.stop().catch(()=>{}).then(()=>{
-        bg.start({backgroundMessage:"러닝 측정 중입니다 — 화면을 꺼도 계속 기록됩니다.",backgroundTitle:"RUN2080",requestPermissions:true,stale:false,distanceFilter:0,networkFallback:true}, // networkFallback: GPS가 20초+ 신호없음일 때 네트워크(Wi-Fi/기지국) 기반 대략위치로 대체
+        if(typeof bg.clearLocationLog==="function")bg.clearLocationLog().catch(()=>{});
+        bg.start({backgroundMessage:"러닝 측정 중입니다 — 화면을 꺼도 계속 기록됩니다.",backgroundTitle:"RUN2080",requestPermissions:true,stale:false,distanceFilter:0,networkFallback:true,locationLog:true}, // networkFallback: GPS가 20초+ 신호없음일 때 네트워크(Wi-Fi/기지국) 기반 대략위치로 대체. locationLog: 네이티브가 모든 수신 위치를 별도 기록(화면꺼짐 중 JS 콜백이 안 와도 pollNativeLocationLog()로 나중에 복원 가능, 2026-11-25)
           (location,error)=>{
             if(error){onErr&&onErr({code:capErrToCode(error),message:error.message});return;}
             if(location)onPoint(capLocToPos(location));
@@ -8522,6 +8683,28 @@ function gpsWatchStop(handle){
   if(!handle)return;
   if(handle.native){const bg=capBgGeoPlugin();if(bg){try{bg.stop().catch(()=>{});}catch(e){}}}
   else{try{navigator.geolocation.clearWatch(handle.id);}catch(e){}}}
+/* ===== 네이티브 위치 로그 재생 (2026-11-25 추가) =====
+   실기기 테스트에서 발견된 증상: 화면을 끄면 @capgo/background-geolocation의 실시간 JS 콜백이
+   거의 오지 않음(WebView가 멈추면 콜백도 멈춤 — 플러그인 공식 문서: "콜백은 WebView가 살아있는 동안에만 동작").
+   30분 화면꺼짐 실측에서 거리 0.03km만 기록된 원인이 이것으로 확인됨(가민 동시 측정 4.88km와 비교).
+   네이티브 쪽은 포그라운드 서비스가 화면꺼짐과 무관하게 계속 수신·기록하므로(locationLog:true 옵션),
+   화면이 켜지는 시점(visibilitychange)과 매초(tickRun)마다 이 로그를 읽어와 기존 onGpsPoint() 알고리즘
+   (스무딩·속도필터·신호두절 보간)에 그대로 통과시켜 거리를 사후에라도 복원한다.
+   실시간 콜백으로 이미 처리된 지점과 겹치지 않도록 RUN.lastSeenTs(처리한 가장 최신 timestamp) 기준으로
+   거른다 — 화면이 켜져 있어 실시간 콜백이 정상 동작한 구간은 그대로 쓰고, 꺼져 있던 구간만 로그로 메운다. */
+function pollNativeLocationLog(){
+  if(!RUN||!RUN.active||!isCapacitorNative())return Promise.resolve();
+  const bg=capBgGeoPlugin();if(!bg||typeof bg.getLocationLog!=="function")return Promise.resolve();
+  if(RUN.logPolling)return Promise.resolve();RUN.logPolling=true;
+  return bg.getLocationLog({afterId:RUN.logCursor||0}).then(res=>{
+    const entries=(res&&res.entries)||[];
+    entries.forEach(e=>{
+      RUN.logCursor=Math.max(RUN.logCursor||0,e.id||0);
+      if((e.time||0)<=(RUN.lastSeenTs||0))return; // 실시간 콜백으로 이미 처리된 시각 이하 — 중복 방지
+      onGpsPoint(capLocToPos(e));
+    });
+  }).catch(()=>{}).then(()=>{RUN.logPolling=false;});
+}
 /* ===== GPS 예열 (탭 진입 즉시 시작, 세션 시작 전에 미리 신호를 잡아둠) ===== */
 let prewarmWatchId=null,prewarmBestAcc=null,prewarmStartedAt=null,prewarmTimerId=null;
 function startPrewarmGps(){
@@ -8621,7 +8804,7 @@ const DYN_SPEED_METRIC_META={
   stride:{label:"보폭",unit:"m",color:"#a78bfa",get:l=>l.strideM||null,band:null,
     bandLabel:"보폭은 키·다리길이에 따라 개인차가 커서 고정된 이상적 수치는 없습니다 — 속도가 오를 때 내 보폭이 함께 느는지가 더 중요합니다."},
   vratio:{label:"진폭율",unit:"%",color:"#f59e0b",get:l=>l.vertRatio||null,band:[6.1,8.6],
-    bandLabel:"평균~상위권 기준대(6.1~8.6%, 낮을수록 좋음 — the5krunner 공개 벤치마크 기준)"}};
+    bandLabel:"평균~상위권 기준대(6.1~8.6%, 낮을수록 좋음 — 공개된 GPS 러닝워치 벤치마크 자료 기준)"}};
 function dynSpeedPaceSec(l){if(l.avgPaceSec!=null)return l.avgPaceSec;if(l.dist>0&&l.duration>0)return l.duration*60/l.dist;return null;}
 function dynSpeedPoints(metric){const meta=DYN_SPEED_METRIC_META[metric];
   return dynamicsLogs().map(l=>{const v=meta.get(l),paceSec=dynSpeedPaceSec(l);
@@ -8725,6 +8908,104 @@ function dynamicsCoachText(log){ // 저장 직후, 개인 평균 대비 오늘 �
   if(log.gctMs&&base.gctMs){const d=log.gctMs-base.gctMs;if(Math.abs(d)>=8)bits.push(`지면접촉시간 평소보다 ${d>0?"길게":"짧게"}(${Math.abs(Math.round(d))}ms)`);}
   if(log.vertRatio&&base.vertRatio){const d=log.vertRatio-base.vertRatio;if(Math.abs(d)>=0.5)bits.push(`진폭율 평소보다 ${d>0?"높게":"낮게"}(${Math.abs(d).toFixed(1)}%p)`);}
   return bits.length?`📊 ${bits.join(", ")} 나왔어요.`:"📊 러닝 다이나믹스가 평소와 비슷합니다.";}
+/* ===== 러닝 이코노미(Running Economy) 복합 리포트 (v2.53.0, 2026-11-22) =====
+   워치의 "러닝 경제성"은 심박·속도 기반 단일 점수 하나로 보여주지만, 이 앱에는 그 비공개 알고리즘을
+   재현할 센서/수식이 없다. 대신 이미 쌓인 데이터(페이스·심박존·러닝 다이나믹스·VDOT)를 여러 각도로
+   나눠 "무엇이 좋아지고 있는지/무엇을 고쳐야 하는지"를 투명하게 보여주는 쪽으로 설계했다.
+   ① 유산소 효율: renderAdaptBanner()의 zone2·28일 고정 비교를, "현재 가장 많이 뛰는 존" 기준으로 일반화.
+   ② 다이나믹스 효율: 기존 DYN_SPEED_METRIC_META 참고 기준대 대비 평균 위치를 점수화.
+   ③ VDOT: 기존 bestVDOT() 현재값(추세 아닌 참고용 — PR은 최신값만 보관되어 과거 이력이 없음).
+   전부 이 앱 내부 추정치이며, 워치가 측정하는 임상적 VO2 수치가 아님(화면에 고지). */
+function allRunLogsWithDate(){const out=[];for(const d in DB.calendar)for(const l of dayLogs(d))if(l.type==="run"&&l.dist>0)out.push({date:d,...l});return out;}
+function aerobicEfficiencyTrend(){
+  const logs=allRunLogsWithDate();
+  const zone=dominantZone(logs);if(!zone)return null;
+  const zl=logs.filter(l=>l.zone===zone);
+  const windowStat=(from,to)=>{let d=0,dur=0,n=0;for(const l of zl){const dif=diffDays(TODAY,l.date);if(dif>=from&&dif<to){d+=l.dist;dur+=l.duration;n++;}}return{paceMinKm:d>0?dur/d:null,n};};
+  return{zone,recent:windowStat(0,28),prev:windowStat(28,56)};}
+function aerobicEfficiencyScore(){ // 표본 3개 미만(최근/이전 각각)이면 추세 판단 보류 — 통계적으로 신뢰하기 어려움
+  const t=aerobicEfficiencyTrend();
+  if(!t||t.recent.n<3||t.prev.n<3||t.recent.paceMinKm==null||t.prev.paceMinKm==null)return{score:null,t};
+  const pctFaster=(t.prev.paceMinKm-t.recent.paceMinKm)/t.prev.paceMinKm*100; // 양수=빨라짐(개선)
+  const score=Math.max(0,Math.min(100,Math.round(50+pctFaster*8))); // 민감도 계수 8은 이 앱이 임의로 정한 값 — 직접 확인 필요
+  return{score,pctFaster,t};}
+function scoreLowerBetter(val,band){ // 낮을수록 좋은 지표용 — 하한 이하=100점, 상한 초과 시 선형 감점(0점 하한). 진폭율(vratio)용.
+  if(val==null||!band)return null;
+  const[lo,hi]=band,span=(hi-lo)||1;
+  if(val<=lo)return 100;
+  if(val<=hi)return Math.round(100-(val-lo)/span*50);
+  return Math.max(0,Math.round(50-(val-hi)/span*50));}
+function scoreAtLeast(val,band){ // 하한 미만일 때만 감점, 상한 초과는 감점하지 않음("이 이상이면 좋음" 성격). 케이던스용.
+  if(val==null||!band)return null;
+  const[lo,hi]=band,span=(hi-lo)||1;
+  if(val>=lo)return 100;
+  return Math.max(0,Math.round(100-(lo-val)/span*100));}
+function metricEfficiencyAverage(metric){const meta=DYN_SPEED_METRIC_META[metric],logs=dynamicsLogs();
+  const vals=logs.map(l=>meta.get(l)).filter(v=>v>0);
+  return{n:vals.length,avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null};}
+function dynamicsEfficiencyScore(){
+  const cad=metricEfficiencyAverage("cadence"),vr=metricEfficiencyAverage("vratio");
+  const parts=[];
+  if(cad.n>=3&&cad.avg!=null)parts.push(scoreAtLeast(cad.avg,DYN_SPEED_METRIC_META.cadence.band));
+  if(vr.n>=3&&vr.avg!=null)parts.push(scoreLowerBetter(vr.avg,DYN_SPEED_METRIC_META.vratio.band));
+  return{score:parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length):null,cad,vr};}
+function economyIndex(){
+  const aero=aerobicEfficiencyScore(),dyn=dynamicsEfficiencyScore(),vdot=bestVDOT();
+  const parts=[aero.score,dyn.score].filter(v=>v!=null);
+  return{overall:parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length):null,aero,dyn,vdot,partsCount:parts.length};}
+function economyCoachText(idx){
+  const bits=[];
+  if(idx.aero.score!=null){
+    const pf=idx.aero.pctFaster,z=idx.aero.t.zone;
+    if(pf>=2)bits.push(`가장 많이 뛰는 Zone${z} 기준으로, 같은 심박대에서 페이스가 직전 4주 대비 약 ${pf.toFixed(1)}% 빨라졌습니다 — 같은 노력으로 더 멀리 가고 있다는 뜻으로, 유산소 효율(러닝 이코노미의 핵심)이 좋아지는 신호입니다.`);
+    else if(pf<=-2)bits.push(`가장 많이 뛰는 Zone${z} 기준으로 페이스가 직전 4주 대비 약 ${Math.abs(pf).toFixed(1)}% 느려졌습니다 — 더위·피로 누적·훈련량 급증 등 외부 요인일 수 있으니 최근 휴식·컨디션도 함께 점검해 보세요.`);
+    else bits.push(`가장 많이 뛰는 Zone${z} 기준 페이스가 직전 4주와 비슷한 수준으로 유지되고 있습니다.`);
+  }else bits.push("유산소 효율 추세를 보려면 같은 강도(Zone)로 뛴 기록이 최근 4주·이전 4주에 각 3회 이상 쌓여야 합니다 — 아직 데이터가 부족합니다.");
+  if(idx.dyn.vr.n>=3&&idx.dyn.vr.avg!=null){
+    const[lo,hi]=DYN_SPEED_METRIC_META.vratio.band;
+    if(idx.dyn.vr.avg>hi)bits.push(`수직 진폭율 평균이 기준대(${lo}~${hi}%)보다 높습니다 — 위아래로 뜨는 동작이 커서 같은 힘이 전진이 아닌 다른 방향으로 새고 있을 수 있습니다. 보폭을 살짝 줄이고 케이던스를 올려보세요.`);
+    else if(idx.dyn.vr.avg<=lo)bits.push(`수직 진폭율 평균이 기준대(${lo}~${hi}%) 안에서도 낮은 편입니다 — 전진 효율이 좋은 편입니다.`);}
+  if(idx.dyn.cad.n>=3&&idx.dyn.cad.avg!=null){
+    const[lo,hi]=DYN_SPEED_METRIC_META.cadence.band;
+    if(idx.dyn.cad.avg<lo)bits.push(`케이던스 평균이 기준대(${lo}~${hi}spm)보다 낮습니다 — 보폭이 큰 스타일일 수 있는데, 착지 충격·부상 위험이 커질 수 있어 케이던스를 조금씩 올려보는 것을 권장합니다.`);}
+  if(idx.dyn.score==null)bits.push("러닝 다이나믹스 효율을 보려면 기록 저장 시 케이던스·진폭율 입력이 3회 이상 쌓여야 합니다.");
+  if(idx.vdot!=null)bits.push(`참고로 최근 PR 기준 VDOT는 ${idx.vdot.toFixed(1)}입니다 — 심폐지구력의 현재값(절대 수준)이며, 위 효율 지표들은 "같은 능력을 얼마나 적은 비용으로 쓰고 있는지"를 보는 것이라 VDOT와는 다른 각도입니다.`);
+  return bits.join(" ");}
+let economyChart=null;
+function zoneWeeklyPaceTrend(zone,weeks){
+  const logs=allRunLogsWithDate().filter(l=>l.zone===zone);
+  const out=[];
+  for(let i=weeks-1;i>=0;i--){const weekEnd=addDays(TODAY,-7*i),weekStart=addDays(weekEnd,-6);
+    let d=0,dur=0;logs.forEach(l=>{if(l.date>=weekStart&&l.date<=weekEnd){d+=l.dist;dur+=l.duration;}});
+    out.push({weekEnd,paceMinKm:d>0?dur/d:null});}
+  return out;}
+function renderEconomyReport(){
+  const slot=document.getElementById("economy-body");if(!slot)return;
+  const idx=economyIndex();
+  const scoreTxt=idx.overall!=null?String(idx.overall):"—";
+  const scoreColor=idx.overall==null?"#64748b":idx.overall>=70?"#10b981":idx.overall>=50?"#f59e0b":"#ef4444";
+  slot.innerHTML=`
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="font-size:36px;font-weight:800;color:${scoreColor};line-height:1">${scoreTxt}<span style="font-size:13px;color:#64748b;font-weight:500"> / 100</span></div>
+      <div style="font-size:11px;color:#64748b;line-height:1.5;flex:1;min-width:180px"><i class="bi bi-info-circle"></i> 페이스·심박존·러닝 다이나믹스를 조합한 이 앱의 자체 추정치입니다. 워치가 측정하는 임상적 VO2 수치가 아니며(직접 확인 필요), 계산 가능한 하위 지표들의 평균입니다.</div>
+    </div>
+    <div class="grid-2col" style="gap:10px;margin-bottom:10px">
+      <div class="stat-mini"><div class="v" style="font-size:16px">${idx.aero.score!=null?idx.aero.score:"—"}</div><div class="l">① 유산소 효율 (같은 강도 페이스 추세)</div></div>
+      <div class="stat-mini"><div class="v" style="font-size:16px">${idx.dyn.score!=null?idx.dyn.score:"—"}</div><div class="l">② 러닝 다이나믹스 효율 (기준대 대비)</div></div>
+    </div>
+    <div class="stat-mini" style="margin-bottom:10px;text-align:left"><div class="l">③ VDOT (심폐지구력 현재값 — 추세 아닌 참고용)</div><div class="v" style="font-size:16px">${idx.vdot!=null?idx.vdot.toFixed(1):"—"}</div></div>
+    ${idx.aero.score!=null?`<div style="height:160px;position:relative;margin-bottom:10px"><canvas id="economyChart"></canvas></div>`:""}
+    <div style="padding:10px 12px;background:#080e1a;border-radius:8px;font-size:12.5px;color:#cbd5e1;line-height:1.65">${economyCoachText(idx)}</div>`;
+  if(idx.aero.score!=null){
+    const weekly=zoneWeeklyPaceTrend(idx.aero.t.zone,12);
+    if(economyChart){economyChart.destroy();economyChart=null;}
+    const canvas=document.getElementById("economyChart");
+    if(canvas)economyChart=new Chart(canvas.getContext("2d"),{type:"line",
+      data:{labels:weekly.map(w=>w.weekEnd.slice(5)),
+        datasets:[{label:`Zone${idx.aero.t.zone} 페이스(분/km)`,data:weekly.map(w=>w.paceMinKm!=null?Math.round(w.paceMinKm*100)/100:null),borderColor:"#38bdf8",backgroundColor:"#38bdf8",spanGaps:true,tension:.3,pointRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        scales:{x:{ticks:{color:"#94a3b8",maxTicksLimit:8}},y:{reverse:true,ticks:{color:"#94a3b8"}}},
+        plugins:{legend:{display:false}}}});}}
 function saveDynamicsPrefs(){DB.dynamicsPrefs={calibrateOn:document.getElementById("dyn-calibrate-toggle").checked,coachOn:document.getElementById("dyn-coach-toggle").checked};save();
   showToast("러닝 다이나믹스 설정을 저장했습니다.");renderDynamicsCompare();}
 function renderDynamicsPrefsUI(){const p=DB.dynamicsPrefs||{calibrateOn:false,coachOn:false};
@@ -8909,7 +9190,7 @@ function onGpsError(err){const st=document.getElementById("live-gps-acc");
 const GPS_MAX_SPEED=12; // m/s — 엘리트 단거리 최고 순간속도 수준까지 허용(그 이상만 명백한 GPS 오류로 간주)
 /* [2026-09] 실측 버그 수정: 화면이 꺼지면 GPS 정확도가 흔히 30~55m대로 떨어지는데, 예전엔
    accuracy>30m 신호를 통째로 폐기(기준점도 안 갱신)해서 화면꺼짐 구간 전체가 누락되는 경우가
-   있었다(가민 0.28km vs 앱 0.15km 실측 확인). 완전히 못 쓸 신호(60m 초과)만 거르고, 그 안에서는
+   있었다(실측 GPS 워치 0.28km vs 앱 0.15km 실측 확인). 완전히 못 쓸 신호(60m 초과)만 거르고, 그 안에서는
    정확도가 나쁠수록 위치를 더 많이 평균내는 EMA(지수이동평균) 스무딩으로 노이즈를 억제한다.
    합성 트랙 경로로 15회 반복검증한 결과 평균 97.7%(85~107%) 정확도로 실측치에 근접함을 확인했다
    (예전 로직은 같은 조건에서 0%). */
@@ -8933,8 +9214,8 @@ function bridgeGap(P0,P1,P2){ // P1(두절 직전)→P2(재획득) 사이를 진
     mids.push(fromLocalXY(P1,{x:bx,y:by}));}
   pathLen+=Math.hypot(p2xy.x-prevXY.x,p2xy.y-prevXY.y);
   return{mids,pathLen,straight};}
-const PACE_SMOOTH_SEC=5; // 기본 스무딩 구간(초, 신호 양호 시) — 가민 등의 실측 관행(3~7초)에 맞춤
-const PACE_SMOOTH_SEC_MAX=7; // GPS 정확도가 나쁠 때(캐노피·빌딩숲 등) 완만히 확장하는 상한 — 가민의 범위(3~7초)를 벗어나지 않음
+const PACE_SMOOTH_SEC=5; // 기본 스무딩 구간(초, 신호 양호 시) — GPS 러닝워치 업계의 실측 관행(3~7초)에 맞춤
+const PACE_SMOOTH_SEC_MAX=7; // GPS 정확도가 나쁠 때(캐노피·빌딩숲 등) 완만히 확장하는 상한 — 업계 통상 범위(3~7초)를 벗어나지 않음
 const MIN_MOVE_SPEED=0.3; // m/s — 이 미만은 정지 중 GPS 흔들림으로 간주. 절대거리(예: 1.5m)가 아닌 '속도'로 판단해야 도보 페이스(초당 약1.2m)도 정상 인식됨
 // 신호가 나쁠수록 정지 중 위치 흔들림의 '겉보기 속도'도 커지므로, 정확도가 나쁠 때는 최소 이동속도 기준을 함께 높인다
 // (실제 손목시계 대비 실측 비교에서, 걷기/정지가 섞인 구간에서 거리가 과다 누적되는 사례를 확인해 v2.43.2에 추가)
@@ -8973,6 +9254,7 @@ function trackCalibratedDist(){ // 완주한 바퀴는 규정거리로 확정, �
   return RUN.trackLapsDone*RUN.trackLapDist+Math.max(0,RUN.dist-RUN.distAtLapStart);}
 function onGpsPoint(pos){if(!RUN||RUN.paused)return;
   const c=pos.coords,ts=(pos.timestamp&&pos.timestamp>0)?pos.timestamp:Date.now();
+  RUN.lastSeenTs=Math.max(RUN.lastSeenTs||0,ts); // pollNativeLocationLog()가 이미 처리된 시각을 걸러내는 기준(2026-11-25)
   const raw={lat:c.latitude,lon:c.longitude,t:ts};
   RUN.acc=c.accuracy;RUN.bestAcc=(RUN.bestAcc==null)?c.accuracy:Math.min(RUN.bestAcc,c.accuracy);
   RUN.accEMA=(RUN.accEMA==null)?c.accuracy:RUN.accEMA*0.7+c.accuracy*0.3; // 정확도 급변에 흔들리지 않도록 지수이동평균
@@ -9021,6 +9303,7 @@ function curPaceSec(){if(!RUN||!RUN.recent||!RUN.recent.length)return null;
   return d>5?t/(d/1000):null;}
 function tickRun(){if(!RUN||RUN.paused)return;
   RUN.elapsed=Math.max(0,Math.floor((Date.now()-RUN.startTs-(RUN.pausedMs||0))/1000)); // 순차증가(RUN.elapsed++) 대신 실제 경과시각으로 계산 — 백그라운드에서 setInterval이 지연되어도 항상 정확
+  pollNativeLocationLog(); // 네이티브 앱이고 화면이 막 켜졌다면 화면꺼짐 동안 쌓인 위치를 지금 따라잡음(2026-11-25) — 매초 호출해도 무해(비동기, 중복방지 내장)
   RUN.tickCount=(RUN.tickCount||0)+1;
   if(RUN.tickCount%5===0)saveRunSnapshot(); // 5초마다 진행 중인 운동을 저장(앱이 강제 종료돼도 복구 가능하도록)
   if(RUN.noGpsRunMode)updateNoGpsDistance(); // 트레드밀 등 — GPS 대신 걸음수×보폭으로 RUN.dist를 매초 갱신
@@ -9190,6 +9473,11 @@ function bestSegmentPace(segs){ // segs: [{d,dt}...] — 롤링 윈도우로 가
         if(pace>0&&(best===null||pace<best))best=pace;break;}}}
   return best;}
 function finishRunSession(){if(!RUN)return;
+  // 네이티브 앱이면 gpsWatchStop()(=bg.stop())으로 포그라운드 서비스를 끄기 전에, 아직 못 읽어온
+  // 마지막 위치 로그부터 먼저 반영 — 그래야 '정지' 버튼을 누른 직후의 짧은 구간도 거리에 포함됨(2026-11-25)
+  if(isCapacitorNative()&&RUN.active){pollNativeLocationLog().then(finishRunSessionImpl);return;}
+  finishRunSessionImpl();}
+function finishRunSessionImpl(){if(!RUN)return;
   clearRunSnapshot(); // 정상적으로 종료됐으니 복구용 스냅샷은 더 이상 필요 없음
   const finalDist=RUN.trackMode?trackCalibratedDist():RUN.dist;
   if(RUN.actGps!==false&&finalDist<50&&!confirm("측정 거리가 매우 짧습니다(50m 미만). 그래도 저장할까요?")){return;} // 시간 기준 활동(수영·헬스 등)은 거리가 0이어도 정상이므로 이 확인을 건너뜀
@@ -9974,85 +10262,6 @@ function parseTCXPoints(doc){
     const distEl=tp.getElementsByTagName("DistanceMeters")[0];
     const cumDist=distEl?parseFloat(distEl.textContent):null;
     return{lat,lon,time,hr,cumDist};});}
-/* ===== Strava 연동 =====
-   Garmin 기기는 이미 "Strava로 자동 전송" 기능이 있어서, Strava를 경유하면 준자동 동기화가 가능하다.
-   OAuth 인증 코드 교환·토큰 갱신은 반드시 서버(api/strava.js)를 거친다 — Client Secret은
-   브라우저에 절대 노출하면 안 되기 때문이다. 이 파일만으로는 동작하지 않고, Vercel에 배포한 뒤
-   STRAVA_CLIENT_SECRET 환경 변수를 등록해야 실제로 연결된다. */
-function saveStravaClientId(id){DB.stravaClientId=id.trim();save();}
-function stravaRedirectUri(){return location.origin+location.pathname;} // 인증 후 같은 페이지로 돌아오게
-function connectStrava(){
-  const id=DB.stravaClientId||(document.getElementById("strava-client-id")||{}).value.trim();
-  if(!id){showToast("Strava Client ID를 먼저 입력하세요.");return;}
-  saveStravaClientId(id);
-  if(location.protocol==="file:"){showToast("이 기능은 Vercel 등에 배포한 뒤에만 동작합니다.");return;}
-  const redirect=encodeURIComponent(stravaRedirectUri());
-  location.href=`https://www.strava.com/oauth/authorize?client_id=${encodeURIComponent(id)}&redirect_uri=${redirect}&response_type=code&approval_prompt=auto&scope=activity:read_all`;}
-async function handleStravaCallback(){
-  if(!FEATURES.strava)return; // 기능 스위치로 숨긴 상태에서는 인증 콜백도 처리하지 않음
-  const params=new URLSearchParams(location.search);
-  const code=params.get("code");if(!code)return;
-  history.replaceState({},"",location.pathname); // code 파라미터를 지워 새로고침 시 재사용되지 않게 함
-  const id=DB.stravaClientId;
-  if(!id){showToast("Strava Client ID 정보가 없습니다. 다시 연결해주세요.");return;}
-  try{
-    const r=await fetch(`/api/strava?action=exchange&code=${encodeURIComponent(code)}&client_id=${encodeURIComponent(id)}`);
-    const data=await r.json();
-    if(!r.ok||!data.access_token)throw new Error(data.error||"토큰 교환 실패");
-    DB.strava={accessToken:data.access_token,refreshToken:data.refresh_token,expiresAt:data.expires_at,
-      athlete:data.athlete?[data.athlete.firstname,data.athlete.lastname].filter(Boolean).join(" "):null};
-    save();showToast("Strava 연결 완료!"+(DB.strava.athlete?` (${DB.strava.athlete})`:""));
-    renderStravaStatus();syncStravaActivities();
-  }catch(e){showToast("Strava 연결 실패: "+e.message);}}
-function renderStravaStatus(){const box=document.getElementById("strava-status");if(!box)return;
-  if(DB.strava&&DB.strava.accessToken)
-    box.innerHTML=`<span style="color:#10b981"><i class="bi bi-check-circle-fill"></i> 연결됨${DB.strava.athlete?" — "+escHtml(DB.strava.athlete):""}</span>
-      <button class="btn btn-sm btn-secondary" style="margin-left:6px;padding:3px 10px" onclick="syncStravaActivities()"><i class="bi bi-arrow-repeat"></i> 지금 가져오기</button>`;
-  else box.innerHTML=`<span style="color:#64748b">아직 연결되지 않았습니다.</span>`;}
-async function getValidStravaToken(){if(!DB.strava)return null;
-  if(DB.strava.expiresAt&&DB.strava.expiresAt*1000>Date.now()+60000)return DB.strava.accessToken; // 아직 유효
-  try{ // 만료됐거나 곧 만료 -> 갱신
-    const r=await fetch(`/api/strava?action=refresh&refresh_token=${encodeURIComponent(DB.strava.refreshToken)}&client_id=${encodeURIComponent(DB.stravaClientId)}`);
-    const data=await r.json();if(!r.ok||!data.access_token)throw new Error("토큰 갱신 실패");
-    DB.strava.accessToken=data.access_token;DB.strava.refreshToken=data.refresh_token;DB.strava.expiresAt=data.expires_at;
-    save();return DB.strava.accessToken;
-  }catch(e){return null;}}
-function decodePolyline(str){ // Strava가 쓰는 구글 폴리라인 인코딩 방식의 좌표 복원
-  let index=0,lat=0,lng=0;const coords=[];
-  while(index<str.length){
-    let b,shift=0,result=0;
-    do{b=str.charCodeAt(index++)-63;result|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
-    lat+=(result&1)?~(result>>1):(result>>1);
-    shift=0;result=0;
-    do{b=str.charCodeAt(index++)-63;result|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
-    lng+=(result&1)?~(result>>1):(result>>1);
-    coords.push([lat/1e5,lng/1e5,0]);}
-  return coords;}
-function stravaActivityToLog(act){const startMs=new Date(act.start_date_local).getTime();
-  const log={id:uid(),stravaId:act.id,time:new Date(startMs).toTimeString().slice(0,5),type:"run",sport:"run",
-    dist:+(act.distance/1000).toFixed(2),duration:Math.round(act.moving_time/60),
-    avghr:act.average_heartrate?Math.round(act.average_heartrate):null,
-    maxhr:act.max_heartrate?Math.round(act.max_heartrate):null,
-    notes:"Strava 가져오기: "+(act.name||""),hasRoute:!!(act.map&&act.map.summary_polyline)};
-  log.title=autoTitle(log);return{...log,_date:ymd(new Date(startMs))};}
-async function syncStravaActivities(){
-  const token=await getValidStravaToken();
-  if(!token){showToast("Strava 연결이 필요합니다.");return;}
-  try{
-    const r=await fetch(`/api/strava?action=activities&access_token=${encodeURIComponent(token)}`);
-    const activities=await r.json();if(!r.ok)throw new Error(activities.error||"활동 목록을 가져오지 못했습니다.");
-    let imported=0;
-    for(const act of activities){
-      if(!/run/i.test(act.type||""))continue; // 러닝류만 가져옴
-      const{_date,...pureLog}=stravaActivityToLog(act);
-      if(!DB.calendar[_date])DB.calendar[_date]={plans:[],logs:[]};
-      if(DB.calendar[_date].logs.some(l=>l.stravaId===act.id))continue; // 이미 가져온 활동은 건너뜀
-      DB.calendar[_date].logs.push(pureLog);
-      if(act.map&&act.map.summary_polyline)saveRouteData(pureLog.id,decodePolyline(act.map.summary_polyline));
-      autoDetectPR(pureLog,_date);imported++;}
-    save();refreshAll();checkDistanceMilestones();
-    showToast(`Strava에서 ${imported}건의 러닝 기록을 가져왔습니다.`);
-  }catch(e){showToast("가져오기 실패: "+e.message);}}
 function importActivityFile(e){const file=e.target.files[0];if(!file)return;
   const term=document.getElementById("device-sync-terminal");
   term.textContent=`[읽는 중] ${file.name} ...`;
@@ -10111,7 +10320,7 @@ const TAB_SECTIONS={
   1:[{id:"run-setup-card",label:"러닝 시작"},{id:"sec-1-1",label:"랩 기록"}],
   2:[{id:"sec-2-0",label:"대회 & 주기화 플래너"},{id:"sec-2-1",label:"4대 주기화 블록 로드맵"}],
   3:[{id:"sec-3-0",label:"선택일 상세"},{id:"sec-3-1",label:"주간 일지 보기"}],
-  4:[{id:"sec-4-0",label:"나의 워크아웃 라이브러리"},{id:"sec-4-1",label:"외부 기기 데이터 가져오기"},{id:"sec-4-1c",label:"지도 (카카오맵)"},...(FEATURES.strava?[{id:"sec-4-1b",label:"Strava 연동"}]:[]),{id:"sec-4-2",label:"가져오기 로그"}],
+  4:[{id:"sec-4-0",label:"나의 워크아웃 라이브러리"},{id:"sec-4-1",label:"외부 기기 데이터 가져오기"},{id:"sec-4-1c",label:"지도 (카카오맵)"},{id:"sec-4-2",label:"가져오기 로그"}],
   5:[{id:"sec-5-0",label:"계획 대비 실측 이행 리포트"},{id:"sec-5-1",label:"3단계 편극 강도 분포"},{id:"sec-5-2",label:"일별 TRIMP 부하 추세"}],
   6:[{id:"sec-6-0",label:"거리별 개인기록 (PR)"}],
   7:[{id:"sec-7-0",label:"통합 기록 예측 환산표"},{id:"sec-7-1",label:"목표 대비 & 지구력 현실성 보정"},{id:"sec-7-2",label:"목표 페이스 · 구간 스플릿"}],
@@ -10173,11 +10382,9 @@ function goToSlide(index){index=Math.max(0,Math.min(totalSlides-1,index));const 
     const d=document.getElementById(`dot-${i}`);if(d)d.classList.toggle("active",i===index);}
   if(index===0)renderDashboard();else if(index===1)prepareRunTab();else if(index===2){renderRaceList();renderPeriodizationBlocks();populateTemplateSelect();renderWeeksHint();renderPlanStartHint();}else if(index===3)renderCalendar();
   else if(index===4){renderWorkoutList();
-    const idInput=document.getElementById("strava-client-id");if(idInput)idInput.value=DB.stravaClientId||"";
     const kkInput=document.getElementById("kakao-js-key");if(kkInput)kkInput.value=DB.kakaoJsKey||"";
-    renderKakaoMapStatus();
-    renderStravaStatus();}
-  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();renderPremiumGate();renderProgressionCoaching();renderDynTrendChart();},80);}
+    renderKakaoMapStatus();}
+  else if(index===5){renderComplianceReport();setTimeout(()=>{renderAnalyticsCharts();renderRaceTrend();renderLoadFocusChart();renderPremiumGate();renderProgressionCoaching();renderDynTrendChart();renderEconomyReport();},80);}
   else if(index===6)renderPRBoard();else if(index===7)renderPredictor();else if(index===8)renderLevels();else if(index===9)renderRaceArchive();else if(index===10){renderErrorReportToggle();populateRunnerTypes();recalculateSettingsZones();renderBodyIndex();renderOnboardEditor();fillMetroDefaultsUI();renderCadenceCalc();renderVersionInfo();renderStorageInfo();renderAudioLog();renderShoeList();renderGearList();populateShoeSelect();onShoeCategoryChange();renderDynamicsCompare();renderDynSpeedChart();renderDynamicsPrefsUI();renderAppLockSettings();renderNotifySettingsUI();applyAllSettingSections();}
   renderTabTOC(index);
   for(let i=0;i<totalSlides;i++){const s=document.getElementById("slide-"+i);if(s)s.classList.toggle("inactive-slide",i!==index);}
@@ -10345,7 +10552,6 @@ function wireOnboardDrag(){const vp=document.getElementById("onboardViewport");i
   window.addEventListener("mouseup",e=>obDragEnd(e.clientX));}
 if(!checkAppLock()){ // 잠겨있으면 잠금화면만 띄우고, 나머지 부팅 동작은 잠금 해제(tryUnlockApp) 후로 미룸
   if(shouldShowOnboarding())showOnboarding();
-  handleStravaCallback(); // Strava 인증 후 돌아왔을 때(?code=...) 처리
   checkRunRecovery(); // 강제종료 등으로 중단된 운동이 있으면 복구 제안
   startNotifyChecker(); // 운동 알림 주기 확인 시작
 }
